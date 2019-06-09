@@ -1,0 +1,46 @@
+<div id="addUsersCtrlDiv" ng-controller="AddUsersCtrl as $ctrl">
+    <div class="errbar" ng-show="errorText">
+        <p class="errtext" ng-bind="errorText"></p>
+    </div>
+
+    <div class="interfaceDiv">
+        <div>
+            <table class="table" id="addUserTable" style="width: 50%; display:table;">
+
+                <tr ng-repeat="info in fields track by $index" ng-init="fieldKey = fieldKeys[$index]">
+                    <td>
+                        {{info}}
+                    </td>
+                    <td>
+                        <input ng-if="fieldKey != 'role'"
+                               placeholder="{{col}}"
+                               ng-model="userInfo[fieldKey]"
+                               ng-model-options='{ debounce: 500 }'
+                               style="width: 100% !important;">
+
+                        <select ng-if="fieldKey == 'role'"
+                                placeholder="{{col}}"
+                                ng-model="userInfo[fieldKey]"
+                                ng-model-options='{ debounce: 500 }'
+                                style="width: 100% !important;">
+                            <option value= "" selected>Role</option>
+                            <option>admin</option>
+                            <option>manager</option>
+                            <option>student</option>
+                        </select>
+                    </td>
+
+
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <button type="button" class="btn btn-primary" ng-click="addUser($event)" >Add</button>
+                        <button type="button" class="btn btn-primary" ng-click="selectSpreadsheet($event)" >Upload Spreadsheet</button>
+                        <a href="/resources/userAddTemplate.xlsx" download="userAddTemplate.xlsx" class="btn btn-primary" >Download Template</button>
+                        <input type="file" style="display: none" id="userSpreadsheetField" name="file" onchange="angular.element(this).scope().submitSpreadsheet(this.files)"/>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>

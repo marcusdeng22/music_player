@@ -1,0 +1,13 @@
+<div id="playlistDiv" ng-controller="playlistCtrl as $ctrl">
+    <p>playlist here</p>
+    <div id="playlistAllDiv">
+        <select id="playlistList" ng-model="playlistSelect" ng-change="selectedPlaylist(playlistSelect)" ng-options="x.name for x in playlistData" size={{playlistData.length}}>
+            <option style="display:none" value="">playlists</option>
+        </select>
+    </div>
+    <div id="playlistContentsDiv">
+        <select id="playlistContentsSelect" ng-model="songSelect" ng-options="x.name + '-' + x.artist for x in songData" size={{songData.length}}>
+            <option style="display:none" value="">songs</option>
+        </select>
+    </div>
+</div>

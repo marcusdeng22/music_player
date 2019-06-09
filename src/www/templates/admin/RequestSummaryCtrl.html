@@ -1,0 +1,254 @@
+<div id="requestSummaryCtrlDiv" ng-controller="RequestSummaryCtrl as $ctrl" style="margin: 2%; box-sizing: border-box; display:flex;">
+
+    <table class="table" style="float: left; width: 10%;">
+        <tr>
+            <td>
+                <h3>Item Filter</h3>
+            </td>
+        </tr>
+        <tr ng-repeat="filter in itemFields track by $index" ng-init="filterKey = itemFieldKeys[$index]">
+            <td>
+                {{filter}}
+                <input type="text"
+                       ng-model="secondaryFilter[filterKey]"
+                       ng-model-options='{ debounce: 500 }'
+                       ng-change='requery()'>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button type="button" class="btn btn-primary" style="width:100%;" ng-click="showGenerateReportsModal()">Generate Report</button>
+            </td>
+        </tr>
+    </table>
+
+    <div style="width: 90%; float: left;">
+
+    <div>
+        <ul class="pagination">
+          <li class="page-item" ng-click="firstPage()"><a class="page-link" href="">First</a></li>
+          <li class="page-item" ng-click="prevPage()"><a class="page-link" href="">Previous</a></li>
+          <li ng-repeat="pageNum in pageNumberArray" class="page-item" ng-click="changePage(pageNum)" ng-class="{active: pageNumber == pageNum}"><a class="page-link" href="">{{pageNum}}</a></li>
+          <li class="page-item" ng-click="nextPage()"><a class="page-link" href="">Next</a></li>
+          <li class="page-item" ng-click="lastPage()"><a class="page-link" href="">Last ({{numberOfPages}})</a></li>
+        </ul>
+    </div>
+
+
+    <table class="table table-bordered pageTable" style="width: 100%">
+        <thead>
+            <tr>
+                <th ng-repeat="col in fields track by $index"
+                    ng-click="toggleSort(fieldKeys[$index])"
+                    ng-class="{ascending: fieldKeys[$index] == sortTableBy && orderTableBy == 'ascending',
+                               descending: fieldKeys[$index] == sortTableBy && orderTableBy == 'descending'}">{{col}}</th>
+            </tr>
+            <tr>
+                <td ng-repeat="col in fields track by $index" ng-init="fieldKey = fieldKeys[$index]">
+                    <input ng-if="fieldKey != 'status'"
+                           placeholder="{{col}}"
+                           ng-model="primaryFilter[fieldKey]"
+                           ng-model-options='{ debounce: 500 }'
+                           ng-change='requery()'
+                           style="width: 100% !important;">
+
+                    <form ng-if="fieldKey == 'status'">
+                      <div class="multiselect">
+                        <div class="selectBox" ng-click="showCheckboxes()" style="width: 190px">
+                          <select></select>
+                          <div class="overSelect"></div>
+                        </div>
+                        <div id="checkboxes">
+                            <label ng-repeat="status in statuses track by $index">
+                                <input type="checkbox" checklist-value="status" ng-click="addToSelectedStatuses(statusesKeys[$index])"> {{status}}
+                            </label>
+                        </div>
+                      </div>
+                    </form>
+
+                    </select>
+                </td>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            <tr ng-repeat-start="dict in data | filter : summaryFilter track by $index" ng-init="dictIdx=$index" ng-click="toggleCollapse($event)">
+                <td ng-repeat="fieldK in fieldKeys">{{fieldK == 'status' ? statusLut[dict[fieldK]] : dict[fieldK]}}</td>
+            </tr>
+
+            <tr ng-repeat-end  style="background-color: #999; display: none;">
+                <td colspan="7" style="padding: 0px;">
+                    <table class="table table-bordered" style="margin-bottom: 0px; margin-left: 10px; width: calc(100% - 10px);">
+                        <tr style="border-bottom: 1.5px solid black">
+                            <td scope="col" style="background-color: #eee;">#</td>
+                            <td scope="col" ng-repeat="field in itemFields" ng-bind="field" style="background-color: #eee;"></td>
+                        </tr>
+
+                        <tr ng-repeat="row in dict.items" ng-init="rowIdx = $index">
+
+                            <td scope="row" ng-bind="rowIdx + 1" style="background-color: #eee;"></td>
+
+                            <td class="cleanInputCell" ng-repeat="field in itemFieldKeys track by $index" ng-init="fieldIdx = $index" style="background-color: #eee;">
+                                {{dict.items[rowIdx][field]}}
+                            </td>
+
+                        </tr>
+                        <tr>
+                            <td colspan="7" style="background-color: #eee; border-top:1.5px solid;">
+                                <table style="width:100%; background-color: #eee;">
+                                    <tr>
+                                        <td>
+                                            Justification: {{dict["justification"]}}
+                                        </td>
+                                        <td>
+                                            Additional Info: {{dict["additionalInfo"]}}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td colspan = "7" style="text-align:center">
+                                <button type="button" class="btn btn-primary col-md-2" ng-click="editRequest($event, dictIdx)">Edit Request</button>
+                                <button type="button" class="btn btn-primary col-md-2" ng-click="viewHistory($event, dictIdx)">View History</button>
+                                <button type="button" class="btn btn-success col-md-2" ng-click="orderRequest($event, dictIdx)" ng-if="canOrder(dict.status)" style="width:44%">Mark as Ordered</button>
+                                <button type="button" class="btn btn-danger col-md-2" ng-click="rejectRequest($event, dictIdx)" ng-if="canOrder(dict.status)" style="width:44%">Reject</button>
+                                <button type="button" class="btn btn-success col-md-2" ng-click="readyRequest($event, dictIdx)" ng-if="canPickup(dict.status)" style="width:44%">Mark as Ready for Pickup</button>
+                                <button type="button" class="btn btn-success col-md-2" ng-click="completeRequest($event, dictIdx)" ng-if="canComplete(dict.status)" style="width:44%">Mark as Complete</button>
+                            </td>
+                        </tr>
+
+                    </table>
+                </td>
+            </tr>
+
+        </tbody>
+
+    </table>
+    </div>
+
+    <div id="historyModal" class="modal">
+        <div class="modal-content" style="width:75%">
+            <table class="table table-bordered history-table">
+                <thead>
+                    <tr>
+                        <th ng-repeat="field in historyFields">{{field}}</th>
+                    </tr>
+                </thead>
+
+                <tbody id="historyBody">
+                </tbody>
+            </table>
+            <button type="button" class="btn btn-primary" ng-click="closeHistoryBox($event)" style="float:left; width:100%;">Close</button>
+        </div>
+    </div>
+
+    <div id="rejectModal" class="modal">
+        <div class="modal-content" style="width:90%;">
+            <div class="row">
+                <div class="col-md-12">
+                    <input type="text" id="rejectCommentBox" placeholder="comment" style="width:100%;" ng-model="adminComment">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3">
+                    <button type="button" class="btn btn-primary" ng-click="closeRejectBox($event)" style="float:left; width:100%;">Close</button>
+                </div>
+                <div class="col-md-3">
+                    <button type="button" class="btn btn-primary" ng-click="permanentReject($event)" style="float:left; width:100%;">Permanent Reject</button>
+                </div>
+                <div class="col-md-3">
+                    <button type="button" class="btn btn-primary" ng-click="sendForUpdatesAdmin($event)" style="float:left; width:100%;">Send for Updates, Return to Admin</button>
+                </div>
+                <div class="col-md-3">
+                    <button type="button" class="btn btn-primary" ng-click="sendForUpdatesManagerAdmin($event)" style="float:left; width:100%;">Send for Updates, Return to Manager</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="shippingModal" class="modal">
+        <div class="modal-content" style="width:50%;">
+            <div class="row">
+                <div class="col-md-12">
+                    <input type="text" id="shippingAmt" placeholder="Shipping Amount" style="width:100%;">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-primary" ng-click="setShipping($event)" style="float:left; width:100%;">Set Shipping Cost</button>
+                </div>
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-primary" ng-click="cancelShippingBox($event)" style="float:left; width:100%;">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="requestEditModal" class="modal">
+        <div class="modal-content" style="width:90%;">
+            <%include file="EditRequestCtrl.html"/>
+        </div>
+    </div>
+
+    <div id="generateReportsModal" class="modal">
+        <div class="modal-content" style="width:30%;">
+
+            <table>
+                <tr>
+                    <td colspan="2">
+                        <h4>Start Date:</h4>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="2">
+                        <input data-date-format="mm/dd/yyyy" id="reportStart" ng-model="reportStart"  style="width: 100%;">
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="2">
+                        <h4>End Date:</h4>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="2">
+                        <input data-date-format="mm/dd/yyyy" id="reportEnd" ng-model="reportEnd" style="width: 100%;">
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="2">
+                        <h4>Report Filter</h4>
+                        <p ng-if="isEmpty(primaryFilter)">None</p>
+                    </td>
+                </tr>
+
+                <tr ng-repeat="(key, value) in primaryFilter" ng-if="value">
+                    <td>{{key}}</td>
+                    <td>{{value}}</td>
+                </tr>
+
+                <tr>
+                    <td colspan="2">
+                        <h4>Item Filter</h4>
+                        <p ng-if="isEmpty(secondaryFilter)">None</p>
+                    </td>
+                </tr>
+
+                <tr ng-repeat="(key, value) in secondaryFilter" ng-if="value">
+                    <td>{{key}}</td>
+                    <td>{{value}}</td>
+                </tr>
+            </table>
+
+            <button type="button" class="btn btn-danger" ng-click="cancelReport()">Cancel</button>
+            <button type="button" class="btn btn-success" ng-click="generateReport()">Generate Report</button>
+        </div>
+    </div>
+
+</div>
