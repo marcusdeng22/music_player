@@ -2,6 +2,8 @@ app.controller('playlistCtrl', ['$scope', '$http', '$timeout', 'dispatcher', fun
     $scope.playlistData = [];
     $scope.songData = [];
 
+    $scope.playlistSelect = [];
+
     $scope.getPlaylistData = function() {
         $http.post("/findPlaylist", {}).then(function(resp) {
             console.log("success");
@@ -28,11 +30,18 @@ app.controller('playlistCtrl', ['$scope', '$http', '$timeout', 'dispatcher', fun
 
     //$scope.playlistSelect = $scope.playlistData[0]["name"];
 
-    $scope.selectedPlaylist = function(item) {
-        console.log("selected item: " + item.name);
-        console.log(item);
+    $scope.selectedPlaylist = function() {
         console.log($scope.playlistSelect);
+        if ($scope.playlistSelect.length > 1) {
+            $scope.songData = [];
+        }
+        else {
+            $scope.getSongData($scope.playlistSelect[0]["contents"]);
+        }
+        // console.log("selected item: " + item.name);
+        // console.log(item);
+        // console.log($scope.playlistSelect);
         //query for item.contents
-        $scope.getSongData(item["contents"]);
+        // $scope.getSongData(item["contents"]);
     };
 }]);
