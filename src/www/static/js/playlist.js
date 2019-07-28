@@ -296,6 +296,8 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 			$scope.playlistData[$scope.playlistIndices]["contents"].splice($scope.songIndices[i], 1);
 			//TODO: perform update to DB
 		}
+		// $("#songSelect").children().removeClass("ui-sortable-selected")
+		$scope.songIndices = [];
 	}
 
 	function closeAllModals() {

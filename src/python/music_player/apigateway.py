@@ -115,7 +115,7 @@ class ApiGateway(object):
 			# for x in data["content"]:
 			#     if not ObjectId.is_valid(x):
 			#         raise cherrypy.HTTPError(400, "Bad song id")
-			#return in order requested
+			#return in order requested: from https://stackoverflow.com/questions/22797768/does-mongodbs-in-clause-guarantee-order/22800784
 			stack = []
 			i = len(data["content"]) - 1
 			while i > 0:

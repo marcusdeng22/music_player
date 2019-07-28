@@ -139,7 +139,7 @@ def createMusicQuery(data):
 						myArtists.append(artist)
 					else:
 						raise cherrypy.HTTPError(400, "Bad artist name")
-				myMusic["artist"] = myArtists
+				myMusic["artist"] = {"$in": myArtists}
 			if key == "_id":
 				myMusic["_id"] = checkValidID(data)
 
