@@ -13,7 +13,7 @@ import music_player.utils as m_utils
 from datetime import datetime, timedelta
 
 absDir = os.getcwd()
-playlistFields = ["_id", "date", "contents", "name"]
+playlistFields = ["_id", "date", "dateStr", "contents", "name"]
 musicFields = ["_id", "url", "type", "vol", "name", "artist", "start", "end"]
 
 class ApiGateway(object):

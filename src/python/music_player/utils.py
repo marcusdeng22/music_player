@@ -174,6 +174,7 @@ def cleanRet(dataList):
 			data["_id"] = str(data["_id"])
 		if "date" in data:
 			data["date"] = data["date"].isoformat()[:19]    # gets only up to seconds; add "Z" for UTC?
+			data["dateStr"] = data["date"][:10]
 		ret.append(data)
 	print("returning:", ret)
 	return ret

@@ -6,9 +6,18 @@
 			<!-- <select multiple id="playlistList" ng-model="playlistSelect" ng-change="selectedPlaylist()" ng-options="x.name for x in playlistData" size={{playlistData.length}} style="width: 100%; height: calc(100% - 35px);">
 				<option style="display:none" value="">playlists</option>
 			</select> -->
+			<div>
+				<button type="button">Name</button>
+				<button type="button">Date</button>
+			</div>
 			<div ui-sortable="sortablePlaylist" ng-model="playlistData" id="playlistSelect" class="list" style="width: 100%; height: calc(100% - 35px);">
 				<div ui-sortable-selectable ng-repeat="item in playlistData" class="item playlistItem">
-					{{item.name}}
+					<div style="width: 100%; display: table; table-layout: fixed;">
+						<div style="width: 100%; display: table-row;">
+							<div style="width: calc(100% - 80px); display: table-cell; overflow: hidden;">{{item.name}}</div>
+							<div style="width: 80px; display: table-cell;">{{item.dateStr}}</div>
+						</div>
+					</div>
 				</div>
 			</div>
 

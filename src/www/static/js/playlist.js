@@ -10,18 +10,18 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	$scope.searchMusicSelect = [];
 
 	$scope.getPlaylistData = function() {
-		// $http.post("/findPlaylist", {}).then(function(resp) {
-		// 	console.log("success");
-		// 	$scope.playlistData = resp.data;
-		// 	console.log($scope.playlistData);
-		// }, function(error) {
-		// 	console.log(error);
-		// });
-		$scope.playlistData = [
-			{"name": "playlist1", "contents": ["1","3"]},
-			{"name": "playlist2", "contents": ["0","1","2"]},
-			{"name": "playlist3", "contents": ["1","2","3"]}
-		]
+		$http.post("/findPlaylist", {}).then(function(resp) {
+			console.log("success");
+			$scope.playlistData = resp.data;
+			console.log($scope.playlistData);
+		}, function(error) {
+			console.log(error);
+		});
+		// $scope.playlistData = [
+		// 	{"name": "playlist1", "contents": ["1","3"]},
+		// 	{"name": "playlist2", "contents": ["0","1","2"]},
+		// 	{"name": "playlist3", "contents": ["1","2","3"]}
+		// ]
 	};
 
 	$scope.getPlaylistData();
@@ -120,6 +120,12 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		.keyup(function(evt) {
 			if (evt.keyCode == 27) {	//escape key
 				closeAllModals();
+			}
+		});
+
+		$(document).keyup(function(e) {
+			if ($("#newSongUrlInput").is(":focus") && e.key == "Enter") {
+				$scope.previewSong();
 			}
 		});
 	});
