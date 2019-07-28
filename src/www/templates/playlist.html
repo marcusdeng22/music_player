@@ -1,17 +1,79 @@
 <div id="playlistDiv" ng-controller="playlistCtrl as $ctrl" style="padding: 10px; width: 100%; height: 75%; display: table;">
-    <!-- <p>playlist here</p> -->
-    <div style="display: table-row; height: 75%;">
-        <div id="playlistAllDiv" style="width: 50%; height: 100%; display: table-cell;">
-            <p>Playlists</p>
-            <select multiple id="playlistList" ng-model="playlistSelect" ng-change="selectedPlaylist()" ng-options="x.name for x in playlistData" size={{playlistData.length}} style="width: 100%; height: 100%;">
-                <option style="display:none" value="">playlists</option>
-            </select>
-        </div>
-        <div id="playlistContentsDiv" style="width: 50%; height: 100%; display: table-cell;">
-            <p>Songs</p>
-            <select multiple id="playlistContentsSelect" ng-model="songSelect" ng-options="x.name + '-' + x.artist for x in songData" size="{{(songData.length > 10) ? songData.length : 10}}" style="width: 100%; height: 100%;">
-                <option style="display:none" value="">songs</option>
-            </select>
-        </div>
-    </div>
+	<!-- <p>playlist here</p> -->
+	<div style="display: table-row; height: 85%;">
+		<div id="playlistAllDiv" class="playlistCol">
+			<p>Playlists</p>
+			<!-- <select multiple id="playlistList" ng-model="playlistSelect" ng-change="selectedPlaylist()" ng-options="x.name for x in playlistData" size={{playlistData.length}} style="width: 100%; height: calc(100% - 35px);">
+				<option style="display:none" value="">playlists</option>
+			</select> -->
+			<div ui-sortable="sortablePlaylist" ng-model="playlistData" id="playlistSelect" class="list" style="width: 100%; height: calc(100% - 35px);">
+				<div ui-sortable-selectable ng-repeat="item in playlistData" class="item playlistItem">
+					{{item.name}}
+				</div>
+			</div>
+
+			<button type="button" class="btn btn-success" ng-disabled="playlistIndices.length == 0" ng-click="triggerPlay()">{{(playlistSelect.length > 1) ? "Play Selected" : "Play"}}</button>
+			<button type="button" class="btn btn-success" ng-click="newPlaylist()">New</button>
+			<button type="button" class="btn btn-primary" ng-click="newPlaylist('edit')" ng-disabled="playlistIndices.length != 1">Edit Playlist</button>
+			<button type="button" class="btn btn-danger" ng-click="deletePlaylist()" ng-disabled="playlistSelect.length == 0">Delete</button>
+		</div>
+		<div id="playlistContentsDiv" class="playlistCol">
+			<p>Songs</p>
+			<!-- <select multiple id="playlistContentsSelect" ng-model="songSelect" ng-options="x.name + '-' + x.artist for x in songData" size="{{(songData.length > 10) ? songData.length : 10}}" style="width: 100%; height: calc(100% - 35px);">
+				<option style="display:none" value="">songs</option>
+			</select> -->
+			<div ui-sortable="sortableSongs" ng-model="songData" id="songSelect" class="list" style="width: 100%; height: calc(100% - 35px);">
+				<div ui-sortable-selectable ng-repeat="song in songData" class="item songItem">
+					{{song.name}}
+				</div>
+			</div>
+			<button type="button" class="btn btn-success" ng-click="addSong()">Add Songs</button>
+			<button type="button" class="btn btn-primary" ng-click="editSong()" ng-disabled="songIndices.length != 1">Edit Song</button>
+			<button type="button" class="btn btn-danger" ng-click="deleteSong()" ng-disabled="songIndices.length == 0">Remove Selected</button>
+		</div>
+	</div>
+
+	<div id="addPlaylistModal" class="modal" style="display: hidden;">
+		<div class="modal-content" style="width:75%;">
+			<div id="playlistMode"></div>
+			<input type="text" id="newPlaylistName" ng-model="newPlaylistName" placeholder="Playlist Name">
+			<div>
+				<button type="button" id="submitNewPlaylist" class="col-md-3 btn btn-success" ng-click="addNewPlaylist()" ng-disabled="newPlaylistName.length == 0">{{(editing) ? "Rename" : "Add"}} Playlist</button>
+				<button type="button" class="col-md-3 btn btn-danger" ng-click="closePlaylistModal()">Cancel</button>
+			</div>
+		</div>
+	</div>
+
+	<div id="addMusicListModal" class="modal" style="display: hidden;">
+		<div class="modal-content" style="width:75%;">
+			<input type="text" id="searchMusicList" placeholder="Search for music...">
+			<select id="searchMusicSelect" ng-model="searchMusicSelect">
+			</select>
+			<button type="button" class="btn btn-success" ng-disabled="searchMusicSelect.length == 0">Add Songs</button>
+			<button type="button" class="btn btn-danger">Cancel</button>
+		</div>
+	</div>
+
+	<div id="editMusicModal" class="modal" style="display: hidden;">
+		<div class="modal-content" style="width:75%;">
+			<table class="table" style="width: 100%; display: table;">
+				<tr ng-repeat = "(key, val) in newSongData" ng-if="key!='_id'">
+					<td>{{key}}</td>
+					<td ng-if="key!='url'">
+						<input type="text" ng-model="newSongData[key]" style="width: 100%;">
+					</td>
+					<td ng-if="key=='url'">
+						<!-- <button type="button" class="btn" style="background-image: url('/images/refresh.png'); background-size: 100% 100%; width: 20px; height: 25px;"></button> -->
+						<input id="newSongUrlInput" type="text" ng-model="newSongData[key]" style="width: calc(100% - 30px);">
+						<button type="button" class="btn refreshBtn" ng-click="previewSong()"><img src="/images/refresh.png" width="23px"></button>
+					</td>
+				</tr>
+			</table>
+			<div id="previewDisplay" style="margin: auto;"></div>
+			<div>
+				<button type="button" class="col-md-3 btn btn-success" ng-disabled="checkSongFields()">Update</button>
+				<button type="button" class="col-md-3 btn btn-danger" ng-click="closeEditSongModal()">Cancel</button>
+			</div>
+		</div>
+	</div>
 </div>

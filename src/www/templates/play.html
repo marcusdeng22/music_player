@@ -1,3 +1,23 @@
 <div id="playDiv">
-    <p>play here</p>
+<div ng-controller="sortableController" class="container">
+	<h2>ui-sortable-multiselection connected lists</h2>
+
+	<div class="floatleft">
+	<div ui-sortable="sortableOptions" ng-model="list" class="list" id="testList">
+		<div ui-sortable-selectable ng-repeat="item in list" ng-click="getSelected()" class="testItem item" id=item{{item.value}}> <!-- ng-click="preserveSingle('item' + item.value, $event)"> -->
+		{{item.text}}
+		</div>
+	</div>
+	</div>
+
+	<div class="floatleft" style="margin-left: 20px;">
+	<ul class="list logList">
+		<li ng-repeat="entry in sortingLog track by $index" class="logItem">
+		{{entry}}
+		</li>
+	</ul>
+	</div>
+
+	<div class="clear"></div>
+</div>
 </div>
