@@ -7,8 +7,32 @@
 				<option style="display:none" value="">playlists</option>
 			</select> -->
 			<div>
-				<button type="button">Name</button>
-				<button type="button">Date</button>
+				<input type="text" id="playlistNameSearch" ng-model="playlistNameSearch" ng-model-options='{debounce: 500}' ng-change="advSearch()" placeholder="Search for playlist name" style="width: 100%;">
+				<a data-toggle="collapse" data-target="#advSearchDiv" href="">Advanced Search</a>
+				<div id="advSearchDiv" class="collapse" style="padding-bottom: 10px;">
+					<div id="playlistDatePicker" class="input-daterange input-group">
+						<span class="input-group-addon">Dates:</span>
+						<input type="text" class="input-sm form-control" name="start" id="playlistStartDate" ng-model="playlistStartDate"/>
+						<span class="input-group-addon">to</span>
+						<input type="text" class="input-sm form-control" name="end" id="playlistEndDate" ng-model="playlistEndDate"/>
+						<!-- <span>Dates:</span>
+						<input type="text" name="start" id="playlistStartDate"/>
+						<span>to</span>
+						<input type="text" name="end" id="playlistEndDate"/> -->
+					</div>
+					<!-- <input data-date-format="mm/dd/yyyy" id="playlistStartDate" ng-model="playlistStartDate"> -->
+					<div class="input-group">
+						<span class="input-group-addon">Includes songs:</span>
+						<input type="text" id="playlistSongSearch" class="input-sm form-control">
+					</div>
+					<div class="input-group">
+						<button type="button" ng-click="advSearch()">Search</button>
+					</div>
+				</div>
+			</div>
+			<div>
+				<button type="button" ng-click="sortBy('name')">Name<span class="glyphicon" ng-class="sortGlyph('name')" style="top: 2px;"></span></button>
+				<button type="button" ng-click="sortBy('date')" style="float: right;">Date<span class="glyphicon" ng-class="sortGlyph('date')" style="top: 2px;"></span></button>
 			</div>
 			<div ui-sortable="sortablePlaylist" ng-model="playlistData" id="playlistSelect" class="list" style="width: 100%; height: calc(100% - 35px);">
 				<div ui-sortable-selectable ng-repeat="item in playlistData" class="item playlistItem">
@@ -73,8 +97,9 @@
 					</td>
 					<td ng-if="key=='url'">
 						<!-- <button type="button" class="btn" style="background-image: url('/images/refresh.png'); background-size: 100% 100%; width: 20px; height: 25px;"></button> -->
-						<input id="newSongUrlInput" type="text" ng-model="newSongData[key]" style="width: calc(100% - 30px);">
-						<button type="button" class="btn refreshBtn" ng-click="previewSong()"><img src="/images/refresh.png" width="23px"></button>
+						<input id="newSongUrlInput" type="text" ng-model="newSongData[key]" style="width: calc(100% - 45px); vertical-align: bottom;">
+						<button type="button" class="btn refreshBtn" ng-click="previewSong()"><span class="glyphicon glyphicon-refresh" style="top: 0px;"></span></button>
+						<!-- <button type="button" class="btn refreshBtn" ng-click="previewSong()"><img src="/images/refresh.png" width="23px"></button> -->
 					</td>
 				</tr>
 			</table>

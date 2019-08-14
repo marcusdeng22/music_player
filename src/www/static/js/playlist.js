@@ -1,4 +1,4 @@
-app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatcher', 'uiSortableMultiSelectionMethods', function($scope, $http, $location, $timeout, dispatcher, uiSortableMultiSelectionMethods) {
+app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatcher', 'uiSortableMultiSelectionMethods', 'orderByFilter', function($scope, $http, $location, $timeout, dispatcher, uiSortableMultiSelectionMethods, orderBy) {
 	$scope.playlistData = [];
 	$scope.playlistIndices = [];
 	$scope.songData = [];
@@ -9,22 +9,90 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	// $scope.songSelect = [];
 	$scope.searchMusicSelect = [];
 
-	$scope.getPlaylistData = function() {
-		$http.post("/findPlaylist", {}).then(function(resp) {
+	//order vars
+	$scope.orderVar = "date";
+	$scope.reverse = true;
+
+	//search vars
+	$scope.playlistStartDate = "";
+
+	$scope.getPlaylistData = function(query={}) {
+		$http.post("/findPlaylist", query).then(function(resp) {
 			console.log("success");
 			$scope.playlistData = resp.data;
 			console.log($scope.playlistData);
+			$scope.sortBy("date", true);
 		}, function(error) {
+			console.log("failed to get playlist data");
 			console.log(error);
 		});
 		// $scope.playlistData = [
-		// 	{"name": "playlist1", "contents": ["1","3"]},
-		// 	{"name": "playlist2", "contents": ["0","1","2"]},
-		// 	{"name": "playlist3", "contents": ["1","2","3"]}
+		// 	{"name": "playlist1", "contents": ["1","3"], "date": "2019-03-01T15:00:00", "dateStr": "2019-03-01"},
+		// 	{"name": "playlist2", "contents": ["0","1","2"], "date": "2019-04-01T15:00:00", "dateStr": "2019-04-01"},
+		// 	{"name": "playlist3", "contents": ["1","2","3"], "date": "2019-05-01T15:00:00", "dateStr": "2019-05-01"}
 		// ]
+		// data = [
+		// 	{"name": "playlist1", "contents": ["1","3"], "date": "2019-03-01T15:00:00", "dateStr": "2019-03-01"},
+		// 	{"name": "playlist2", "contents": ["0","1","2"], "date": "2019-04-01T15:00:00", "dateStr": "2019-04-01"},
+		// 	{"name": "playlist3", "contents": ["1","2","3"], "date": "2019-05-01T15:00:00", "dateStr": "2019-05-01"}
+		// ];
+		// $scope.playlistData = orderBy(data, "date", true);
 	};
 
 	$scope.getPlaylistData();
+
+	$scope.playlistNameSearch = "";
+	// $scope.playlistStartDate
+	$scope.advSearch = function() {
+		// create query
+		// available keys: "name", "start_date", "end_date", "content", "_id"
+		var query = {};
+		query["name"] = $scope.playlistNameSearch;
+		console.log("start date")
+		console.log($scope.playlistStartDate);
+		console.log(Date.parse($scope.playlistStartDate));
+		console.log($scope.playlistStartDate == "")
+		console.log($scope.playlistStartDate == undefined)
+		console.log("end date")
+		console.log($scope.playlistEndDate)
+		console.log($scope.playlistEndDate == "")
+		console.log($scope.playlistEndDate == undefined)
+		if ($scope.playlistStartDate != undefined) {
+			// query["start_date"] = new Date($scope.playlistStartDate).toISOString();
+			// query["start_date"] = new Date(Date.parse($scope.playlistStartDate)).toISOString();
+			query["start_date"] = $scope.playlistStartDate;
+		}
+		if ($scope.playlistEndDate != undefined) {
+			// query["end_date"] = new Date($scope.playlistEndDate).toISOString();
+			// query["end_date"] = new Date(Date.parse($scope.playlistEndDate)).toISOString();
+			query["end_date"] = $scope.playlistEndDate;
+		}
+		console.log("query:", query)
+		$scope.getPlaylistData(query);
+	}
+
+	//ordering function
+	$scope.sortBy = function(propertyName, preserveOrder=false) {
+		// $scope.reverse = ((propertyName !== null && $scope.orderVar === propertyName) ? !$scope.reverse : false) ? !preserveOrder : $scope.reverse;
+		if (!preserveOrder) {
+			$scope.reverse = (propertyName !== null && $scope.orderVar === propertyName) ? !$scope.reverse : false;
+		}
+		$scope.orderVar = propertyName;
+		$scope.playlistData = orderBy($scope.playlistData, $scope.orderVar, $scope.reverse);
+	}
+
+	$scope.sortGlyph = function(type) {
+		ret = "glyphicon-chevron-" + ($scope.reverse ? "down" : "up");
+		if ($scope.orderVar == "date" && $scope.orderVar == type) {
+			return ret;
+		}
+		else if ($scope.orderVar == "name" && $scope.orderVar == type) {
+			return ret;
+		}
+		else {
+			return "";
+		}
+	}
 
 	$scope.getSongData = function(songDict) {
 		query = {"content": songDict};
@@ -123,11 +191,22 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 			}
 		});
 
+		//update preview on enter key
 		$(document).keyup(function(e) {
 			if ($("#newSongUrlInput").is(":focus") && e.key == "Enter") {
 				$scope.previewSong();
 			}
 		});
+
+		//prepare datepicker
+		$('#playlistStartDate, #playlistEndDate').datepicker({
+			todayBtn: "linked",
+			clearBtn: true,
+			autoclose: true,
+			todayHighlight: true
+		});
+		$('#playlistStartDate, #playlistEndDate').datepicker("clearDates");
+		// $('#playlistStartDate, #playlistEndDate').datepicker("setDate", new Date());
 	});
 
 	//PLAYLIST BUTTONS##############################################################################################################################

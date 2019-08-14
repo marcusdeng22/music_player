@@ -3,12 +3,13 @@
 import cherrypy
 import hashlib
 import os
-import re
+# import re
 import math
 import functools
 import datetime
 
 from bson.objectid import ObjectId
+from bson.regex import Regex
 
 supportedTypes = ["youtube", "mp3"]
 
@@ -33,7 +34,7 @@ def checkValidData(key, data, dataType, optional=False, default="", coerce=False
 		else:
 			if coerce:
 				try:
-					return dataType(localVar)
+					return datetime.datetime.strptime(localVar, "%m/%d/%Y") if dataType == datetime.datetime else dataType(localVar)
 				except:
 					raise cherrypy.HTTPError(400, "Could not coerce to type %s. See: %s" % (dataType, localVar))
 			else:
@@ -124,8 +125,10 @@ def createMusicQuery(data):
 	# string fields
 	for key in ["url", "name", "type", "artist", "_id"]:
 		if key in data:
-			if key in ["url", "name"]:
+			if key in "url":
 				myMusic[key] = checkValidData(key, data, str)
+			if key == "name":
+				myMusic[key] = {"$regex": r".*" + checkValidData(key, data, str) + r".*", "$options": "i"}
 			if key == "type":
 				if data["type"] in supportedTypes:
 					myMusic["type"] = checkValidData("type", data, str)
@@ -136,6 +139,7 @@ def createMusicQuery(data):
 				myArtists = []
 				for artist in artistList:
 					if isinstance(artist, str):
+						reg = Regex(r".*" + artist + r".*", "i")
 						myArtists.append(artist)
 					else:
 						raise cherrypy.HTTPError(400, "Bad artist name")
@@ -152,19 +156,32 @@ def createMusicQuery(data):
 	return myMusic
 
 def createPlaylistQuery(data):
+	print("creating query")
 	myPlaylist = dict()
 
 	for key in ["name", "start_date", "end_date", "content", "_id"]:
 		if key in data:
 			if key == "name":
-				myPlaylist[key] = checkValidData(key, data, str)
-			if key in ["start_date", "end_date"]:
-				myPlaylist[key] = checkValidData(key, data, datetime)
+				# myPlaylist[key] = r"/.*" + checkValidData(key, data, str) + r".*/i"
+				myPlaylist[key] = {"$regex": r".*" + checkValidData(key, data, str) + r".*", "$options": "i"}
+			if key == "start_date":
+				print("checking start")
+				print(checkValidData(key, data, datetime.datetime, coerce=True))
+				print("passed")
+				if "date" not in myPlaylist:
+					myPlaylist["date"] = {"$gte": checkValidData(key, data, datetime.datetime, coerce=True)}
+				else:
+					myPlaylist["date"]["$gte"] = checkValidData(key, data, datetime.datetime, coerce=True)
+			if key == "end_date":
+				if "date" not in myPlaylist:
+					myPlaylist["date"] = {"$lte": checkValidData(key, data, datetime.datetime, coerce=True) + datetime.timedelta(days=1)}
+				else:
+					myPlaylist["date"]["$lte"] = checkValidData(key, data, datetime.datetime, coerce=True) + datetime.timedelta(days=1)
 			if key == "content":
 				myPlaylist[key] = checkValidData(key, data, list)   # change this query to search for inclusive ($in?)
 			if key == "_id":
 				myPlaylist[key] = checkValidID(data)
-
+	print(myPlaylist)
 	return myPlaylist
 
 def cleanRet(dataList):

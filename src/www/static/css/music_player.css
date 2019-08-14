@@ -17,9 +17,14 @@
 	padding: 5px;
 }
 
+.ui-d/*atepicker {
+	background-color: #fff;
+}*/
+
 .refreshBtn {
-	padding: 0px;
-	margin-top: -2px;
+	/*padding: 0px;*/
+	/*position: absolute;
+	margin-top: -15px;*/
 }
 
 /*start of sortable */
@@ -44,6 +49,7 @@
 
 .item.ui-sortable-selected {
 	background-color: LightSkyBlue;
+	border: 1px solid #444;
 }
 
 .ui-sortable-helper {
