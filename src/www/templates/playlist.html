@@ -1,6 +1,6 @@
-<div id="playlistDiv" ng-controller="playlistCtrl as $ctrl" style="padding: 10px; width: 100%; height: 75%; display: table;">
+<div id="playlistDiv" ng-controller="playlistCtrl as $ctrl" style="padding: 10px; width: 100%; height: 100%; display: table;">
 	<!-- <p>playlist here</p> -->
-	<div style="display: table-row; height: 85%;">
+	<div style="display: table-row; height: 100%;">
 		<div id="playlistAllDiv" class="playlistCol">
 			<p>Playlists</p>
 			<!-- <select multiple id="playlistList" ng-model="playlistSelect" ng-change="selectedPlaylist()" ng-options="x.name for x in playlistData" size={{playlistData.length}} style="width: 100%; height: calc(100% - 35px);">
@@ -8,19 +8,14 @@
 			</select> -->
 			<div>
 				<input type="text" id="playlistNameSearch" ng-model="playlistNameSearch" ng-model-options='{debounce: 500}' ng-change="advSearch()" placeholder="Search for playlist name" style="width: 100%;">
-				<a data-toggle="collapse" data-target="#advSearchDiv" href="">Advanced Search</a>
-				<div id="advSearchDiv" class="collapse" style="padding-bottom: 10px;">
-					<div id="playlistDatePicker" class="input-daterange input-group">
+				<a data-toggle="collapse" data-target=".playlistCollapse" href="">Advanced Search</a>
+				<div id="advSearchDiv" class="playlistCollapse collapse" style="padding-bottom: 10px;">
+					<div id="playlistDatePicker" class="input-daterange input-group" style="z-index: 1;">
 						<span class="input-group-addon">Dates:</span>
 						<input type="text" class="input-sm form-control" name="start" id="playlistStartDate" ng-model="playlistStartDate"/>
 						<span class="input-group-addon">to</span>
 						<input type="text" class="input-sm form-control" name="end" id="playlistEndDate" ng-model="playlistEndDate"/>
-						<!-- <span>Dates:</span>
-						<input type="text" name="start" id="playlistStartDate"/>
-						<span>to</span>
-						<input type="text" name="end" id="playlistEndDate"/> -->
 					</div>
-					<!-- <input data-date-format="mm/dd/yyyy" id="playlistStartDate" ng-model="playlistStartDate"> -->
 					<div class="input-group">
 						<span class="input-group-addon">Includes songs:</span>
 						<input type="text" id="playlistSongSearch" class="input-sm form-control">
@@ -34,12 +29,14 @@
 				<button type="button" ng-click="sortBy('name')">Name<span class="glyphicon" ng-class="sortGlyph('name')" style="top: 2px;"></span></button>
 				<button type="button" ng-click="sortBy('date')" style="float: right;">Date<span class="glyphicon" ng-class="sortGlyph('date')" style="top: 2px;"></span></button>
 			</div>
-			<div ui-sortable="sortablePlaylist" ng-model="playlistData" id="playlistSelect" class="list" style="width: 100%; height: calc(100% - 35px);">
-				<div ui-sortable-selectable ng-repeat="item in playlistData" class="item playlistItem">
-					<div style="width: 100%; display: table; table-layout: fixed;">
-						<div style="width: 100%; display: table-row;">
-							<div style="width: calc(100% - 80px); display: table-cell; overflow: hidden;">{{item.name}}</div>
-							<div style="width: 80px; display: table-cell;">{{item.dateStr}}</div>
+			<div id="playlistContainer" class="playlistDataContainer playlistCollapse collapse show">
+				<div ui-sortable="sortablePlaylist" ng-model="playlistData" id="playlistSelect" class="list" style="width: 100%; min-height: 100%;">
+					<div ui-sortable-selectable ng-repeat="item in playlistData" class="item playlistItem">
+						<div style="width: 100%; display: table; table-layout: fixed;">
+							<div style="width: 100%; display: table-row;">
+								<div style="width: calc(100% - 80px); display: table-cell; overflow: hidden;">{{item.name}}</div>
+								<div style="width: 80px; display: table-cell;">{{item.dateStr}}</div>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -55,9 +52,11 @@
 			<!-- <select multiple id="playlistContentsSelect" ng-model="songSelect" ng-options="x.name + '-' + x.artist for x in songData" size="{{(songData.length > 10) ? songData.length : 10}}" style="width: 100%; height: calc(100% - 35px);">
 				<option style="display:none" value="">songs</option>
 			</select> -->
-			<div ui-sortable="sortableSongs" ng-model="songData" id="songSelect" class="list" style="width: 100%; height: calc(100% - 35px);">
-				<div ui-sortable-selectable ng-repeat="song in songData" class="item songItem">
-					{{song.name}}
+			<div id="songContainer" class="playlistDataContainer" style="height: calc(100% - 33px);">
+				<div ui-sortable="sortableSongs" ng-model="songData" id="songSelect" class="list" style="width: 100%; min-height: 100%;">
+					<div ui-sortable-selectable ng-repeat="song in songData" class="item songItem">
+						{{song.name}}
+					</div>
 				</div>
 			</div>
 			<button type="button" class="btn btn-success" ng-click="addSong()">Add Songs</button>

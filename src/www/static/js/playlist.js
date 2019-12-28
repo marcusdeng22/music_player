@@ -42,31 +42,18 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	$scope.getPlaylistData();
 
 	$scope.playlistNameSearch = "";
-	// $scope.playlistStartDate
 	$scope.advSearch = function() {
 		// create query
 		// available keys: "name", "start_date", "end_date", "content", "_id"
 		var query = {};
 		query["name"] = $scope.playlistNameSearch;
-		console.log("start date")
-		console.log($scope.playlistStartDate);
-		console.log(Date.parse($scope.playlistStartDate));
-		console.log($scope.playlistStartDate == "")
-		console.log($scope.playlistStartDate == undefined)
-		console.log("end date")
-		console.log($scope.playlistEndDate)
-		console.log($scope.playlistEndDate == "")
-		console.log($scope.playlistEndDate == undefined)
-		if ($scope.playlistStartDate != undefined) {
-			// query["start_date"] = new Date($scope.playlistStartDate).toISOString();
-			// query["start_date"] = new Date(Date.parse($scope.playlistStartDate)).toISOString();
+		if (!($scope.playlistStartDate == undefined || $scope.playlistStartDate == "")) {
 			query["start_date"] = $scope.playlistStartDate;
 		}
-		if ($scope.playlistEndDate != undefined) {
-			// query["end_date"] = new Date($scope.playlistEndDate).toISOString();
-			// query["end_date"] = new Date(Date.parse($scope.playlistEndDate)).toISOString();
+		if (!($scope.playlistEndDate == undefined || $scope.playlistEndDate == "")) {
 			query["end_date"] = $scope.playlistEndDate;
 		}
+		//TODO: parse "includes song" to add songs to playlist search
 		console.log("query:", query)
 		$scope.getPlaylistData(query);
 	}
@@ -368,6 +355,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	$scope.closeEditSongModal = function() {
 		// console.log($scope.songData[$scope.songIndices]);
 		// $scope.previewPlayer.destroy();
+		$("#previewDisplay").empty();	//stops loading if closing modal early
 		playem.stop();
 		playem.clearQueue();
 		$("#editMusicModal").hide();

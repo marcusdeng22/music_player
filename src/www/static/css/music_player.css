@@ -27,11 +27,31 @@
 	margin-top: -15px;*/
 }
 
+.playlistDataContainer {
+	overflow: auto;
+	margin: 10px 0;
+}
+
+#playlistContainer.collapse.show {
+	height: calc(100% - 115px);
+	display: block !important;
+}
+
+#playlistContainer.collapse:not(.show) {	/*hidden state*/
+	height: calc(100% - 211px) !important;
+	display: block !important;
+}
+
+#playlistContainer.collapsing {
+	height: calc(100% - 211px) !important;
+}
+
 /*start of sortable */
 
 .list {
 	list-style: none outside none;
-	margin: 10px 0 30px;
+	/*margin: 10px 0 30px;*/
+	/*margin: 10px 0 0 0;*/
 	border: 1px solid black;
 }
 
@@ -120,6 +140,7 @@ h2 {
 	position: fixed;
 	width: 100%; top: 0;
 	height: 59px;
+	border-radius: 0;
 }
 
 .navbar .active {
@@ -162,7 +183,8 @@ h2 {
 .modal {
 	display: none;
 	position: fixed;
-	z-index: 1;
+	/*z-index: 1;*/
+	z-index: 99;
 	padding-top: 100px;
 	left: 0;
 	top: 0;
