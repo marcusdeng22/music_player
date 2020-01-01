@@ -87,11 +87,15 @@ def checkValidID(data):
 	if '_id' in data:
 		myID = data['_id']
 		if ObjectId.is_valid(myID):
-			return myID
+			return ObjectId(myID)
 		else:
 			raise cherrypy.HTTPError(400, 'Object id not valid')
 	else:
-		raise cherrypy.HTTPError(400, 'data needs object id')
+		# raise cherrypy.HTTPError(400, 'data needs object id')
+		if (ObjectId.is_valid(data)):
+			return ObjectId(data)
+		else:
+			raise cherrypy.HTTPError(400, "Object id not valid")
 
 def createMusic(data):
 	myMusic = dict()

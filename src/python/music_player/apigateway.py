@@ -126,6 +126,8 @@ class ApiGateway(object):
 			#return in order requested: from https://stackoverflow.com/questions/22797768/does-mongodbs-in-clause-guarantee-order/22800784
 			stack = []
 			i = len(idList) - 1
+			if i <= 0:
+				return []
 			while i > 0:
 				rec = {
 					"$cond": [{
@@ -176,8 +178,9 @@ class ApiGateway(object):
 		else:
 			raise cherrypy.HTTPError(400, 'No data was given')
 
-		myID = m_utils.checkValidID(data)
-		if self.colMusic.count({"_id": myID}) == 0:
+		# myID = m_utils.checkValidID(data)
+		# if self.colMusic.count({"_id": myID}) == 0:
+		if self.colMusic.count({"_id": m_utils.checkValidID(data)}) == 0:
 			raise cherrypy.HTTPError(400, "Song does not exist")
 
 		# sanitize the input
@@ -235,23 +238,26 @@ class ApiGateway(object):
 			raise cherrypy.HTTPError(400, 'No data was given')
 
 		# sanitize the input
+		print("adding playlist");
 		myPlaylist = dict()
 
 		myPlaylist["name"] = m_utils.checkValidData("name", data, str)
-		myPlaylist["date"] = datetime.datetime.now()
+		myPlaylist["date"] = datetime.now()
 		contentList = m_utils.checkValidData("contents", data, list)
 		myContent = []
 		for song in contentList:
-			if self.colMusic.count({"_id": song}) > 0:
+			# if self.colMusic.count({"_id": ObjectId(song)}) > 0:
+			if self.colMusic.count({"_id": checkValidID(song)}) > 0:
 				myContent.append(song)
 			else:
 				raise cherrypy.HTTPError(400, "Invalid song ID")
 		myPlaylist["contents"] = myContent
 
 		# add to database
-		self.colPlaylists.insert(myRequest)
+		self.colPlaylists.insert(myPlaylist)
 
-		return {"_id": str(self.colPlaylists.find(myRequest)["_id"])}
+		# return {"_id": str(self.colPlaylists.find(myPlaylist)["_id"])}
+		# return {"_id": str(self.colPlaylists.find_one(myPlaylist)["_id"])}
 
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
@@ -299,6 +305,7 @@ class ApiGateway(object):
 		else:
 			raise cherrypy.HTTPError(400, 'No data was given')
 
+		print("editing playlist")
 		myID = m_utils.checkValidID(data)
 		if self.colPlaylists.count({"_id": myID}) == 0:
 			raise cherrypy.HTTPError(400, "Playlist does not exist")
@@ -306,19 +313,18 @@ class ApiGateway(object):
 		myPlaylist = dict()
 		if "name" in data:
 			myPlaylist["name"] = m_utils.checkValidData("name", data, str)
-			myPlaylist["date"] = datetime.datetime.now()
 		if "contents" in data:
 			contentList = m_utils.checkValidData("contents", data, list)
 			myContent = []
 			for song in contentList:
-				if self.colMusic.count({"_id": song}) > 0:
-					myContent.append(song)
+				if self.colMusic.count({"_id": m_utils.checkValidID(song)}) > 0:
+					myContent.append(ObjectId(song))
 				else:
 					raise cherrypy.HTTPError(400, "Invalid song ID")
 			myPlaylist["contents"] = myContent
-			myPlaylist["date"] = datetime.datetime.now()
+		myPlaylist["date"] = datetime.now()
 
-		self.colPlaylists.update_one({"_id": myID}, {"$set": myPlaylist})
+		self.colPlaylists.update_one({"_id": myID}, {"$set": myPlaylist}, upsert=True)
 
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
@@ -338,5 +344,11 @@ class ApiGateway(object):
 			raise cherrypy.HTTPError(400, 'No data was given')
 
 		# sanitize the input
-		#TODO implement
+		if "playlist" in data:
+			myQuery = []
+			for i in data["playlist"]:
+				myQuery.append(checkValidID(i))
+			self.colPlaylists.DeleteMany({"_id": {"$in": myQuery}})
+		else:
+			raise cherrypy.HTTPError(400, "No data given")
 

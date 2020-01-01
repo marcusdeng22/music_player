@@ -73,7 +73,7 @@
 					</div>
 				</div>
 			</div>
-			<button type="button" class="btn btn-success" ng-click="addSong()">Add Songs</button>
+			<button type="button" class="btn btn-success" ng-click="addSong()" ng-disabled="playlistIndices.length != 1">Add Songs</button>
 			<button type="button" class="btn btn-primary" ng-click="editSong()" ng-disabled="songIndices.length != 1">Edit Song</button>
 			<button type="button" class="btn btn-danger" ng-click="deleteSong()" ng-disabled="songIndices.length == 0">Remove Selected</button>
 		</div>

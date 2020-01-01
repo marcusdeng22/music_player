@@ -16,12 +16,17 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	//search vars
 	$scope.playlistStartDate = "";
 
-	$scope.getPlaylistData = function(query={}, sortVar="date", sortRev=true) {
+	$scope.getPlaylistData = function(query={}, sortVar="date", sortRev=true, selectFirst=false) {
 		$http.post("/findPlaylist", query).then(function(resp) {
 			console.log("success");
 			$scope.playlistData = resp.data;
 			console.log($scope.playlistData);
 			$scope.sortBy(sortVar, sortRev);
+			if (selectFirst) {
+				angular.element(document).ready(function() {
+					$(".playlistItem").first().click();
+				});
+			}
 		}, function(error) {
 			console.log("failed to get playlist data");
 			console.log(error);
@@ -104,10 +109,10 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		}
 	}
 
-	$scope.getSongData = function(songDict) {
+	$scope.getSongData = function(songDict) {	//TODO: change this to query the db for playlist id and return the order stored on db
 		query = {"content": songDict};
-		console.log("playlist query songDict:", $scope.playlistData[$scope.playlistIndices]);
-		console.log("playlist query: ", query);
+		// console.log("playlist query songDict:", $scope.playlistData[$scope.playlistIndices]);
+		// console.log("playlist query: ", query);
 		$http.post("/findMusicList", {"content": songDict}).then(function(resp) {
 			// console.log("success");
 			$scope.songData = resp.data;
@@ -146,6 +151,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 			console.log("original order: ", $scope.playlistData[$scope.playlistIndices]);
 			$scope.playlistData[$scope.playlistIndices]["contents"] = songOrder;
 			console.log("new order: ", $scope.playlistData[$scope.playlistIndices]);
+			//TODO: update DB of new order
 		}
 	});
 
@@ -180,6 +186,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 				}
 			},
 			over: function(event, ui) {
+				console.log("over");
 				$(this).addClass("over");
 			},
 			out: function(event, ui) {
@@ -264,16 +271,39 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	});
 
 	$scope.addNewPlaylist = function() {
-		if ($scope.editing) {
-			$scope.playlistData[$scope.playlistIndices]["name"] = $scope.newPlaylistName;
-		}
-		else {
-			$scope.playlistData.unshift({"name": $scope.newPlaylistName, "contents": []});
-			angular.element(document).ready(function() {
-				$(".playlistItem").first().click();
+		//TODO: clear the search
+		if ($scope.editing) {	//editing a playlist name
+			console.log('editing');
+			console.log($scope.playlistData[$scope.playlistIndices])
+			// $scope.playlistData[$scope.playlistIndices]["name"] = $scope.newPlaylistName;
+			$http.post("/editPlaylist", {"_id": $scope.playlistData[$scope.playlistIndices]["_id"], "name": $scope.newPlaylistName}).then(function(resp) {
+				$scope.getPlaylistData(undefined, undefined, undefined, selectFirst=true);
+			}, function(error) {
+				console.log("failed to update playlist data");
+				console.log(error);
 			});
 		}
+		else {
+			console.log("adding");
+			// $scope.playlistData.unshift({"name": $scope.newPlaylistName, "contents": []});
+			$http.post("/addPlaylist", {"name": $scope.newPlaylistName, "contents": []}).then(function(resp) {
+				console.log("added playlist data, getting new");
+				$scope.getPlaylistData(undefined, undefined, undefined, selectFirst=true);
+				// let newData = new Promise(function(resolve, reject) {
+				// 	resolve();
+				// });
+				// newData.then($scope.getPlaylistData);
+			}, function(error) {
+				console.log("failed to add playlist");
+			});
+			// angular.element(document).ready(function() {
+			// 	$(".playlistItem").first().click();
+			// });
+		}
 		//TODO: perform update to DB
+		// $http.post("/editPlaylist", $scope.playlistData[$scope.playlistIndices])
+		// console.log("updating/adding playlist:");
+		// console.log($scope.playlistData[$scope.playlistIndices]);
 		$scope.closePlaylistModal();
 	}
 
@@ -285,11 +315,10 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 
 	//delete playlist
 	$scope.deletePlaylist = function() {
-		$scope.playlistIndices.sort(function(a, b) {return b - a;});
-		for (var i = $scope.playlistIndices.length - 1; i >= 0; i--) {
-			$scope.playlistData.splice($scope.playlistIndices[i], 1);
-			//TODO: perform update to DB
-		}
+		// $scope.playlistIndices.sort(function(a, b) {return b - a;});
+		// for (var i = $scope.playlistIndices.length - 1; i >= 0; i--) {
+		// 	$scope.playlistData.splice($scope.playlistIndices[i], 1);
+		// 	//TODO: perform update to DB: remove from db using selected indices, then call get list
 	}
 
 	//SONG BUTTONS##################################################################################################################################
