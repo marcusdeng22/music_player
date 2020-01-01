@@ -21,6 +21,7 @@ class ApiGateway(object):
 	def __init__(self):
 		client = pm.MongoClient()
 		db = client['music']
+		self.colArtist = db["artists"]
 		self.colMusic = db['music']
 		self.colPlaylists = db['playlists']
 
@@ -37,7 +38,7 @@ class ApiGateway(object):
 
 			{
 				"url": (string),
-				"type": (string) ("youtube" or "mp3"),
+				"type": (string) ("youtube" or "mp3"),	//TODO: add other sources
 				"vol": (int) (0-100),
 				"name": (string),
 				"artist": [(string)],
@@ -65,6 +66,11 @@ class ApiGateway(object):
 		# insert the data into the database
 		self.colMusic.insert(myRequest)
 
+		#check if the artist exists; add if DNE
+		for artist in myRequest["artist"]:
+			if (len(list(self.colArtist.find({"name": artist}).limit(1))) == 0):
+				self.colArtist.insert_one({"name": artist})
+
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
 	@cherrypy.tools.json_out()
@@ -88,9 +94,10 @@ class ApiGateway(object):
 			raise cherrypy.HTTPError(400, 'No data was given')
 
 		# sanitize the input
-		myQuery = m_utils.createMusicQuery(data)
+		# myQuery = m_utils.createMusicQuery(data)
 
-		return list(self.colMusic.find(myQuery))
+		# return list(self.colMusic.find(myQuery))
+		return m_utils.makeMusicQuery(data, self.colMusic)
 
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
@@ -112,16 +119,17 @@ class ApiGateway(object):
 
 		if "content" in data:
 			print("finding:", data["content"])
-			# for x in data["content"]:
-			#     if not ObjectId.is_valid(x):
-			#         raise cherrypy.HTTPError(400, "Bad song id")
+			idList = [ObjectId(i) for i in data["content"]]
+			for x in idList:
+			    if not ObjectId.is_valid(x):
+			        raise cherrypy.HTTPError(400, "Bad song id")
 			#return in order requested: from https://stackoverflow.com/questions/22797768/does-mongodbs-in-clause-guarantee-order/22800784
 			stack = []
-			i = len(data["content"]) - 1
+			i = len(idList) - 1
 			while i > 0:
 				rec = {
 					"$cond": [{
-						"$eq": ["$_id", data["content"][i - 1]]
+						"$eq": ["$_id", idList[i - 1]]
 					},
 					i]
 				}
@@ -135,12 +143,12 @@ class ApiGateway(object):
 			for f in musicFields:
 				projectStage["$project"][f] = 1
 			pipeline = [
-				{"$match": {"_id": {"$in": data["content"]}}},
+				{"$match": {"_id": {"$in": idList}}},
 				# {"$project": {"order": stack[0]}},
 				projectStage,
 				{"$sort": {"order": 1}}
 			]
-			return m_utils.cleanRet(list(self.colMusic.aggregate(pipeline)))
+			return m_utils.cleanRet(self.colMusic.aggregate(pipeline))
 			# return m_utils.cleanRet(list(self.colMusic.find({"_id": {"$in": data["content"]}})))
 		raise cherrypy.HTTPError(400, "No playlist content data given")
 
@@ -173,9 +181,10 @@ class ApiGateway(object):
 			raise cherrypy.HTTPError(400, "Song does not exist")
 
 		# sanitize the input
-		myQuery = m_utils.createMusicQuery(data)
+		# myQuery = m_utils.createMusicQuery(data)
+		# TODO
 
-		self.colMusic.update_one({"_id": myID}, {"$set": {myQuery}})
+		# self.colMusic.update_one({"_id": myID}, {"$set": {myQuery}})
 
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
@@ -267,8 +276,9 @@ class ApiGateway(object):
 			raise cherrypy.HTTPError(400, 'No data was given')
 
 		# sanitize the input
-		myQuery = m_utils.createPlaylistQuery(data)
-		return m_utils.cleanRet(list(self.colPlaylists.find(myQuery)))
+		# myQuery = m_utils.createPlaylistQuery(data, self.colPlaylists, self.colMusic)
+		# return m_utils.cleanRet(list(self.colPlaylists.find(myQuery)))
+		return m_utils.makePlaylistQuery(data, self.colPlaylists, self.colMusic)
 
 	@cherrypy.expose
 	@cherrypy.tools.json_in()

@@ -15,18 +15,32 @@
 						<input type="text" class="input-sm form-control" name="start" id="playlistStartDate" ng-model="playlistStartDate"/>
 						<span class="input-group-addon">to</span>
 						<input type="text" class="input-sm form-control" name="end" id="playlistEndDate" ng-model="playlistEndDate"/>
+						<span class="input-group-addon">AND</span>
 					</div>
 					<div class="input-group">
-						<span class="input-group-addon">Includes songs:</span>
-						<input type="text" id="playlistSongSearch" class="input-sm form-control">
+						<div class="input-group">
+							<span class="input-group-addon">Includes songs:</span>
+							<div data-tip="Use semicolons to separate entries">
+								<input type="text" id="playlistSongSearch" class="input-sm form-control" ng-model="playlistSongSearch">
+							</div>
+							<span class="input-group-addon">OR</span>
+						</div>
+						<div class="input-group">
+							<span class="input-group-addon">Includes artists:</span>
+							<div data-tip="Use semicolons to separate entries">
+								<input type="text" id="playlistArtistSearch" class="input-sm form-control" ng-model="playlistArtistSearch">
+							</div>
+							<!--TODO: add a drop down for artists-->
+						</div>
 					</div>
 					<div class="input-group">
-						<button type="button" ng-click="advSearch()">Search</button>
+						<button type="button" id="advSearchBtn" ng-click="advSearch()">Search</button>
 					</div>
 				</div>
 			</div>
 			<div>
 				<button type="button" ng-click="sortBy('name')">Name<span class="glyphicon" ng-class="sortGlyph('name')" style="top: 2px;"></span></button>
+				<button type="button" ng-click="sortBy('relev')">Relevance<span class="glyphicon" ng-class="sortGlyph('relev')" style="top: 2px;"></span></button>
 				<button type="button" ng-click="sortBy('date')" style="float: right;">Date<span class="glyphicon" ng-class="sortGlyph('date')" style="top: 2px;"></span></button>
 			</div>
 			<div id="playlistContainer" class="playlistDataContainer playlistCollapse collapse show">

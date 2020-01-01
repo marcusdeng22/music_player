@@ -16,12 +16,12 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	//search vars
 	$scope.playlistStartDate = "";
 
-	$scope.getPlaylistData = function(query={}) {
+	$scope.getPlaylistData = function(query={}, sortVar="date", sortRev=true) {
 		$http.post("/findPlaylist", query).then(function(resp) {
 			console.log("success");
 			$scope.playlistData = resp.data;
 			console.log($scope.playlistData);
-			$scope.sortBy("date", true);
+			$scope.sortBy(sortVar, sortRev);
 		}, function(error) {
 			console.log("failed to get playlist data");
 			console.log(error);
@@ -44,7 +44,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	$scope.playlistNameSearch = "";
 	$scope.advSearch = function() {
 		// create query
-		// available keys: "name", "start_date", "end_date", "content", "_id"
+		// available keys: "name", "start_date", "end_date", "song_names", "artist_names" "_id"
 		var query = {};
 		query["name"] = $scope.playlistNameSearch;
 		if (!($scope.playlistStartDate == undefined || $scope.playlistStartDate == "")) {
@@ -53,12 +53,32 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		if (!($scope.playlistEndDate == undefined || $scope.playlistEndDate == "")) {
 			query["end_date"] = $scope.playlistEndDate;
 		}
-		//TODO: parse "includes song" to add songs to playlist search
+		var sortByRelev = false;
+		if (!($scope.playlistSongSearch == undefined || $scope.playlistSongSearch == "")) {
+			query["song_names"] = $scope.playlistSongSearch.split(";").map(i => i.trim()).filter(function(i) {return i != "";});
+			sortByRelev = true;
+		}
+		if (!($scope.playlistArtistSearch == undefined || $scope.playlistArtistSearch == "")) {
+			query["artist_names"] = $scope.playlistArtistSearch.split(";").map(i => i.trim()).filter(function(i) {return i != "";});
+			sortByRelev = true;
+		}
 		console.log("query:", query)
-		$scope.getPlaylistData(query);
+		if (sortByRelev) {
+			$scope.getPlaylistData(query, "relev");
+		}
+		else {
+			$scope.getPlaylistData(query);
+		}
 	}
 
+	$("#playlistSongSearch,#playlistArtistSearch").keypress(function(evt) {
+		if (evt.which == 13) {	//enter key
+			$("#advSearchBtn").click();
+		}
+	});
+
 	//ordering function
+	//TODO: make this a stable sort? https://stackoverflow.com/questions/24678527/is-backbonejs-and-angularjs-sorting-stable
 	$scope.sortBy = function(propertyName, preserveOrder=false) {
 		// $scope.reverse = ((propertyName !== null && $scope.orderVar === propertyName) ? !$scope.reverse : false) ? !preserveOrder : $scope.reverse;
 		if (!preserveOrder) {
@@ -74,6 +94,9 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 			return ret;
 		}
 		else if ($scope.orderVar == "name" && $scope.orderVar == type) {
+			return ret;
+		}
+		else if ($scope.orderVar == "relev" && $scope.orderVar == type) {
 			return ret;
 		}
 		else {
