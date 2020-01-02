@@ -94,7 +94,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	}
 
 	$scope.sortGlyph = function(type) {
-		ret = "glyphicon-chevron-" + ($scope.reverse ? "down" : "up");
+		ret = "icon icon-arrow-" + ($scope.reverse ? "down" : "up");
 		if ($scope.orderVar == "date" && $scope.orderVar == type) {
 			return ret;
 		}

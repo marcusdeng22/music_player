@@ -17,7 +17,7 @@
 	padding: 5px;
 }
 
-.ui-d/*atepicker {
+/*.ui-datepicker {
 	background-color: #fff;
 }*/
 
@@ -25,6 +25,28 @@
 	/*padding: 0px;*/
 	/*position: absolute;
 	margin-top: -15px;*/
+}
+
+.icon {
+	position: relative;
+	top: 0px;
+	height: 14px;
+	width: 14px;
+	display: inline-block;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+.icon-refresh {
+	content: url("../images/refresh.svg");
+}
+
+.icon-arrow-up {
+	content: url("../images/arrow-up.svg");
+}
+
+.icon-arrow-down {
+	content: url("../images/arrow-down.svg");
 }
 
 .playlistDataContainer {
