@@ -83,7 +83,9 @@ class ApiGateway(object):
 				"url": (string),
 				"type": (string),
 				"name": (string),
-				"artist": [(string)],
+				"artist_names": [(string)],
+				"start_date": (datetime),
+				"end_date": (datetime),
 				"_id": (string)
 			}
 		"""
@@ -271,7 +273,8 @@ class ApiGateway(object):
 				"name": (string),
 				"start_date": (datetime),
 				"end_date": (datetime),
-				"content": [(_id)],
+				"artist_names": [(string)],
+				"song_names": [(string)],
 				"_id": (string)
 			}
 		"""

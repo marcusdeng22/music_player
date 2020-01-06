@@ -1,14 +1,22 @@
-<div id="editDiv" ng-controller="editCtrl as $ctrl">
+<!-- <script src="/js/edit.js"></script> -->
+
+<style type="text/css">
+	[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+		display: none !important;
+	}
+</style>
+
+<div id="editDiv" ng-controller="editCtrl as $ctrl" style="height: 100%; width: 100%">
 	<ul class="nav nav-tabs" role="tablist">
 		<li class="nav-item"><a class="nav-link active" data-toggle="tab" data-target="#existingSongSearch" role="tab">Songs</a></li>
 		<li class="nav-item"><a class="nav-link" data-toggle="tab" data-target="#addNewSong" role="tab">Add New Song</a></li>
 	</ul>
 
-	<div class="tab-content" style="margin: 10px;">
+	<div class="tab-content" style="margin: 10px; height: calc(100% - 50px);">
 		<div id="existingSongSearch" class="existingSongSearch tab-pane show active" role="tabpanel">
 			<div>
 				<input type="text" id="songNameSearch" ng-model="songNameSearch" ng-model-options='{debounce: 500}' ng-change="advSearch()" placeholder="Search for song name" style="width: 100%;">
-				<a data-toggle="collapse" data-target=".songCollapse" href="">Advanced Search</a>
+				<a id="editCollapse" data-toggle="collapse" data-target=".songCollapse" href="">Advanced Search</a>
 				<div class="songCollapse collapse" style="padding-bottom: 10px;">
 					<div id="songDatePicker" class="input-daterange input-group" style="z-index: 1;">
 						<span class="input-group-addon">Dates:</span>
@@ -34,8 +42,8 @@
 				<button type="button" ng-click="sortBy('relev')">Relevance<img ng-class="sortGlyph('relev')" style="left: 2px;"></img></button>
 				<button type="button" ng-click="sortBy('date')" style="float: right;">Date<img ng-class="sortGlyph('date')" style="left: 2px;"></img></button>
 			</div>
-			<div class="sortableDataContainer songCollapse collapse show">
-				<div ui-sortable="sortablePlaylist" ng-model="songData" id="songSelect" class="list" style="width: 100%; min-height: 100%;">
+			<div class="joinCollapseContainer sortableDataContainer songCollapse collapse show" style="height: calc(100% - 100px);">
+				<div ui-sortable="sortableSongs" ng-model="songData" id="songSelect" class="ng-cloak list" style="width: 100%; min-height: 100%;">
 					<div ui-sortable-selectable ng-repeat="item in songData" class="item songItem">
 						<div style="width: 100%; display: table; table-layout: fixed;">
 							<div style="width: 100%; display: table-row;">
@@ -53,4 +61,19 @@
 	</div>
 </div>
 
-<script src="/js/edit.js"></script>
+<!-- <script src="/js/edit.js"></script> -->
+<script type="text/javascript">
+	//handle subtab click
+	$("#editDiv .nav-link").on("click", function(e) {
+		console.log("subtab clicked");
+		e.preventDefault();
+		$(".tab-pane").removeClass("show active");
+		$($(this)[0]["dataset"]["target"]).addClass("show active");
+	});
+
+	//handle advanced search expand
+	$("#editCollapse").click(function(e) {
+		e.preventDefault();
+		console.log("edit expand clicked");
+	});
+</script>

@@ -134,19 +134,19 @@ def makeMusicQuery(data, musicDB, fast=False):
 	myProjection = {"relev": {"$meta": "textScore"}}
 
 	# string fields
-	for key in ["url", "name", "type", "artist", "_id"]:
+	for key in ["url", "name", "type", "artist_names", "start_date", "end_date", "_id"]:
 		if key in data:
 			if key in "url":
 				myMusic[key] = checkValidData(key, data, str)
 			if key == "name":
-				# myMusic[key] = {"$regex": r".*" + checkValidData(key, data, str) + r".*", "$options": "i"}
-				myMusic["$text"] = {"$search": '"' + checkValidData(key, data, str).strip() + '"'}
+				myMusic[key] = {"$regex": r".*" + checkValidData(key, data, str) + r".*", "$options": "i"}
+				# myMusic["$text"] = {"$search": '"' + checkValidData(key, data, str).strip() + '"'}
 			if key == "type":
 				if data["type"] in supportedTypes:
 					myMusic["type"] = checkValidData("type", data, str)
 				else:
 					raise cherrypy.HTTPError(400, "Bad file type")
-			if key == "artist":		#TODO: replace this with a check against artist db?
+			if key == "artist_names":		#TODO: replace this with a check against artist db?
 				print("finding artists")
 				artistList = checkValidData(key, data, list)
 				myArtists = []
@@ -159,6 +159,16 @@ def makeMusicQuery(data, musicDB, fast=False):
 					else:
 						raise cherrypy.HTTPError(400, "Bad artist name")
 				myMusic["artist"] = {"$in": myArtists}
+			if key == "start_date":
+				if "date" not in myMusic:
+					myMusic["date"] = {"$gte": checkValidData(key, data, datetime.datetime, coerce=True)}
+				else:
+					myMusic["date"]["$gte"] = checkValidData(key, data, datetime.datetime, coerce=True)
+			if key == "end_date":
+				if "date" not in myMusic:
+					myMusic["date"] = {"$lte": checkValidData(key, data, datetime.datetime, coerce=True) + datetime.timedelta(days=1)}
+				else:
+					myMusic["date"]["$lte"] = checkValidData(key, data, datetime.datetime, coerce=True) + datetime.timedelta(days=1)
 			if key == "_id":
 				myMusic["_id"] = checkValidID(data)
 

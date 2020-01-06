@@ -44,6 +44,18 @@
 	margin: 10px 0;
 }
 
+#existingSongSearch > .joinCollapseContainer.collapse.show {
+	height: calc(100% - 100px);
+}
+
+#existingSongSearch > .joinCollapseContainer.collapse:not(.show) {
+	height: calc(100% - 195px) !important;
+}
+
+#existingSongSearch > .joinCollapseContainer.collapsing {
+	height: calc(100% - 195px) !important;
+}
+
 .joinCollapseContainer.collapse.show {
 	height: calc(100% - 115px);
 	display: block !important;
@@ -118,7 +130,8 @@
 
 .item {
 	width: 100%;
-	padding: 1px 10px;
+	/*padding: 1px 10px;*/
+	padding: 1px 15px 1px 10px;
 	border: 1px solid #444;
 	text-align: left;
 	cursor: move;

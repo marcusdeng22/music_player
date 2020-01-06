@@ -1,4 +1,4 @@
-app.controller('NavCtrl', ['$scope', 'dispatcher', '$timeout', '$location', '$window', '$http', function($scope, dispatcher, $timeout, $location, $window, $http) {
+app.controller('NavCtrl', ['$scope', 'dispatcher', '$timeout', '$location', '$window', '$http', '$compile', function($scope, dispatcher, $timeout, $location, $window, $http, $compile) {
 
 	$scope.activeTab = "";
 	$scope.activeId = "";
@@ -29,34 +29,52 @@ app.controller('NavCtrl', ['$scope', 'dispatcher', '$timeout', '$location', '$wi
 		// TODO What you want on the event.
 
 		var hash = $location.hash();
+		var unload = true;
 
 		if (hash == 'playlist') {
+			console.log("routing to playlist");
 			$scope.activeTab = 'playlist';
 			$scope.activeId = "#playlistDiv";
 		} else if (hash == 'play') {
+			console.log("routing to play");
 			$scope.activeTab = 'play';
 			$scope.activeId = "#playDiv";
 		} else if (hash == 'song') {
+			console.log("routing to song");
 			$scope.activeTab = 'song';
 			$scope.activeId = "#songDiv";
 		} else {
 			//default screen here
 			console.log("default screen reroute");
+			unload = false;
 		}
 
 		$scope.tabIds.forEach(function(tabId) {
 			if (tabId == $scope.activeId) {
 				//if moving to playlist or song, unload the edit html from existing and load the html to the new screen
-				if ($scope.activeId == "#playlistDiv") {
-					//unload from #songDiv and load to #playlistSongEditDiv
-					console.log("unloading song div");
-					$("#songDiv").empty();
-					$("#playlistSongEditDiv").load("/shared/edit.html");
-				}
-				else if ($scope.activeId == "#songDiv") {
-					console.log("unloading playlist div");
-					$("#playlistSongEditDiv").empty();
-					$("#songDiv").load("/shared/edit.html");
+				if (unload) {
+					//angular compile on load: https://stackoverflow.com/questions/38543619/how-to-activate-new-angular-controller-after-bootstrapping
+					if ($scope.activeId == "#playlistDiv") {
+						//unload from #songDiv and load to #playlistSongEditDiv
+						console.log("unloading song div");
+						$("#songEditDiv").empty();
+						$("#playlistSongEditDiv").load("/shared/edit.html");
+						$timeout(function() {
+							$compile(angular.element(document.querySelector("#playlistSongEditDiv")).contents())($scope);
+						}, 1000);
+					}
+					else if ($scope.activeId == "#songDiv") {
+						console.log("unloading playlist div");
+						$("#playlistSongEditDiv").empty();
+						$("#songEditDiv").load("/shared/edit.html");
+						//now compile and load angular
+						var songEditAng = angular.element(document.querySelector("#songEditDiv"));
+						console.log("compiling song edit");
+						console.log(songEditAng);
+						$timeout(function() {
+							$compile(songEditAng.contents())($scope);
+						}, 1000);
+					}
 				}
 				$(tabId).show();
 			} else {

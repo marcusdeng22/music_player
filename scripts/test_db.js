@@ -35,7 +35,7 @@ db.music.insert({
 	"artist": ["Tessa Violet"],
 	"start": 0,
 	"end": 0,
-	"date": ISODate("2019-07-31T16:00:00.000Z")
+	"date": ISODate("2019-07-30T16:00:00.000Z")
 }, {}, function(e, r) {
 	s2 = r[0]._id
 })
@@ -52,7 +52,7 @@ db.music.insert({
 	"artist": ["Tessa Violet"],
 	"start": 0,
 	"end": 0,
-	"date": ISODate("2019-07-31T16:00:00.000Z")
+	"date": ISODate("2019-07-20T16:00:00.000Z")
 })
 
 s3 = db.music.findOne({"url": "https://www.youtube.com/watch?v=JCd9Z6cc_6Y"})["_id"]
@@ -67,7 +67,7 @@ db.music.update({"url": "https://www.youtube.com/watch?v=ZXbmsaVVWoI"}, {
 	"artist": ["Dodie"],
 	"start": 0,
 	"end": 0,
-	"date": ISODate("2019-07-31T16:00:00.000Z")
+	"date": ISODate("2019-12-31T16:00:00.000Z")
 }, {"upsert": true})
 
 s4 = db.music.findOne({"url": "https://www.youtube.com/watch?v=ZXbmsaVVWoI"})["_id"]

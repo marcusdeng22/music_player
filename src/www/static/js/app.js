@@ -1,5 +1,10 @@
 // var app = angular.module('MusicApp', []);
 var app = angular.module('MusicApp', ['ui.sortable', 'ui.sortable.multiselection']);
+// app.config(["$controllerProvider", function($controllerProvider) {
+// 	app.register = {
+// 		controller: $controllerProvider.register
+// 	};
+// }]);
 app.value('dispatcher', {
 
 	callbacks: {},
