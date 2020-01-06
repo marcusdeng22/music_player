@@ -1,10 +1,10 @@
 <div id="editDiv" ng-controller="editCtrl as $ctrl">
 	<ul class="nav nav-tabs" role="tablist">
-		<li class="nav-item"><a class="nav-link active" data-toggle="tab" data-target=".existingSongSearch" role="tab">Songs</a></li>
-		<li class="nav-item"><a class="nav-link" data-toggle="tab" data-target=".addNewSong" role="tab">Add New Song</a></li>
+		<li class="nav-item"><a class="nav-link active" data-toggle="tab" data-target="#existingSongSearch" role="tab">Songs</a></li>
+		<li class="nav-item"><a class="nav-link" data-toggle="tab" data-target="#addNewSong" role="tab">Add New Song</a></li>
 	</ul>
 
-	<div class="tab-content">
+	<div class="tab-content" style="margin: 10px;">
 		<div id="existingSongSearch" class="existingSongSearch tab-pane show active" role="tabpanel">
 			<div>
 				<input type="text" id="songNameSearch" ng-model="songNameSearch" ng-model-options='{debounce: 500}' ng-change="advSearch()" placeholder="Search for song name" style="width: 100%;">
@@ -52,3 +52,5 @@
 		</div>
 	</div>
 </div>
+
+<script src="/js/edit.js"></script>

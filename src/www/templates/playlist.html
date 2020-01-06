@@ -1,11 +1,7 @@
 <div id="playlistDiv" ng-controller="playlistCtrl as $ctrl" style="padding: 10px; width: 100%; height: 100%; display: table;">
-	<!-- <p>playlist here</p> -->
 	<div style="display: table-row; height: 100%;">
 		<div id="playlistAllDiv" class="playlistCol">
 			<p>Playlists</p>
-			<!-- <select multiple id="playlistList" ng-model="playlistSelect" ng-change="selectedPlaylist()" ng-options="x.name for x in playlistData" size={{playlistData.length}} style="width: 100%; height: calc(100% - 35px);">
-				<option style="display:none" value="">playlists</option>
-			</select> -->
 			<div>
 				<input type="text" id="playlistNameSearch" ng-model="playlistNameSearch" ng-model-options='{debounce: 500}' ng-change="advSearch()" placeholder="Search for playlist name" style="width: 100%;">
 				<a data-toggle="collapse" data-target=".playlistCollapse" href="">Advanced Search</a>
@@ -39,14 +35,11 @@
 				</div>
 			</div>
 			<div>
-				<!-- <button type="button" ng-click="sortBy('name')">Name<span class="glyphicon" ng-class="sortGlyph('name')" style="top: 2px;"></span></button>
-				<button type="button" ng-click="sortBy('relev')">Relevance<span class="glyphicon" ng-class="sortGlyph('relev')" style="top: 2px;"></span></button>
-				<button type="button" ng-click="sortBy('date')" style="float: right;">Date<span class="glyphicon" ng-class="sortGlyph('date')" style="top: 2px;"></span></button> -->
 				<button type="button" ng-click="sortBy('name')">Name<img ng-class="sortGlyph('name')" style="left: 2px;"></img></button>
 				<button type="button" ng-click="sortBy('relev')">Relevance<img ng-class="sortGlyph('relev')" style="left: 2px;"></img></button>
 				<button type="button" ng-click="sortBy('date')" style="float: right;">Date<img ng-class="sortGlyph('date')" style="left: 2px;"></img></button>
 			</div>
-			<div id="playlistContainer" class="playlistDataContainer playlistCollapse collapse show">
+			<div class="joinCollapseContainer sortableDataContainer playlistCollapse collapse show">
 				<div ui-sortable="sortablePlaylist" ng-model="playlistData" id="playlistSelect" class="list" style="width: 100%; min-height: 100%;">
 					<div ui-sortable-selectable ng-repeat="item in playlistData" class="item playlistItem">
 						<div style="width: 100%; display: table; table-layout: fixed;">
@@ -62,27 +55,25 @@
 			<button type="button" class="btn btn-success" ng-disabled="playlistIndices.length == 0" ng-click="triggerPlay()">{{(playlistSelect.length > 1) ? "Play Selected" : "Play"}}</button>
 			<button type="button" class="btn btn-success" ng-click="newPlaylist()">New</button>
 			<button type="button" class="btn btn-primary" ng-click="newPlaylist('edit')" ng-disabled="playlistIndices.length != 1">Edit Playlist</button>
-			<button type="button" class="btn btn-danger" ng-click="deletePlaylist()" ng-disabled="playlistSelect.length == 0">Delete</button>
+			<button type="button" class="btn btn-danger" ng-click="deletePlaylist()" ng-disabled="playlistIndices.length == 0">Delete</button>
 		</div>
 		<div id="playlistContentsDiv" class="playlistCol">
 			<p>Songs</p>
-			<!-- <select multiple id="playlistContentsSelect" ng-model="songSelect" ng-options="x.name + '-' + x.artist for x in songData" size="{{(songData.length > 10) ? songData.length : 10}}" style="width: 100%; height: calc(100% - 35px);">
-				<option style="display:none" value="">songs</option>
-			</select> -->
-			<div id="songContainer" class="playlistDataContainer" style="height: calc(100% - 33px);">
+			<!--- TODO: add a search filter here; disable ordering when searching?-->
+			<div id="songContainer" class="sortableDataContainer" style="height: calc(100% - 33px);">
 				<div ui-sortable="sortableSongs" ng-model="songData" id="songSelect" class="list" style="width: 100%; min-height: 100%;">
 					<div ui-sortable-selectable ng-repeat="song in songData" class="item songItem">
 						{{song.name}}
 					</div>
 				</div>
 			</div>
-			<button type="button" class="btn btn-success" ng-click="addSong()" ng-disabled="playlistIndices.length != 1">Add Songs</button>
+			<button type="button" class="btn btn-success" ng-click="addSongs()" ng-disabled="playlistIndices.length != 1">Add Songs</button>
 			<button type="button" class="btn btn-primary" ng-click="editSong()" ng-disabled="songIndices.length != 1">Edit Song</button>
 			<button type="button" class="btn btn-danger" ng-click="deleteSong()" ng-disabled="songIndices.length == 0">Remove Selected</button>
 		</div>
 	</div>
 
-	<div id="addPlaylistModal" class="modal" style="display: hidden;">
+	<div id="addPlaylistModal" class="modal" style="display: none;">
 		<div class="modal-content" style="width:75%;">
 			<div id="playlistMode"></div>
 			<input type="text" id="newPlaylistName" ng-model="newPlaylistName" placeholder="Playlist Name">
@@ -93,34 +84,31 @@
 		</div>
 	</div>
 
-	<div id="addMusicListModal" class="modal" style="display: hidden;">
+	<div id="addMusicListModal" class="modal" style="display: none;">
 		<div class="modal-content" style="width:75%;">
-			<input type="text" id="searchMusicList" placeholder="Search for music...">
-			<select id="searchMusicSelect" ng-model="searchMusicSelect">
-			</select>
-			<button type="button" class="btn btn-success" ng-disabled="searchMusicSelect.length == 0">Add Songs</button>
-			<button type="button" class="btn btn-danger">Cancel</button>
+			<div id="playlistSongEditDiv">
+				<!-- put file here -->
+			</div>
+			<button type="button" class="btn btn-success" ng-disabled>Add Songs</button>
+			<button type="button" class="btn btn-danger" ng-click="closeAddSongsModal()">Cancel</button>
 		</div>
 	</div>
 
-	<div id="editMusicModal" class="modal" style="display: hidden;">
+	<div id="editMusicModal" class="modal" style="display: none;">
 		<div class="modal-content" style="width:75%;">
-			<table class="table" style="width: 100%; display: table;">
-				<tr ng-repeat = "(key, val) in newSongData" ng-if="key!='_id'">
+			<table class="table" style="width: 100%; display: table; margin-bottom: 5px;">
+				<tr ng-repeat = "(key, val) in newSongData" ng-if="key!='_id' && key!='order'">
 					<td>{{key}}</td>
 					<td ng-if="key!='url'">
 						<input type="text" ng-model="newSongData[key]" style="width: 100%;">
 					</td>
 					<td ng-if="key=='url'">
-						<!-- <button type="button" class="btn" style="background-image: url('/images/refresh.png'); background-size: 100% 100%; width: 20px; height: 25px;"></button> -->
 						<input id="newSongUrlInput" type="text" ng-model="newSongData[key]" style="width: calc(100% - 45px); vertical-align: bottom;">
-						<!-- <button type="button" class="btn refreshBtn" ng-click="previewSong()"><span class="glyphicon glyphicon-refresh" style="top: 0px;"></span></button> -->
 						<button type="button" class="btn refreshBtn" ng-click="previewSong()"><img class="icon icon-refresh" style="top: 0px;"></img></button>
-						<!-- <button type="button" class="btn refreshBtn" ng-click="previewSong()"><img src="/images/refresh.png" width="23px"></button> -->
 					</td>
 				</tr>
 			</table>
-			<div id="previewDisplay" style="margin: auto;"></div>
+			<div id="previewDisplay" style="padding-bottom: 5px;"></div>
 			<div>
 				<button type="button" class="col-md-3 btn btn-success" ng-disabled="checkSongFields()">Update</button>
 				<button type="button" class="col-md-3 btn btn-danger" ng-click="closeEditSongModal()">Cancel</button>

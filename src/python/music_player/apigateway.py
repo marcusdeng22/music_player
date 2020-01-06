@@ -328,13 +328,13 @@ class ApiGateway(object):
 
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
-	def removePlaylist(self):
+	def removePlaylists(self):
 		"""
 		Removes a list of playlists
 
 		Expected input:
 			{
-				"playlist": [(_id)]
+				"playlists": [(_id)]
 			}
 		"""
 		# check that we actually have json
@@ -344,11 +344,11 @@ class ApiGateway(object):
 			raise cherrypy.HTTPError(400, 'No data was given')
 
 		# sanitize the input
-		if "playlist" in data:
+		if "playlists" in data:
 			myQuery = []
-			for i in data["playlist"]:
-				myQuery.append(checkValidID(i))
-			self.colPlaylists.DeleteMany({"_id": {"$in": myQuery}})
+			for i in data["playlists"]:
+				myQuery.append(m_utils.checkValidID(i))
+			self.colPlaylists.delete_many({"_id": {"$in": myQuery}})
 		else:
 			raise cherrypy.HTTPError(400, "No data given")
 

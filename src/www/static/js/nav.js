@@ -5,7 +5,7 @@ app.controller('NavCtrl', ['$scope', 'dispatcher', '$timeout', '$location', '$wi
 	$scope.tabIds = [
 		"#playlistDiv",
 		"#playDiv",
-		"#editDiv"
+		"#songDiv"
 	];
 /**
 	dispatcher.on('bulkUserRefresh', function() {
@@ -36,15 +36,28 @@ app.controller('NavCtrl', ['$scope', 'dispatcher', '$timeout', '$location', '$wi
 		} else if (hash == 'play') {
 			$scope.activeTab = 'play';
 			$scope.activeId = "#playDiv";
-		} else if (hash == 'edit') {
-			$scope.activeTab = 'edit';
-			$scope.activeId = "#editDiv";
+		} else if (hash == 'song') {
+			$scope.activeTab = 'song';
+			$scope.activeId = "#songDiv";
 		} else {
 			//default screen here
+			console.log("default screen reroute");
 		}
 
 		$scope.tabIds.forEach(function(tabId) {
 			if (tabId == $scope.activeId) {
+				//if moving to playlist or song, unload the edit html from existing and load the html to the new screen
+				if ($scope.activeId == "#playlistDiv") {
+					//unload from #songDiv and load to #playlistSongEditDiv
+					console.log("unloading song div");
+					$("#songDiv").empty();
+					$("#playlistSongEditDiv").load("/shared/edit.html");
+				}
+				else if ($scope.activeId == "#songDiv") {
+					console.log("unloading playlist div");
+					$("#playlistSongEditDiv").empty();
+					$("#songDiv").load("/shared/edit.html");
+				}
 				$(tabId).show();
 			} else {
 				$(tabId).hide();

@@ -1,4 +1,5 @@
-app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatcher', 'uiSortableMultiSelectionMethods', 'orderByFilter', function($scope, $http, $location, $timeout, dispatcher, uiSortableMultiSelectionMethods, orderBy) {
+app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatcher', 'uiSortableMultiSelectionMethods', 'sortingFuncs',
+		function($scope, $http, $location, $timeout, dispatcher, uiSortableMultiSelectionMethods, sortingFuncs) {
 	$scope.playlistData = [];
 	$scope.playlistIndices = [];
 	$scope.songData = [];
@@ -82,32 +83,41 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		}
 	});
 
-	//ordering function
-	//TODO: make this a stable sort? https://stackoverflow.com/questions/24678527/is-backbonejs-and-angularjs-sorting-stable
 	$scope.sortBy = function(propertyName, preserveOrder=false) {
-		// $scope.reverse = ((propertyName !== null && $scope.orderVar === propertyName) ? !$scope.reverse : false) ? !preserveOrder : $scope.reverse;
-		if (!preserveOrder) {
-			$scope.reverse = (propertyName !== null && $scope.orderVar === propertyName) ? !$scope.reverse : false;
-		}
-		$scope.orderVar = propertyName;
-		$scope.playlistData = orderBy($scope.playlistData, $scope.orderVar, $scope.reverse);
+		var res = sortingFuncs.sortBy($scope.playlistData, $scope.reverse, $scope.orderVar, propertyName, preserveOrder);
+		$scope.reverse = res["reverse"];
+		$scope.orderVar = res["orderVar"];
+		$scope.playlistData = res["data"];
 	}
+	// //ordering function
+	// //TODO: make this a stable sort? https://stackoverflow.com/questions/24678527/is-backbonejs-and-angularjs-sorting-stable
+	// $scope.sortBy = function(propertyName, preserveOrder=false) {
+	// 	// $scope.reverse = ((propertyName !== null && $scope.orderVar === propertyName) ? !$scope.reverse : false) ? !preserveOrder : $scope.reverse;
+	// 	if (!preserveOrder) {	//preserveOrder keeps $scope.reverse the same
+	// 		$scope.reverse = (propertyName !== null && $scope.orderVar === propertyName) ? !$scope.reverse : false;
+	// 	}
+	// 	$scope.orderVar = propertyName;
+	// 	$scope.playlistData = orderBy($scope.playlistData, $scope.orderVar, $scope.reverse);
+	// }
 
 	$scope.sortGlyph = function(type) {
-		ret = "icon icon-arrow-" + ($scope.reverse ? "down" : "up");
-		if ($scope.orderVar == "date" && $scope.orderVar == type) {
-			return ret;
-		}
-		else if ($scope.orderVar == "name" && $scope.orderVar == type) {
-			return ret;
-		}
-		else if ($scope.orderVar == "relev" && $scope.orderVar == type) {
-			return ret;
-		}
-		else {
-			return "";
-		}
+		return sortingFuncs.sortGlyph($scope.reverse, $scope.orderVar, type);
 	}
+	// $scope.sortGlyph = function(type) {
+	// 	ret = "icon icon-arrow-" + ($scope.reverse ? "down" : "up");
+	// 	if ($scope.orderVar == "date" && $scope.orderVar == type) {
+	// 		return ret;
+	// 	}
+	// 	else if ($scope.orderVar == "name" && $scope.orderVar == type) {
+	// 		return ret;
+	// 	}
+	// 	else if ($scope.orderVar == "relev" && $scope.orderVar == type) {
+	// 		return ret;
+	// 	}
+	// 	else {
+	// 		return "";
+	// 	}
+	// }
 
 	$scope.getSongData = function(songDict) {	//TODO: change this to query the db for playlist id and return the order stored on db
 		query = {"content": songDict};
@@ -208,7 +218,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 			}
 		});
 
-		//update preview on enter key
+		//update song url preview on enter key
 		$(document).keyup(function(e) {
 			if ($("#newSongUrlInput").is(":focus") && e.key == "Enter") {
 				$scope.previewSong();
@@ -260,7 +270,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		else {
 			$("#playlistMode").html("New Playlist");
 		}
-		$("#addPlaylistModal").show();
+		$("#addPlaylistModal").css("display", "flex");
 		$("#newPlaylistName").focus();
 	};
 
@@ -275,7 +285,6 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		if ($scope.editing) {	//editing a playlist name
 			console.log('editing');
 			console.log($scope.playlistData[$scope.playlistIndices])
-			// $scope.playlistData[$scope.playlistIndices]["name"] = $scope.newPlaylistName;
 			$http.post("/editPlaylist", {"_id": $scope.playlistData[$scope.playlistIndices]["_id"], "name": $scope.newPlaylistName}).then(function(resp) {
 				$scope.getPlaylistData(undefined, undefined, undefined, selectFirst=true);
 			}, function(error) {
@@ -285,25 +294,13 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		}
 		else {
 			console.log("adding");
-			// $scope.playlistData.unshift({"name": $scope.newPlaylistName, "contents": []});
 			$http.post("/addPlaylist", {"name": $scope.newPlaylistName, "contents": []}).then(function(resp) {
 				console.log("added playlist data, getting new");
 				$scope.getPlaylistData(undefined, undefined, undefined, selectFirst=true);
-				// let newData = new Promise(function(resolve, reject) {
-				// 	resolve();
-				// });
-				// newData.then($scope.getPlaylistData);
 			}, function(error) {
 				console.log("failed to add playlist");
 			});
-			// angular.element(document).ready(function() {
-			// 	$(".playlistItem").first().click();
-			// });
 		}
-		//TODO: perform update to DB
-		// $http.post("/editPlaylist", $scope.playlistData[$scope.playlistIndices])
-		// console.log("updating/adding playlist:");
-		// console.log($scope.playlistData[$scope.playlistIndices]);
 		$scope.closePlaylistModal();
 	}
 
@@ -315,16 +312,30 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 
 	//delete playlist
 	$scope.deletePlaylist = function() {
-		// $scope.playlistIndices.sort(function(a, b) {return b - a;});
-		// for (var i = $scope.playlistIndices.length - 1; i >= 0; i--) {
-		// 	$scope.playlistData.splice($scope.playlistIndices[i], 1);
-		// 	//TODO: perform update to DB: remove from db using selected indices, then call get list
+		var toRemove = [];
+		if ($scope.playlistIndices.length > 0) {
+			for (const i in $scope.playlistIndices) {
+				toRemove.push($scope.playlistData[i]["_id"]);
+			}
+		}
+		console.log("removing playlists");
+		console.log(toRemove);
+		$http.post("/removePlaylists", {"playlists": toRemove}).then(function(resp) {
+			$scope.getPlaylistData();
+		}, function(err) {
+			console.log("error removing playlists");
+		})
 	}
 
 	//SONG BUTTONS##################################################################################################################################
 	//add a song
 	$scope.addSongs = function() {
+		console.log("adding song");
+		$("#addMusicListModal").css("display", "flex");
+	}
 
+	$scope.closeAddSongsModal = function() {
+		$("#addMusicListModal").hide();
 	}
 
 	//edit a song
@@ -333,7 +344,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		console.log("editing song");
 		console.log($scope.songData[$scope.songIndices]);
 		$scope.newSongData = angular.copy($scope.songData[$scope.songIndices]);
-		$("#editMusicModal").show();
+		$("#editMusicModal").css("display", "flex");
 		$scope.previewSong();
 	}
 
@@ -428,5 +439,6 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	function closeAllModals() {
 		$scope.closePlaylistModal();
 		$scope.closeEditSongModal();
+		$scope.closeAddSongsModal();
 	}
 }]);

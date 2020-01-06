@@ -30,7 +30,7 @@ print(len(textDict))
 # exactTerms = ["@font-face"]	#can't use font-family in .glyphicon for some reason
 # searchTerms = ["button", "btn", "input", "input-group", "input-group-addon", "input-sm", "form-control"]
 
-excludedTerms = ["@font-face", "glyphicon"]
+excludedTerms = ["@font-face", "glyphicon", "tab"]
 
 with open("bootstrap_3.4.1_replacement2.css", "w") as f:
 	for k in textDict:

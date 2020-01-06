@@ -17,16 +17,6 @@
 	padding: 5px;
 }
 
-/*.ui-datepicker {
-	background-color: #fff;
-}*/
-
-.refreshBtn {
-	/*padding: 0px;*/
-	/*position: absolute;
-	margin-top: -15px;*/
-}
-
 .icon {
 	position: relative;
 	top: 0px;
@@ -49,22 +39,22 @@
 	content: url("../images/arrow-down.svg");
 }
 
-.playlistDataContainer {
+.sortableDataContainer {
 	overflow: auto;
 	margin: 10px 0;
 }
 
-#playlistContainer.collapse.show {
+.joinCollapseContainer.collapse.show {
 	height: calc(100% - 115px);
 	display: block !important;
 }
 
-#playlistContainer.collapse:not(.show) {	/*hidden state*/
+.joinCollapseContainer.collapse:not(.show) {	/*hidden state*/
 	height: calc(100% - 241px) !important;
 	display: block !important;
 }
 
-#playlistContainer.collapsing {
+.joinCollapseContainer.collapsing {
 	height: calc(100% - 241px) !important;
 }
 
@@ -110,6 +100,11 @@
 [data-tip]:hover:before,
 [data-tip]:hover:after {
 	display:block;
+}
+
+#ytplayer {
+	margin: auto;
+	width: 100%;
 }
 
 /*start of sortable */
@@ -251,7 +246,7 @@ h2 {
 	position: fixed;
 	/*z-index: 1;*/
 	z-index: 99;
-	padding-top: 100px;
+	/*padding-top: 100px;*/
 	left: 0;
 	top: 0;
 	width: 100%;

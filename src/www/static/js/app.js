@@ -20,6 +20,41 @@ app.value('dispatcher', {
 	}
 
 });
+
+app.factory("sortingFuncs", ["orderByFilter", function(orderBy) {
+	var sortingFuncs = {};
+	sortingFuncs.sortGlyph = function(reverse, orderVar, type) {
+		ret = "icon icon-arrow-" + (reverse ? "down" : "up");
+		if (orderVar == "date" && orderVar == type) {
+			return ret;
+		}
+		else if (orderVar == "name" && orderVar == type) {
+			return ret;
+		}
+		else if (orderVar == "relev" && orderVar == type) {
+			return ret;
+		}
+		else {
+			return "";
+		}
+	};
+
+	//ordering function
+	//TODO: make this a stable sort? https://stackoverflow.com/questions/24678527/is-backbonejs-and-angularjs-sorting-stable
+	sortingFuncs.sortBy = function(data, reverse, orderVar, propertyName, preserveOrder=false) {
+		if (!preserveOrder) {
+			reverse = (propertyName !== null && orderVar === propertyName) ? !reverse : false;
+		}
+		orderVar = propertyName;
+		data = orderBy(data, orderVar, reverse);
+		return {
+			"reverse": reverse,
+			"orderVar": orderVar,
+			"data": data
+		}
+	}
+	return sortingFuncs;
+}]);
 // console.log("hi");
 // angular.element('[ui-sortable]').on('ui-sortable-selectionschanged', function (e, args) {
 //     console.log("selection changed");
