@@ -1,18 +1,17 @@
-app.controller('editCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatcher', 'uiSortableMultiSelectionMethods', 'sortingFuncs',
-		function($scope, $http, $location, $timeout, dispatcher, uiSortableMultiSelectionMethods, sortingFuncs) {
-	//data models
-	$scope.songData = [];
-	$scope.songIndices = [];
+app.controller('editCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatcher', 'uiSortableMultiSelectionMethods', 'sortingFuncs', 'songDatashare',
+		function($scope, $http, $location, $timeout, dispatcher, uiSortableMultiSelectionMethods, sortingFuncs, songDatashare) {
+	//data model
+	$scope.songs = songDatashare;
 
 	//order vars
 	$scope.orderVar = "date";
 	$scope.reverse = true;
 	//sorting funcs
 	$scope.sortBy = function(propertyName, preserveOrder=false) {
-		var res = sortingFuncs.sortBy($scope.songData, $scope.reverse, $scope.orderVar, propertyName, preserveOrder);
+		var res = sortingFuncs.sortBy($scope.songs.songData, $scope.reverse, $scope.orderVar, propertyName, preserveOrder);
 		$scope.reverse = res["reverse"];
 		$scope.orderVar = res["orderVar"];
-		$scope.songData = res["data"];
+		$scope.songs.songData = res["data"];
 	}
 
 	$scope.sortGlyph = function(type) {
@@ -23,11 +22,19 @@ app.controller('editCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatc
 		refreshPositions: true
 	});
 
+	$("#editSongSelect").on('ui-sortable-selectionschanged', function (e, args) {
+		console.log("song select changed");
+		$scope.songs.songIndices = $(this).find('.ui-sortable-selected').map(function(i, element){
+			return $(this).index();
+		}).toArray();
+		$scope.$apply();
+	});
+
 	$scope.getSongData = function(query={}, sortVar="date", sortRev=true) {
 		$http.post("/findMusic", query).then(function(resp) {
 			console.log("edit music query success");
-			$scope.songData = resp.data;
-			console.log("songs returned: ", $scope.songData);
+			$scope.songs.songData = resp.data;
+			console.log("songs returned: ", $scope.songs.songData);
 		}, function(error) {
 			console.log(error);
 		});
@@ -37,6 +44,7 @@ app.controller('editCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatc
 
 	$scope.songNameSearch = "";
 	$scope.advSearch = function() {
+		$scope.songs.songIndices = [];
 		// create query
 		// available keys: "name", "start_date", "end_date", "artist_names" "_id"
 		var query = {};

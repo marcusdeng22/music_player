@@ -60,6 +60,13 @@ app.factory("sortingFuncs", ["orderByFilter", function(orderBy) {
 	}
 	return sortingFuncs;
 }]);
+
+app.factory("songDatashare", function() {
+	var data = {};
+	data.songData = [];
+	data.songIndices = [];
+	return data;
+})
 // console.log("hi");
 // angular.element('[ui-sortable]').on('ui-sortable-selectionschanged', function (e, args) {
 //     console.log("selection changed");

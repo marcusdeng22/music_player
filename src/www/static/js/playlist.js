@@ -1,9 +1,10 @@
-app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatcher', 'uiSortableMultiSelectionMethods', 'sortingFuncs',
-		function($scope, $http, $location, $timeout, dispatcher, uiSortableMultiSelectionMethods, sortingFuncs) {
+app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatcher', 'uiSortableMultiSelectionMethods', 'sortingFuncs', 'songDatashare',
+		function($scope, $http, $location, $timeout, dispatcher, uiSortableMultiSelectionMethods, sortingFuncs, songDatashare) {
 	$scope.playlistData = [];
 	$scope.playlistIndices = [];
 	$scope.songData = [];
 	$scope.songIndices = [];
+	$scope.songDatashare = songDatashare;
 
 	//select info
 	// $scope.playlistSelect = [];
@@ -89,35 +90,10 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		$scope.orderVar = res["orderVar"];
 		$scope.playlistData = res["data"];
 	}
-	// //ordering function
-	// //TODO: make this a stable sort? https://stackoverflow.com/questions/24678527/is-backbonejs-and-angularjs-sorting-stable
-	// $scope.sortBy = function(propertyName, preserveOrder=false) {
-	// 	// $scope.reverse = ((propertyName !== null && $scope.orderVar === propertyName) ? !$scope.reverse : false) ? !preserveOrder : $scope.reverse;
-	// 	if (!preserveOrder) {	//preserveOrder keeps $scope.reverse the same
-	// 		$scope.reverse = (propertyName !== null && $scope.orderVar === propertyName) ? !$scope.reverse : false;
-	// 	}
-	// 	$scope.orderVar = propertyName;
-	// 	$scope.playlistData = orderBy($scope.playlistData, $scope.orderVar, $scope.reverse);
-	// }
 
 	$scope.sortGlyph = function(type) {
 		return sortingFuncs.sortGlyph($scope.reverse, $scope.orderVar, type);
 	}
-	// $scope.sortGlyph = function(type) {
-	// 	ret = "icon icon-arrow-" + ($scope.reverse ? "down" : "up");
-	// 	if ($scope.orderVar == "date" && $scope.orderVar == type) {
-	// 		return ret;
-	// 	}
-	// 	else if ($scope.orderVar == "name" && $scope.orderVar == type) {
-	// 		return ret;
-	// 	}
-	// 	else if ($scope.orderVar == "relev" && $scope.orderVar == type) {
-	// 		return ret;
-	// 	}
-	// 	else {
-	// 		return "";
-	// 	}
-	// }
 
 	$scope.getSongData = function(songDict) {	//TODO: change this to query the db for playlist id and return the order stored on db
 		query = {"content": songDict};
@@ -138,7 +114,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 
 	$("#playlistSelect").on('ui-sortable-selectionschanged', function (e, args) {
 		$scope.playlistIndices = $(this).find('.ui-sortable-selected').map(function(i, element){
-		  return $(this).index();
+			return $(this).index();
 		}).toArray();
 		$scope.songIndices = [];
 		if ($scope.playlistIndices.length > 1) {
@@ -332,6 +308,10 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	$scope.addSongs = function() {
 		console.log("adding song");
 		$("#addMusicListModal").css("display", "flex");
+	}
+
+	$scope.submitSongs = function() {
+		console.log(songDatashare);
 	}
 
 	$scope.closeAddSongsModal = function() {
