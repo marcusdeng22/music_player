@@ -63,6 +63,26 @@ app.factory("sortingFuncs", ["orderByFilter", function(orderBy) {
 
 app.factory("songDatashare", ["$timeout", "$compile", function($timeout, $compile) {
 	var data = {};
+	//tab info
+	data.tab = "#existingSongSearch";	//#existingSongSearch or #addNewSong	//TODO: reset on template load
+	data.listTemplateId = "";
+	data.loadListTemplate = function(targetId, $scope) {
+		if (data.listTemplateId != ""){
+			$(data.listTemplateId).empty();
+		}
+		//load template
+		data.listTemplateId = targetId;
+		$(targetId).load("/shared/list_edit_song.html");
+		data.tab = "#existingSongSearch";
+		$timeout(function() {
+			$compile(angular.element(document.querySelector(targetId)).contents())($scope);
+			if (targetId == "#songEditDiv") {
+				//load the edit template
+				console.log("loading edit template");
+				data.loadEditTemplate("#addNewSong", $scope);
+			}
+		}, 1000);
+	};
 	//song data below
 	data.songData = [];
 	data.songIndices = [];

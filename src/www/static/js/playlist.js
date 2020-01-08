@@ -374,12 +374,9 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 
 	//delete a song
 	$scope.deleteSong = function() {
-		console.log("removing songs from playlist");
-		console.log($scope.songIndices);
 		//selected indices are to be removed; remove them
 		$scope.songIndices.sort((a, b) => a-b);
 		for (var i = $scope.songIndices.length - 1; i >= 0; i--) {
-			console.log($scope.songIndices[i]);
 			$scope.songData.splice($scope.songIndices[i], 1);
 		}
 		$scope.songIndices = [];	//clear selection
@@ -388,9 +385,6 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 			idList.push($scope.songData[i]["_id"]);
 		}
 		$scope.playlistData[$scope.playlistIndices]["contents"] = idList;
-		console.log("remaining data");
-		console.log($scope.songData);
-		console.log($scope.playlistData[$scope.playlistIndices]);
 		//update DB
 		$http.post("/editPlaylist", {"_id": $scope.playlistData[$scope.playlistIndices]["_id"], "contents": idList}).then(function(resp) {
 			console.log("removal of songs from playlist ok");

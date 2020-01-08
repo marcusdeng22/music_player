@@ -74,6 +74,18 @@ app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$timeout', 
 	}
 
 	$(function() {
+		//TODO: load the edit song template in the new song tab with a dict with default vals
+		//handle subtab click
+		$("#listEditSongDiv .nav-link").on("click", function(e) {
+			console.log("subtab clicked");
+			console.log($(this)[0]);
+			songDatashare.tab = $(this)[0]["dataset"]["target"];
+			console.log(songDatashare);
+			e.preventDefault();
+			$(".tab-pane").removeClass("show active");
+			$($(this)[0]["dataset"]["target"]).addClass("show active");
+		});
+
 		//prepare datepicker
 		$('#songStartDate, #songEndDate').datepicker({
 			todayBtn: "linked",
@@ -82,7 +94,7 @@ app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$timeout', 
 			todayHighlight: true
 		});
 		$('#songStartDate, #songEndDate').datepicker("clearDates");
-	})
+	});
 
 	console.log("edit controller exec");
 	

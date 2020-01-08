@@ -54,15 +54,6 @@
 </div>
 
 <script type="text/javascript">
-	//TODO: load the edit song template in the new song tab
-	//handle subtab click
-	$("#listEditSongDiv .nav-link").on("click", function(e) {
-		console.log("subtab clicked");
-		e.preventDefault();
-		$(".tab-pane").removeClass("show active");
-		$($(this)[0]["dataset"]["target"]).addClass("show active");
-	});
-
 	//handle advanced search expand
 	$("#editCollapse").click(function(e) {
 		e.preventDefault();

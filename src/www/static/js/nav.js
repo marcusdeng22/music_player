@@ -58,24 +58,26 @@ app.controller('NavCtrl', ['$scope', 'dispatcher', '$timeout', '$location', '$wi
 					if ($scope.activeId == "#playlistDiv") {
 						//unload from #songDiv and load to #playlistSongEditDiv
 						console.log("unloading song div");
-						$("#songEditDiv").empty();
-						$("#playlistSongEditDiv").load("/shared/list_edit_song.html");
-						$timeout(function() {
-							$compile(angular.element(document.querySelector("#playlistSongEditDiv")).contents())($scope);
-						}, 1000);
+						// $("#songEditDiv").empty();
+						// $("#playlistSongEditDiv").load("/shared/list_edit_song.html");
+						// $timeout(function() {
+						// 	$compile(angular.element(document.querySelector("#playlistSongEditDiv")).contents())($scope);
+						// }, 1000);
+						songDatashare.loadListTemplate("#playlistSongEditDiv", $scope);
 					}
 					else if ($scope.activeId == "#songDiv") {
 						console.log("unloading playlist div");
-						$("#playlistSongEditDiv").empty();
-						$("#songEditDiv").load("/shared/list_edit_song.html");
-						//now compile and load angular
-						var songEditAng = angular.element(document.querySelector("#songEditDiv"));
-						console.log("compiling song edit");
-						console.log(songEditAng);
-						$timeout(function() {
-							$compile(songEditAng.contents())($scope);
-							songDatashare.loadEditTemplate("#addNewSong", $scope);
-						}, 1000);
+						// $("#playlistSongEditDiv").empty();
+						// $("#songEditDiv").load("/shared/list_edit_song.html");
+						// //now compile and load angular
+						// var songEditAng = angular.element(document.querySelector("#songEditDiv"));
+						// console.log("compiling song edit");
+						// console.log(songEditAng);
+						// $timeout(function() {
+						// 	$compile(songEditAng.contents())($scope);
+						// 	songDatashare.loadEditTemplate("#addNewSong", $scope);
+						// }, 1000);
+						songDatashare.loadListTemplate("#songEditDiv", $scope);
 					}
 				}
 				$(tabId).show();
