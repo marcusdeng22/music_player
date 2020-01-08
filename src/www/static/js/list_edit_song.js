@@ -1,4 +1,4 @@
-app.controller('editCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatcher', 'uiSortableMultiSelectionMethods', 'sortingFuncs', 'songDatashare',
+app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatcher', 'uiSortableMultiSelectionMethods', 'sortingFuncs', 'songDatashare',
 		function($scope, $http, $location, $timeout, dispatcher, uiSortableMultiSelectionMethods, sortingFuncs, songDatashare) {
 	//data model
 	$scope.songs = songDatashare;
@@ -86,17 +86,3 @@ app.controller('editCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatc
 	
 }]);
 console.log("edit exec");
-
-// //handle subtab click
-// $("#editDiv .nav-link").on("click", function(e) {
-// 	console.log("subtab clicked");
-// 	e.preventDefault();
-// 	$(".tab-pane").removeClass("show active");
-// 	$($(this)[0]["dataset"]["target"]).addClass("show active");
-// });
-
-// //handle advanced search expand
-// $("#editCollapse").click(function(e) {
-// 	e.preventDefault();
-// 	console.log("edit expand clicked");
-// });

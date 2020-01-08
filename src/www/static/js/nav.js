@@ -1,4 +1,5 @@
-app.controller('NavCtrl', ['$scope', 'dispatcher', '$timeout', '$location', '$window', '$http', '$compile', function($scope, dispatcher, $timeout, $location, $window, $http, $compile) {
+app.controller('NavCtrl', ['$scope', 'dispatcher', '$timeout', '$location', '$window', '$http', '$compile', 'songDatashare',
+	function($scope, dispatcher, $timeout, $location, $window, $http, $compile, songDatashare) {
 
 	$scope.activeTab = "";
 	$scope.activeId = "";
@@ -58,7 +59,7 @@ app.controller('NavCtrl', ['$scope', 'dispatcher', '$timeout', '$location', '$wi
 						//unload from #songDiv and load to #playlistSongEditDiv
 						console.log("unloading song div");
 						$("#songEditDiv").empty();
-						$("#playlistSongEditDiv").load("/shared/edit.html");
+						$("#playlistSongEditDiv").load("/shared/list_edit_song.html");
 						$timeout(function() {
 							$compile(angular.element(document.querySelector("#playlistSongEditDiv")).contents())($scope);
 						}, 1000);
@@ -66,13 +67,14 @@ app.controller('NavCtrl', ['$scope', 'dispatcher', '$timeout', '$location', '$wi
 					else if ($scope.activeId == "#songDiv") {
 						console.log("unloading playlist div");
 						$("#playlistSongEditDiv").empty();
-						$("#songEditDiv").load("/shared/edit.html");
+						$("#songEditDiv").load("/shared/list_edit_song.html");
 						//now compile and load angular
 						var songEditAng = angular.element(document.querySelector("#songEditDiv"));
 						console.log("compiling song edit");
 						console.log(songEditAng);
 						$timeout(function() {
 							$compile(songEditAng.contents())($scope);
+							songDatashare.loadEditTemplate("#addNewSong", $scope);
 						}, 1000);
 					}
 				}

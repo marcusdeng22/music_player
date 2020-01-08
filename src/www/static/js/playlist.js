@@ -78,6 +78,13 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		}
 	}
 
+	function clearSearch() {
+		$scope.playlistNameSearch = "";
+		$scope.playlistSongSearch = "";
+		$scope.playlistArtistSearch = "";
+		$('#playlistStartDate, #playlistEndDate').datepicker("clearDates");
+	}
+
 	$("#playlistSongSearch,#playlistArtistSearch").keypress(function(evt) {
 		if (evt.which == 13) {	//enter key
 			$("#advSearchBtn").click();
@@ -95,7 +102,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		return sortingFuncs.sortGlyph($scope.reverse, $scope.orderVar, type);
 	}
 
-	$scope.getSongData = function(songDict) {	//TODO: change this to query the db for playlist id and return the order stored on db
+	$scope.getSongData = function(songDict) {	//SKIP: change this to query the db for playlist id and return the order stored on db
 		query = {"content": songDict};
 		// console.log("playlist query songDict:", $scope.playlistData[$scope.playlistIndices]);
 		// console.log("playlist query: ", query);
@@ -134,23 +141,28 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 				return i["_id"];
 			});
 			console.log("song order: ", songOrder);
-			console.log("original order: ", $scope.playlistData[$scope.playlistIndices]);
+			// console.log("original order: ", $scope.playlistData[$scope.playlistIndices]);
 			$scope.playlistData[$scope.playlistIndices]["contents"] = songOrder;
-			console.log("new order: ", $scope.playlistData[$scope.playlistIndices]);
-			//TODO: update DB of new order
+			// console.log("new order: ", $scope.playlistData[$scope.playlistIndices]);
+			//update DB of new order
+			$http.post("/editPlaylist", {"_id": $scope.playlistData[$scope.playlistIndices]["_id"], "contents": songOrder}).then(function(resp) {
+				console.log("successful update of song order");
+			}, function(error) {
+				console.log(error);
+			});
 		}
 	});
 
 	$("#songSelect").on('ui-sortable-selectionschanged', function (e, args) {
-		//TODO: update the indices in the playlist store
+		//DONE: update the indices in the playlist store
 		$scope.songIndices = $(this).find('.ui-sortable-selected').map(function(i, element){
 		  return $(this).index();
 		}).toArray();
 		$scope.$apply();
-		console.log($scope.songIndices);
+		// console.log($scope.songIndices);
 	});
 
-	$(function() {	//maybe wrap this in a function and call on update? TODO test
+	$(function() {
 		// $(".playlistItem").not(".ui-sortable-placeholder").droppable({
 		$(".playlistItem").droppable({
 			drop: function(event, ui) {	//this occurs before the sortable.beforeStop
@@ -162,13 +174,38 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 					console.log(ui["draggable"]["sortableMultiSelect"]["selectedModels"]);
 					console.log($(".playlistItem:not(.ui-sortable-placeholder)").index(this));
 					console.log($scope.playlistData[$(".playlistItem:not(.ui-sortable-placeholder)").index(this)]);
-					//TODO: perform merge and push to DB
+					//perform merge
+					console.log("merging playlists");
+					var targetPlaylist = $scope.playlistData[$(".playlistItem:not(.ui-sortable-placeholder)").index(this)];
+					var curContents = targetPlaylist["contents"];
+					$.each(ui["draggable"]["sortableMultiSelect"]["selectedModels"], function(i, e) {
+						curContents = curContents.concat(e["contents"]);
+					});
+					targetPlaylist["contents"] = curContents;
+					//write to DB
+					$http.post("/editPlaylist", {"_id": targetPlaylist["_id"], "contents": curContents}).then(function(resp) {
+						console.log("playlist merge successful");
+					}, function(err) {
+						console.log(err);
+					});
 				}
 				else if (ui["draggable"][0].className.split(/\s+/).includes("songItem")) {	//add songs to target
 					console.log("adding songs");
 					console.log(ui["draggable"]["sortableMultiSelect"]["selectedModels"]);
 					console.log($scope.playlistData[$(".playlistItem:not(.ui-sortable-placeholder)").index(this)]);
-					//TODO: perform merge and push to DB
+					//perform merge
+					var targetPlaylist = $scope.playlistData[$(".playlistItem:not(.ui-sortable-placeholder)").index(this)];
+					// var songsToAdd = [];
+					$.each(ui["draggable"]["sortableMultiSelect"]["selectedModels"], function(i, e) {
+						targetPlaylist["contents"].push(e["_id"]);
+					});
+					$scope.$apply();
+					//write to DB
+					$http.post("/editPlaylist", {"_id": targetPlaylist["_id"], "contents": targetPlaylist["contents"]}).then(function(resp) {
+						console.log("song merge successful");
+					}, function(err) {
+						console.log(err);
+					});
 				}
 			},
 			over: function(event, ui) {
@@ -257,7 +294,8 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	});
 
 	$scope.addNewPlaylist = function() {
-		//TODO: clear the search
+		//clear the search
+		clearSearch();
 		if ($scope.editing) {	//editing a playlist name
 			console.log('editing');
 			console.log($scope.playlistData[$scope.playlistIndices])
@@ -307,6 +345,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	//add a song
 	$scope.addSongs = function() {
 		console.log("adding song");
+		songDatashare.loadEditTemplate("#addNewSong", $scope);
 		$("#addMusicListModal").css("display", "flex");
 	}
 
@@ -319,88 +358,99 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	}
 
 	//edit a song
-	$scope.newSongData = {};
-	$scope.editSong = function() {
-		console.log("editing song");
-		console.log($scope.songData[$scope.songIndices]);
-		$scope.newSongData = angular.copy($scope.songData[$scope.songIndices]);
-		$("#editMusicModal").css("display", "flex");
-		$scope.previewSong();
-	}
-
-	$scope.checkSongFields = function() {
-		for (var key in $scope.newSongData) {
-			//TODO: check fields here
-			if ($scope.newSongData[key] === "") {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	// function logEvent (evtName) {
-	// 	this.on(evtName, (data) =>
-	// 	console.log("event:", evtName, data)
-	// 	);
+	// $scope.newSongData = {};
+	// $scope.editSong = function() {
+	// 	console.log("editing song");
+	// 	console.log($scope.songData[$scope.songIndices]);
+	// 	$scope.newSongData = angular.copy($scope.songData[$scope.songIndices]);
+	// 	$("#editMusicModal").css("display", "flex");
+	// 	$scope.previewSong();
 	// }
-	var config = {
-		playerContainer: document.getElementById("previewDisplay")
-	};
-	var playem = new Playem();
-	playem.addPlayer(YoutubePlayer, config);
-	// init logging for all player events
-	// ["onPlay", "onReady", "onTrackChange", "onEnd", "onPause", "onError", "onBuffering"].forEach(logEvent.bind(playem));
 
-	$scope.previewPlayer;
-	$scope.previewSong = function() {
-		console.log("previewing song");
-		//.loadVideoByUrl	loads a video by the url, but need to figure out how to create the player object
-		//.setVolume		sets the volume
-		//.playVideo
-		//.pauseVideo
-		//.getPlayerState	0=ended, 1=playing, 2=paused
-		//.getDuration
-		//.addEventListener	onReady, onStateChange
-		//.getIframe()
+	// $scope.checkSongFields = function() {
+	// 	for (var key in $scope.newSongData) {
+	// 		//TODO: check fields here
+	// 		if ($scope.newSongData[key] === "") {
+	// 			return true;
+	// 		}
+	// 	}
+	// 	return false;
+	// }
 
-		//create the video player on the start of opening the modal; then load the original video ID: TODO: splice out the video ID
-		//here, load the new ID once refreshed
-		//check the buffer status: may cause the play to fail
-		// function onYouTubePlayerAPIReady() {
-		// 	$scope.previewPlayer = new YT.Player('previewDisplay', {
-		// 		// videoId: $scope.songData[$scope.songIndices]["url"]
-		// 		events:
-		// 	})
-		// }
-		playem.stop();
-		playem.clearQueue();
-		console.log(playem.getQueue());
-		// console.log("adding url: ", $scope.songData[$scope.songIndices]["url"]);
-		// console.log($scope.songData);
-		// console.log($scope.songIndices);
-		// playem.addTrackByUrl($scope.songData[$scope.songIndices]["url"]);
-		// playem.addTrackByUrl($("#newSongUrlInput").val());
-		// console.log("adding: ", $("#newSongUrlInput").val());
-		console.log("adding: ", $scope.newSongData["url"]);
-		playem.addTrackByUrl($scope.newSongData["url"]);
-		// playem.addTrackByUrl("https://www.youtube.com/watch?v=8axQACbVkrk");
-		console.log(playem.getPlayers());
-		console.log(playem.getQueue());
-		playem.play();
+	// // function logEvent (evtName) {
+	// // 	this.on(evtName, (data) =>
+	// // 	console.log("event:", evtName, data)
+	// // 	);
+	// // }
+	// var config = {
+	// 	playerContainer: document.getElementById("previewDisplay")
+	// };
+	// var playem = new Playem();
+	// playem.addPlayer(YoutubePlayer, config);
+	// // init logging for all player events
+	// // ["onPlay", "onReady", "onTrackChange", "onEnd", "onPause", "onError", "onBuffering"].forEach(logEvent.bind(playem));
+
+	// $scope.previewPlayer;
+	// $scope.previewSong = function() {
+	// 	console.log("previewing song");
+	// 	//.loadVideoByUrl	loads a video by the url, but need to figure out how to create the player object
+	// 	//.setVolume		sets the volume
+	// 	//.playVideo
+	// 	//.pauseVideo
+	// 	//.getPlayerState	0=ended, 1=playing, 2=paused
+	// 	//.getDuration
+	// 	//.addEventListener	onReady, onStateChange
+	// 	//.getIframe()
+
+	// 	//create the video player on the start of opening the modal; then load the original video ID: library: splice out the video ID
+	// 	//here, load the new ID once refreshed
+	// 	//check the buffer status: may cause the play to fail
+	// 	// function onYouTubePlayerAPIReady() {
+	// 	// 	$scope.previewPlayer = new YT.Player('previewDisplay', {
+	// 	// 		// videoId: $scope.songData[$scope.songIndices]["url"]
+	// 	// 		events:
+	// 	// 	})
+	// 	// }
+	// 	playem.stop();
+	// 	playem.clearQueue();
+	// 	console.log(playem.getQueue());
+	// 	// console.log("adding url: ", $scope.songData[$scope.songIndices]["url"]);
+	// 	// console.log($scope.songData);
+	// 	// console.log($scope.songIndices);
+	// 	// playem.addTrackByUrl($scope.songData[$scope.songIndices]["url"]);
+	// 	// playem.addTrackByUrl($("#newSongUrlInput").val());
+	// 	// console.log("adding: ", $("#newSongUrlInput").val());
+	// 	console.log("adding: ", $scope.newSongData["url"]);
+	// 	playem.addTrackByUrl($scope.newSongData["url"]);
+	// 	// playem.addTrackByUrl("https://www.youtube.com/watch?v=8axQACbVkrk");
+	// 	console.log(playem.getPlayers());
+	// 	console.log(playem.getQueue());
+	// 	playem.play();
+	// }
+
+	$scope.editSong = function() {
+		//load the edit song file
+		songDatashare.loadEditTemplate("#playlistEditTemplate", $scope);
+		//share the data
+		songDatashare.setEditData($scope.songData[$scope.songIndices]);
+		//display modal
+		$("#editMusicModal").css("display", "flex");
+		//preview song?
 	}
 
 	$scope.submitEditSong = function() {
 		//TODO: write update to DB
-		$scope.songData[$scope.songIndices] = $scope.newSongData;
+		// $scope.songData[$scope.songIndices] = $scope.newSongData;		//TODO: replace newSongData with shared data from data share
 		$scope.closeEditSongModal();
 	}
 
 	$scope.closeEditSongModal = function() {
 		// console.log($scope.songData[$scope.songIndices]);
 		// $scope.previewPlayer.destroy();
-		$("#previewDisplay").empty();	//stops loading if closing modal early
-		playem.stop();
-		playem.clearQueue();
+		// $("#previewDisplay").empty();	//stops loading if closing modal early
+		// playem.stop();
+		// playem.clearQueue();
+		songDatashare.stopPlayem();
 		$("#editMusicModal").hide();
 	}
 

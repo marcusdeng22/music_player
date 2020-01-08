@@ -32,7 +32,7 @@ db.music.insert({
 	"type": "youtube",
 	"vol": 100,
 	"name": "Bad Ideas",
-	"artist": ["Tessa Violet"],
+	"artist": ["Tessa Violet", "tessa"],
 	"start": 0,
 	"end": 0,
 	"date": ISODate("2019-07-30T16:00:00.000Z")

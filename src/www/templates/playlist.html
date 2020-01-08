@@ -98,7 +98,7 @@
 
 	<div id="editMusicModal" class="modal" style="display: none;">
 		<div class="modal-content" style="width:75%;">
-			<table class="table" style="width: 100%; display: table; margin-bottom: 5px;">
+			<!-- <table class="table" style="width: 100%; display: table; margin-bottom: 5px;">
 				<tr ng-repeat = "(key, val) in newSongData" ng-if="key!='_id' && key!='order'">
 					<td>{{key}}</td>
 					<td ng-if="key!='url'">
@@ -110,9 +110,12 @@
 					</td>
 				</tr>
 			</table>
-			<div id="previewDisplay" style="padding-bottom: 5px;"></div>
+			<div id="previewDisplay" style="padding-bottom: 5px;"></div> -->
+			<div id="playlistEditTemplate">
+				<!-- put file here -->
+			</div>
 			<div>
-				<button type="button" class="col-md-3 btn btn-success" ng-disabled="checkSongFields()">Update</button>
+				<button type="button" class="col-md-3 btn btn-success" ng-disabled="songDatashare.checkSongFields()" ng-click="submitEditSong()">Update</button>
 				<button type="button" class="col-md-3 btn btn-danger" ng-click="closeEditSongModal()">Cancel</button>
 			</div>
 		</div>

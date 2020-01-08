@@ -1,12 +1,4 @@
-<!-- <script src="/js/edit.js"></script> -->
-
-<style type="text/css">
-	[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
-		display: none !important;
-	}
-</style>
-
-<div id="editDiv" ng-controller="editCtrl as $ctrl" style="height: 100%; width: 100%">
+<div id="listEditSongDiv" ng-controller="listEditSongCtrl as $ctrl" style="height: 100%; width: 100%">
 	<ul class="nav nav-tabs" role="tablist">
 		<li class="nav-item"><a class="nav-link active" data-toggle="tab" data-target="#existingSongSearch" role="tab">Songs</a></li>
 		<li class="nav-item"><a class="nav-link" data-toggle="tab" data-target="#addNewSong" role="tab">Add New Song</a></li>
@@ -61,10 +53,10 @@
 	</div>
 </div>
 
-<!-- <script src="/js/edit.js"></script> -->
 <script type="text/javascript">
+	//TODO: load the edit song template in the new song tab
 	//handle subtab click
-	$("#editDiv .nav-link").on("click", function(e) {
+	$("#listEditSongDiv .nav-link").on("click", function(e) {
 		console.log("subtab clicked");
 		e.preventDefault();
 		$(".tab-pane").removeClass("show active");

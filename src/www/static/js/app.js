@@ -61,12 +61,103 @@ app.factory("sortingFuncs", ["orderByFilter", function(orderBy) {
 	return sortingFuncs;
 }]);
 
-app.factory("songDatashare", function() {
+app.factory("songDatashare", ["$timeout", "$compile", function($timeout, $compile) {
 	var data = {};
+	//song data below
 	data.songData = [];
 	data.songIndices = [];
+	//edit data below
+	data.editTemplateId = "";
+	data.editData = {};	//store the song info here
+	data.playem = undefined;	//store the preview player info here
+	data.loadEditTemplate = function(targetId, $scope) {
+		console.log("loading edit template");
+		//unload playem
+		data.stopPlayem();
+		if (data.editTemplateId != "") {
+			//unload template
+			$(data.editTemplateId).empty();
+		}
+		//load template
+		data.editTemplateId = targetId;
+		$(targetId).load("/shared/editSong.html");
+		//clear old data
+		data.editData = {};
+		$timeout(function() {
+			//build playem object
+			console.log("adding playem");
+			data.playem = new Playem();
+			var config = {
+				playerContainer: document.getElementById("previewDisplay")
+			};
+			data.playem.addPlayer(YoutubePlayer, config);	//ADD MORE PLAYERS HERE
+			console.log("compiling edit template");
+			$compile(angular.element(document.querySelector(targetId)).contents())($scope);
+		}, 1000);
+	};
+	data.stopPlayem = function() {
+		$("#previewDisplay").empty();	//stops loading of video if stopping early
+		if (data.playem != undefined) {
+			data.playem.stop();
+			data.playem.clearQueue();
+			delete data.playem;
+		}
+	}
+	data.setEditData = function(dataToCopy) {
+		data.editData = angular.copy(dataToCopy);
+	}
+	data.checkSongFields = function() {	//check fields of editted data before pushing; returns true if a field is bad
+		console.log("checking edit song fields");
+		console.log(data.editData);
+		var reqKeys = ["_id", "url", "type", "name", "artist"];
+		var mediaTypes = ["youtube"];
+		for (var i = 0; i < reqKeys.length; i ++) {
+			var key = reqKeys[i];
+			if (data.editData[key] == undefined || data.editData[key] == "") {
+				console.log(key + " is bad");
+				return true;
+			}
+			if (key == "type") {
+				//force to lowercase
+				data.editData[key] = data.editData[key].toLowerCase();
+				if (!mediaTypes.includes(data.editData[key])) {
+					return true;
+				}
+			}
+		}
+		//unrequired keys
+		if (data.editData["vol"] != undefined) {
+			if (data.editData["vol"] < 0) {
+				data.editData["vol"] = 0;
+			}
+			if (data.editData["vol"] > 100) {
+				data.editData["vol"] = 100;
+			}
+		}
+		else {
+			data.editData["vol"] = 100;	//default
+		}
+		if (data.editData["start"] != undefined) {
+			if (data.editData["start"] < 0) {
+				data.editData["start"] = 0;
+			}
+		}
+		else {
+			data.editData["start"] = 0;
+		}
+		if (data.editData["end"] != undefined) {
+			if (data.editData["end"] < 0) {
+				data.editData["end"] = 0;
+			}
+		}
+		else {
+			data.editData["end"] = 0;
+		}
+		console.log("edit data ok");
+		return false;
+	}
 	return data;
-})
+}]);
 // console.log("hi");
 // angular.element('[ui-sortable]').on('ui-sortable-selectionschanged', function (e, args) {
 //     console.log("selection changed");
