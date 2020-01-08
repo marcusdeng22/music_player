@@ -124,9 +124,21 @@ app.factory("songDatashare", ["$timeout", "$compile", function($timeout, $compil
 					return true;
 				}
 			}
+			if (key == "artist") {
+				//force to array if str
+				if (typeof data.editData[key] === "string" || data.editData[key] instanceof String) {
+					data.editData[key] = data.editData[key].split(",").filter(function(el) {return el;});
+				}
+			}
 		}
 		//unrequired keys
 		if (data.editData["vol"] != undefined) {
+			if (isNaN(parseInt(data.editData["vol"]))) {
+				data.editData["vol"] = 100;
+			}
+			else {
+				data.editData["vol"] = parseInt(data.editData["vol"]);
+			}
 			if (data.editData["vol"] < 0) {
 				data.editData["vol"] = 0;
 			}
@@ -138,6 +150,12 @@ app.factory("songDatashare", ["$timeout", "$compile", function($timeout, $compil
 			data.editData["vol"] = 100;	//default
 		}
 		if (data.editData["start"] != undefined) {
+			if (isNaN(parseInt(data.editData["start"]))) {
+				data.editData["start"] = 0;
+			}
+			else {
+				data.editData["start"] = parseInt(data.editData["start"]);
+			}
 			if (data.editData["start"] < 0) {
 				data.editData["start"] = 0;
 			}
@@ -146,6 +164,12 @@ app.factory("songDatashare", ["$timeout", "$compile", function($timeout, $compil
 			data.editData["start"] = 0;
 		}
 		if (data.editData["end"] != undefined) {
+			if (isNaN(parseInt(data.editData["end"]))) {
+				data.editData["end"] = 0;
+			}
+			else {
+				data.editData["end"] = parseInt(data.editData["end"]);
+			}
 			if (data.editData["end"] < 0) {
 				data.editData["end"] = 0;
 			}

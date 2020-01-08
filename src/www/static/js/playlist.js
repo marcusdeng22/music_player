@@ -231,13 +231,6 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 			}
 		});
 
-		//update song url preview on enter key
-		$(document).keyup(function(e) {
-			if ($("#newSongUrlInput").is(":focus") && e.key == "Enter") {
-				$scope.previewSong();
-			}
-		});
-
 		//prepare datepicker
 		$('#playlistStartDate, #playlistEndDate').datepicker({
 			todayBtn: "linked",
@@ -351,82 +344,12 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 
 	$scope.submitSongs = function() {
 		console.log(songDatashare);
+		//TODO: add songs and update db
 	}
 
 	$scope.closeAddSongsModal = function() {
 		$("#addMusicListModal").hide();
 	}
-
-	//edit a song
-	// $scope.newSongData = {};
-	// $scope.editSong = function() {
-	// 	console.log("editing song");
-	// 	console.log($scope.songData[$scope.songIndices]);
-	// 	$scope.newSongData = angular.copy($scope.songData[$scope.songIndices]);
-	// 	$("#editMusicModal").css("display", "flex");
-	// 	$scope.previewSong();
-	// }
-
-	// $scope.checkSongFields = function() {
-	// 	for (var key in $scope.newSongData) {
-	// 		//TODO: check fields here
-	// 		if ($scope.newSongData[key] === "") {
-	// 			return true;
-	// 		}
-	// 	}
-	// 	return false;
-	// }
-
-	// // function logEvent (evtName) {
-	// // 	this.on(evtName, (data) =>
-	// // 	console.log("event:", evtName, data)
-	// // 	);
-	// // }
-	// var config = {
-	// 	playerContainer: document.getElementById("previewDisplay")
-	// };
-	// var playem = new Playem();
-	// playem.addPlayer(YoutubePlayer, config);
-	// // init logging for all player events
-	// // ["onPlay", "onReady", "onTrackChange", "onEnd", "onPause", "onError", "onBuffering"].forEach(logEvent.bind(playem));
-
-	// $scope.previewPlayer;
-	// $scope.previewSong = function() {
-	// 	console.log("previewing song");
-	// 	//.loadVideoByUrl	loads a video by the url, but need to figure out how to create the player object
-	// 	//.setVolume		sets the volume
-	// 	//.playVideo
-	// 	//.pauseVideo
-	// 	//.getPlayerState	0=ended, 1=playing, 2=paused
-	// 	//.getDuration
-	// 	//.addEventListener	onReady, onStateChange
-	// 	//.getIframe()
-
-	// 	//create the video player on the start of opening the modal; then load the original video ID: library: splice out the video ID
-	// 	//here, load the new ID once refreshed
-	// 	//check the buffer status: may cause the play to fail
-	// 	// function onYouTubePlayerAPIReady() {
-	// 	// 	$scope.previewPlayer = new YT.Player('previewDisplay', {
-	// 	// 		// videoId: $scope.songData[$scope.songIndices]["url"]
-	// 	// 		events:
-	// 	// 	})
-	// 	// }
-	// 	playem.stop();
-	// 	playem.clearQueue();
-	// 	console.log(playem.getQueue());
-	// 	// console.log("adding url: ", $scope.songData[$scope.songIndices]["url"]);
-	// 	// console.log($scope.songData);
-	// 	// console.log($scope.songIndices);
-	// 	// playem.addTrackByUrl($scope.songData[$scope.songIndices]["url"]);
-	// 	// playem.addTrackByUrl($("#newSongUrlInput").val());
-	// 	// console.log("adding: ", $("#newSongUrlInput").val());
-	// 	console.log("adding: ", $scope.newSongData["url"]);
-	// 	playem.addTrackByUrl($scope.newSongData["url"]);
-	// 	// playem.addTrackByUrl("https://www.youtube.com/watch?v=8axQACbVkrk");
-	// 	console.log(playem.getPlayers());
-	// 	console.log(playem.getQueue());
-	// 	playem.play();
-	// }
 
 	$scope.editSong = function() {
 		//load the edit song file
@@ -435,21 +358,16 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		songDatashare.setEditData($scope.songData[$scope.songIndices]);
 		//display modal
 		$("#editMusicModal").css("display", "flex");
-		//preview song?
 	}
 
 	$scope.submitEditSong = function() {
 		//TODO: write update to DB
+		// $http.post("")
 		// $scope.songData[$scope.songIndices] = $scope.newSongData;		//TODO: replace newSongData with shared data from data share
 		$scope.closeEditSongModal();
 	}
 
 	$scope.closeEditSongModal = function() {
-		// console.log($scope.songData[$scope.songIndices]);
-		// $scope.previewPlayer.destroy();
-		// $("#previewDisplay").empty();	//stops loading if closing modal early
-		// playem.stop();
-		// playem.clearQueue();
 		songDatashare.stopPlayem();
 		$("#editMusicModal").hide();
 	}
