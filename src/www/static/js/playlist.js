@@ -33,17 +33,6 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 			console.log("failed to get playlist data");
 			console.log(error);
 		});
-		// $scope.playlistData = [
-		// 	{"name": "playlist1", "contents": ["1","3"], "date": "2019-03-01T15:00:00", "dateStr": "2019-03-01"},
-		// 	{"name": "playlist2", "contents": ["0","1","2"], "date": "2019-04-01T15:00:00", "dateStr": "2019-04-01"},
-		// 	{"name": "playlist3", "contents": ["1","2","3"], "date": "2019-05-01T15:00:00", "dateStr": "2019-05-01"}
-		// ]
-		// data = [
-		// 	{"name": "playlist1", "contents": ["1","3"], "date": "2019-03-01T15:00:00", "dateStr": "2019-03-01"},
-		// 	{"name": "playlist2", "contents": ["0","1","2"], "date": "2019-04-01T15:00:00", "dateStr": "2019-04-01"},
-		// 	{"name": "playlist3", "contents": ["1","2","3"], "date": "2019-05-01T15:00:00", "dateStr": "2019-05-01"}
-		// ];
-		// $scope.playlistData = orderBy(data, "date", true);
 	};
 
 	$scope.getPlaylistData();
@@ -361,9 +350,20 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	}
 
 	$scope.submitEditSong = function() {
-		//TODO: write update to DB
-		// $http.post("")
-		// $scope.songData[$scope.songIndices] = $scope.newSongData;		//TODO: replace newSongData with shared data from data share
+		//write update to DB
+		//first check if safe to add
+		if (songDatashare.checkSongFields()) {
+			//true means not ok
+			return;
+		}
+		//data is now coerced and ready to push
+		//update local
+		$scope.songData[$scope.songIndices] = angular.copy(songDatashare.editData);
+		$http.post("/editMusic", songDatashare.editData).then(function(resp) {
+			console.log("edit song ok");
+		}, function(err) {
+			console.log(err);
+		});
 		$scope.closeEditSongModal();
 	}
 
@@ -374,14 +374,29 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 
 	//delete a song
 	$scope.deleteSong = function() {
-		$scope.songIndices.sort(function(a, b) {return b - a;});
+		console.log("removing songs from playlist");
+		console.log($scope.songIndices);
+		//selected indices are to be removed; remove them
+		$scope.songIndices.sort((a, b) => a-b);
 		for (var i = $scope.songIndices.length - 1; i >= 0; i--) {
+			console.log($scope.songIndices[i]);
 			$scope.songData.splice($scope.songIndices[i], 1);
-			$scope.playlistData[$scope.playlistIndices]["contents"].splice($scope.songIndices[i], 1);
-			//TODO: perform update to DB
 		}
-		// $("#songSelect").children().removeClass("ui-sortable-selected")
-		$scope.songIndices = [];
+		$scope.songIndices = [];	//clear selection
+		var idList = [];
+		for (var i = 0; i < $scope.songData.length; i++) {
+			idList.push($scope.songData[i]["_id"]);
+		}
+		$scope.playlistData[$scope.playlistIndices]["contents"] = idList;
+		console.log("remaining data");
+		console.log($scope.songData);
+		console.log($scope.playlistData[$scope.playlistIndices]);
+		//update DB
+		$http.post("/editPlaylist", {"_id": $scope.playlistData[$scope.playlistIndices]["_id"], "contents": idList}).then(function(resp) {
+			console.log("removal of songs from playlist ok");
+		}, function(err) {
+			console.log(err);
+		});
 	}
 
 	function closeAllModals() {

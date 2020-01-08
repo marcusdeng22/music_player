@@ -180,16 +180,34 @@ class ApiGateway(object):
 		else:
 			raise cherrypy.HTTPError(400, 'No data was given')
 
-		# myID = m_utils.checkValidID(data)
-		# if self.colMusic.count({"_id": myID}) == 0:
-		if self.colMusic.count({"_id": m_utils.checkValidID(data)}) == 0:
+		myID = m_utils.checkValidID(data)
+		if self.colMusic.count({"_id": myID}) == 0:
+		# if self.colMusic.count({"_id": m_utils.checkValidID(data)}) == 0:
 			raise cherrypy.HTTPError(400, "Song does not exist")
 
 		# sanitize the input
-		# myQuery = m_utils.createMusicQuery(data)
-		# TODO
+		myQuery = {}
+		for key in ["url", "type", "name", "artist", "vol", "start", "end"]:
+			if key in data:
+				if key == "artist":
+					myQuery[key] = []
+					for artist in m_utils.checkValidData(key, data, list):
+						if isinstance(artist, str):
+							myQuery[key] = artist
+						else:
+							raise cherrypy.HTTPError(400, "Invalid artist provided")
+				elif key == "type":
+					if m_utils.checkValidData(key, data, str) in m_utils.supportedTypes:
+						myQuery[key] = data[key]
+					else:
+						raise cherrypy.HTTPError(400, "Invalid data type provided")
+				elif key in ["vol", "start", "end"]:
+					myQuery[key] = m_utils.checkValidData(key, data, int)
+				else:
+					myQuery[key] = m_utils.checkValidData(key, data, str)
 
-		# self.colMusic.update_one({"_id": myID}, {"$set": {myQuery}})
+		myQuery["date"] = datetime.now()
+		self.colMusic.update_one({"_id": myID}, {"$set": myQuery}, upsert=True)
 
 	@cherrypy.expose
 	@cherrypy.tools.json_in()

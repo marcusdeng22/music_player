@@ -142,7 +142,7 @@ def makeMusicQuery(data, musicDB, fast=False):
 				myMusic[key] = {"$regex": r".*" + checkValidData(key, data, str) + r".*", "$options": "i"}
 				# myMusic["$text"] = {"$search": '"' + checkValidData(key, data, str).strip() + '"'}
 			if key == "type":
-				if data["type"] in supportedTypes:
+				if checkValidData("type", data, str) in supportedTypes:
 					myMusic["type"] = checkValidData("type", data, str)
 				else:
 					raise cherrypy.HTTPError(400, "Bad file type")
@@ -208,101 +208,20 @@ def makePlaylistQuery(data, playlistDB, musicDB):
 				else:
 					myPlaylist["date"]["$lte"] = checkValidData(key, data, datetime.datetime, coerce=True) + datetime.timedelta(days=1)
 			if key == "song_names":
-				# get the ids of songs with names, sorted by relevance
-				# try:
-				# 	id_list = list(musicDB.find({
-				# 		"$text": {
-				# 			"$search": " ".join('"' + str(n) + '"' for n in checkValidData(key, data, list)),
-				# 			"$caseSensitive": False,
-				# 		}
-				# 	},
-				# 	{
-				# 		"$score": {
-				# 			"$meta": "textScore"
-				# 		}
-				# 	}).sort({
-				# 		"score": {"$meta": "textScore"}
-				# 	}))
-				# 	id_list = list(musicDB.aggregate([
-				# 		{
-				# 			"$match": {
-				# 				"$text": {
-				# 					"$search": " ".join('"' + str(n) + '"' for n in checkValidData(key, data, list)),
-				# 					"$caseSensitive": False
-				# 				}
-				# 			}
-				# 		},
-				# 		{
-				# 			"$sort": {
-				# 				"score": {
-				# 					"$meta": "textScore"
-				# 				}
-				# 			}
-				# 		},
-				# 		{
-				# 			"$project": {
-				# 				"_id": 1
-				# 			}
-				# 		}
-				# 	]))
-				# 	# we have the ids of songs in order of relevance
-				# except:
-				# 	raise cherrypy.HTTPError(400, "Failed to parse song names")
-
-				# for n in checkValidData(key, data, list):
-				# 	song_list = list(musicDB.aggregate([
-				# 		{
-				# 			"$match": {"$text": {"$search": str(n), "$caseSensitive": False}}
-				# 		}
-				# 	]))
-				# myPlaylist[key] = checkValidData(key, data, list)   # change this query to search for inclusive ($in?)
 				print("querying for song names")
 				for n in checkValidData(key, data, list):
-					# musicList.add(v["_id"] for v in makeMusicQuery({"name": n}, musicDB, fast=True))
 					for v in makeMusicQuery({"name": n}, musicDB, fast=True):
 						musicList.add(v["_id"])
 				print("done with song name query")
-			if key == "artist_names":	#use $in here	#OR with song_names
-				# arist_list = list(musicDB.find({
-				# 	"artist": {"$in": [str(n) for n in checkValidData(key, data, list)]}
-				# }))
-				# for a in checkValidData(key, data, list):
-				# 	# musicList.add(v["_id"] for v in makeMusicQuery({"artist": a}, musicDB, fast=True))
-				# 	for v in makeMusicQuery({"artist": a}, musicDB, fast=True):
-				# 		musicList.add(v["_id"])
+			if key == "artist_names":
 				for v in makeMusicQuery({"artist": data[key]}, musicDB, fast=True):
 					musicList.add(v["_id"])
-				# myPlaylist[key] = checkValidData(key, data, list)
 			if key == "_id":
 				myPlaylist[key] = checkValidID(data)
 	if len(musicList) > 0:
 		myPlaylist["contents"] = {"$in": list(musicList)}
 	print("myPlaylist.contents:", musicList)
 	print("playlist query:", myPlaylist)
-	# if len(musicList) > 0:
-	# 	ret = playlistDB.aggregate([
-	# 		{
-	# 			"$match": myPlaylist
-	# 		},
-	# 		{
-	# 			"$unwind": "$contents"
-	# 		},
-	# 		{
-	# 			"$match": {"contents": myPlaylist["contents"]}
-	# 		},
-	# 		{
-	# 			"$group": {
-	# 				"_id": "$_id",
-	# 				"relev": {"$sum": 1}
-	# 			}
-	# 		},
-	# 		{
-	# 			"$sort": {"relev": -1}
-	# 		}
-	# 	])
-	# 	#TODO: join this with another query to get contents?
-	# else:
-	# 	ret = playlistDB.find(myPlaylist)
 	ret = list(playlistDB.find(myPlaylist))
 	#add relevance markers in
 	if len(musicList) > 0:

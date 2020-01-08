@@ -35,6 +35,8 @@ app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$timeout', 
 			console.log("edit music query success");
 			$scope.songs.songData = resp.data;
 			console.log("songs returned: ", $scope.songs.songData);
+			//sort data
+			$scope.sortBy(sortVar, sortRev);
 		}, function(error) {
 			console.log(error);
 		});

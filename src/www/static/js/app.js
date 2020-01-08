@@ -109,7 +109,7 @@ app.factory("songDatashare", ["$timeout", "$compile", function($timeout, $compil
 	data.checkSongFields = function() {	//check fields of editted data before pushing; returns true if a field is bad
 		console.log("checking edit song fields");
 		console.log(data.editData);
-		var reqKeys = ["_id", "url", "type", "name", "artist"];
+		var reqKeys = ["url", "type", "name", "artist"];
 		var mediaTypes = ["youtube"];
 		for (var i = 0; i < reqKeys.length; i ++) {
 			var key = reqKeys[i];
