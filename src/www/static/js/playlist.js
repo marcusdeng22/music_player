@@ -18,16 +18,14 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	//search vars
 	$scope.playlistStartDate = "";
 
-	$scope.getPlaylistData = function(query={}, sortVar="date", sortRev=true, selectFirst=false) {
+	$scope.getPlaylistData = function(query={}, sortVar="date", sortRev=true, callback=null) {
 		$http.post("/findPlaylist", query).then(function(resp) {
 			console.log("success");
 			$scope.playlistData = resp.data;
 			console.log($scope.playlistData);
 			$scope.sortBy(sortVar, sortRev);
-			if (selectFirst) {
-				angular.element(document).ready(function() {
-					$(".playlistItem").first().click();
-				});
+			if (callback != null) {
+				callback();
 			}
 		}, function(error) {
 			console.log("failed to get playlist data");
@@ -38,7 +36,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	$scope.getPlaylistData();
 
 	$scope.playlistNameSearch = "";
-	$scope.advSearch = function() {
+	$scope.advSearch = function(callback=null) {
 		// create query
 		// available keys: "name", "start_date", "end_date", "song_names", "artist_names" "_id"
 		var query = {};
@@ -60,10 +58,10 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		}
 		console.log("query:", query)
 		if (sortByRelev) {
-			$scope.getPlaylistData(query, "relev");
+			$scope.getPlaylistData(query, "relev", undefined, callback);
 		}
 		else {
-			$scope.getPlaylistData(query);
+			$scope.getPlaylistData(query, undefined, undefined, callback);
 		}
 	}
 
@@ -213,20 +211,45 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		}
 		else {
 			if (oldID == null) {
+				console.log("multi or none selected");
+				console.log($scope.playlistIndices);
 				clearPlaylistSelected();
 				return;
 			}
 			$scope.playlistIndices = [$scope.playlistData.findIndex(function(p) { return p["_id"] == oldID; })];
 		}
-		if (oldIndex != $scope.playlistIndices) {
+		// if (!sameArrays(oldIndex, $scope.playlistIndices)) {
 			angular.element(document).ready(function() {
 				// $scope.songIndices = [];
 				clearSongSelected();
 				// $scope.$apply();
+				console.log("clicking: " + $scope.playlistIndices);
 				$(".playlistItem").eq($scope.playlistIndices).click();
 			});
-		}
+		// }
 	}
+
+	dispatcher.on("songChanged", function(data) {
+		//update the currently selected songs
+		for (var i = 0; i < $scope.songData.length; i ++) {
+			if ($scope.songData[i]["_id"] == data["_id"]) {
+				$scope.songData[i] = data;
+			}
+		}
+		
+	});
+
+	dispatcher.on("songsRemoved", function() {
+		//get the new playlist info
+		// $scope.clearSearch();
+		// $scope.getPlaylistData();
+		var targetID = $scope.playlistIndices.length == 1 ? $scope.playlistData[$scope.playlistIndices]["_id"] : null;
+		$scope.advSearch(function() {
+			updatePlaylistSortable(targetID);
+		});	//use the same filters
+		//select the original, if one was selected
+		// updatePlaylistSortable();
+	});
 
 	$(function() {
 		// $(".playlistItem").not(".ui-sortable-placeholder").droppable({
@@ -462,7 +485,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	//add a song
 	$scope.addSongs = function() {
 		console.log("adding song");
-		songDatashare.loadEditTemplate("#addNewSong", $scope);
+		// songDatashare.loadEditTemplate("#addNewSong", $scope);	//now handled by tab
 		$("#addMusicListModal").css("display", "flex");
 	}
 
@@ -524,17 +547,24 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		}
 		//data is now coerced and ready to push
 		//update DB
-		$http.post("/editMusic", songDatashare.editData).then(function(resp) {
-			console.log("edit song ok");
-			//update local
-			// $scope.songData[$scope.songIndices] = resp["data"];
+		// $http.post("/editMusic", songDatashare.editData).then(function(resp) {
+		// 	console.log("edit song ok");
+		// 	//update local
+		// 	// $scope.songData[$scope.songIndices] = resp["data"];
+		// 	for (var i = 0; i < $scope.songData.length; i ++) {
+		// 		if ($scope.songData[i]["_id"] == resp["data"]["_id"]) {
+		// 			$scope.songData[i] = resp["data"];
+		// 		}
+		// 	}
+		// }, function(err) {
+		// 	console.log(err);
+		// });
+		songDatashare.editSong(function(insertedData) {
 			for (var i = 0; i < $scope.songData.length; i ++) {
-				if ($scope.songData[i]["_id"] == resp["data"]["_id"]) {
-					$scope.songData[i] = resp["data"];
+				if ($scope.songData[i]["_id"] == insertedData["_id"]) {
+					$scope.songData[i] = insertedData;
 				}
 			}
-		}, function(err) {
-			console.log(err);
 		});
 		$scope.closeEditSongModal();
 	}

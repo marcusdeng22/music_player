@@ -244,10 +244,13 @@ class ApiGateway(object):
 		data = m_utils.checkValidData("music", data, list)
 		myData = []
 		for myID in data:
-			if ObjectId.is_valid(myID):
-				myData.append(myID)
+			myData.append(m_utils.checkValidID(myID))
 
 		self.colMusic.remove({"_id": {"$in": myData}})
+		# now remove from all playlists
+		self.colPlaylists.update_many({}, {
+			"$pull": {"contents": {"$in": myData}}
+		});
 
 	@cherrypy.expose
 	@cherrypy.tools.json_in()

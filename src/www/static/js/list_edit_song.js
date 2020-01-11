@@ -44,7 +44,9 @@ app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$timeout', 
 		// songDatashare.songIndices = $(this).find('.ui-sortable-selected').map(function(i, element){
 			return $(this).index();
 		}).toArray();
-		$scope.$apply();
+		if (!$scope.$$phase) {
+			$scope.$apply();
+		}
 	});
 
 	$scope.getSongData = function(query={}, sortVar="date", sortRev=true) {
@@ -95,12 +97,18 @@ app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$timeout', 
 		$("#listEditSongDiv .nav-link").on("click", function(e) {
 			console.log("subtab clicked");
 			console.log($(this)[0]);
-			songDatashare.tab = $(this)[0]["dataset"]["target"];
-			$scope.$apply();
+			var targetTab = $(this)[0]["dataset"]["target"];
+			songDatashare.tab = targetTab;
+			if (targetTab == "#addNewSong") {
+				songDatashare.loadEditTemplate("#addNewSong", $scope, null, true);
+			}
+			if (!$scope.$$phase) {
+				$scope.$apply();
+			}
 			console.log(songDatashare);
 			e.preventDefault();
 			$(".tab-pane").removeClass("show active");
-			$($(this)[0]["dataset"]["target"]).addClass("show active");
+			$(targetTab).addClass("show active");
 		});
 
 		//prepare datepicker

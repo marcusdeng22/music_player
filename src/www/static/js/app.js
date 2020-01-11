@@ -61,7 +61,7 @@ app.factory("sortingFuncs", ["orderByFilter", function(orderBy) {
 	return sortingFuncs;
 }]);
 
-app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", function($compile, $timeout, $http, sortingFuncs) {
+app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "dispatcher", function($compile, $timeout, $http, sortingFuncs, dispatcher) {
 	var data = {};
 	//tab info
 	data.tab = "#existingSongSearch";	//#existingSongSearch or #addNewSong	//TODO: reset on template load
@@ -74,12 +74,14 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", f
 		if (data.listTemplateId != targetId) {		//or should it always recompile?
 			//load template
 			data.listTemplateId = targetId;
+			data.songIndices = [];
+			data.tab = "#existingSongSearch";
 			$(targetId).load("/shared/list_edit_song.html", function() {
 				$compile($(targetId).contents())($scope);
 				// if (targetId == "#songEditDiv") {
 					//load the edit template
-					console.log("loading edit template");
-					data.loadEditTemplate("#addNewSong", $scope, null, true);
+					// console.log("loading edit template");
+					// data.loadEditTemplate("#addNewSong", $scope, null, true);
 				// }
 			});
 		}
@@ -268,7 +270,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", f
 		console.log("edit data ok");
 		return false;
 	};
-	data.addSong = function(toCall) {
+	data.addSong = function(toCall=null) {
 		if (data.checkSongFields()) {
 			return;
 		}
@@ -286,10 +288,46 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", f
 			console.log(err);
 		});
 	};
-	data.editSong = function(toCall) {
+	data.editSong = function(toCall=null, fromList=false) {
 		if (data.checkSongFields()) {
 			return;
 		}
+		$http.post("/editMusic", data.editData).then(function(resp) {
+			console.log("edit request ok");
+			//only modify local data if editing song from the list view
+			if (fromList) {
+				data.songData[data.songIndices] = resp["data"];
+				data.sortBy(data.orderVar, true);
+				//now select it
+				data.songIndices = [data.songData.findIndex(function(p) { return p["_id"] == resp["data"]["_id"]; })];
+				$("#editSongSelect > .songItem").eq(data.songIndices).click();
+				dispatcher.emit("songChanged", resp["data"]);
+			}
+			//now do callback
+			if (toCall != null) {
+				console.log("callback");
+				toCall(resp["data"]);
+			}
+		}, function(err) {
+			console.log(err);
+		})
+	};
+	data.removeSongs = function() {
+		var idList = [];
+		//sort selected indices in reverse, and remove
+		data.songIndices.sort((a, b) => a-b);
+		for (var i = data.songIndices.length - 1; i >= 0; i--) {
+			idList.push(data.songData[data.songIndices[i]]["_id"]);
+		}
+		$http.post("/removeMusic", {"music": idList}).then(function(resp) {
+			dispatcher.emit("songsRemoved", idList);
+			for (var i = data.songIndices.length - 1; i >= 0; i--) {
+				data.songData.splice(data.songIndices[i], 1);
+			}
+			data.clearSelected();
+		}, function(err) {
+			console.log(err);
+		});
 	}
 	return data;
 }]);

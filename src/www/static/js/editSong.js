@@ -13,7 +13,7 @@ app.controller('editSongCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	}
 
 	//only auto preview if editing song
-	if (songDatashare.editTemplateId == "#playlistEditTemplate") {
+	if (songDatashare.editTemplateId == "#playlistEditTemplate" || songDatashare.editTemplateId == "#songEditTemplate") {
 		console.log("auto previewing");
 		$scope.previewSong();
 	}
