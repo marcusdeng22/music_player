@@ -35,12 +35,12 @@
 				<button type="button" ng-click="sortBy('date')" style="float: right;">Date<img ng-class="sortGlyph('date')" style="left: 2px;"></img></button>
 			</div>
 			<div class="joinCollapseContainer sortableDataContainer songCollapse collapse show" style="height: calc(100% - 100px);">
-				<div ui-sortable="sortableSongs" ng-model="songs.songData" id="editSongSelect" class="ng-cloak list" style="width: 100%; min-height: 100%;">
-					<div ui-sortable-selectable ng-repeat="item in songs.songData" class="item songItem">
+				<div ui-sortable="sortableSongs" ng-model="songDatashare.songData" id="editSongSelect" class="ng-cloak list" style="width: 100%; min-height: 100%;">
+					<div ui-sortable-selectable ng-repeat="song in songDatashare.songData track by $index" class="item songItem">
 						<div style="width: 100%; display: table; table-layout: fixed;">
 							<div style="width: 100%; display: table-row;">
-								<div style="width: calc(100% - 80px); display: table-cell; overflow: hidden;">{{item.name}}</div>
-								<div style="width: 80px; display: table-cell;">{{item.dateStr}}</div>
+								<div style="width: calc(100% - 80px); display: table-cell; overflow: hidden;">{{song.name}}</div>
+								<div style="width: 80px; display: table-cell;">{{song.dateStr}}</div>
 							</div>
 						</div>
 					</div>

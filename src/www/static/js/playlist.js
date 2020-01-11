@@ -81,6 +81,8 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	});
 
 	$scope.sortBy = function(propertyName, preserveOrder=false) {
+		// $scope.playlistIndices = [];
+		clearPlaylistSelected();
 		var res = sortingFuncs.sortBy($scope.playlistData, $scope.reverse, $scope.orderVar, propertyName, preserveOrder);
 		$scope.reverse = res["reverse"];
 		$scope.orderVar = res["orderVar"];
@@ -104,41 +106,86 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		});
 	};
 
+	function clearPlaylistSelected() {
+		$scope.songData = [];
+		clearSongSelected();
+		$("#playlistSelect > .ui-sortable-selected").removeClass("ui-sortable-selected");
+		$scope.playlistIndices = [];
+		if (!$scope.$$phase) {
+			$scope.$apply();
+		}
+	}
+
+	function clearSongSelected() {
+		$("#songSelect > .ui-sortable-selected").removeClass("ui-sortable-selected");
+		$scope.songIndices = [];
+		if (!$scope.$$phase) {
+			$scope.$apply();
+		}
+	}
+
 	$scope.sortablePlaylist = uiSortableMultiSelectionMethods.extendOptions({
 		refreshPositions: true
 	});
 
 	$("#playlistSelect").on('ui-sortable-selectionschanged', function (e, args) {
+		// console.log("playlist select changed");
+		// console.log($(this).find('.ui-sortable-selected').map(function(i, element){
+		// 	return $(this).index();
+		// }).toArray());
 		$scope.playlistIndices = $(this).find('.ui-sortable-selected').map(function(i, element){
 			return $(this).index();
 		}).toArray();
-		$scope.songIndices = [];
+		// $scope.songIndices = [];
+		clearSongSelected();
 		if ($scope.playlistIndices.length > 1) {
 			$scope.songData = [];
 			$scope.$apply();    //forces update
 		}
-		else {
+		else if ($scope.playlistIndices.length == 1) {
 			$scope.getSongData($scope.playlistData[$scope.playlistIndices[0]]["contents"]);
 		}
 	});
 
+	function sameArrays(arr1, arr2) {
+		if (arr1.length != arr2.length) {
+			return false;
+		}
+		for (var i = 0; i < arr1.length; i ++) {
+			if (arr1[i] != arr2[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	var updatingPlaylist = false;
 	$scope.sortableSongs = uiSortableMultiSelectionMethods.extendOptions({
 		refreshPositions: true,
+		update: function(e, ui) {
+			if (updatingPlaylist) {
+				ui.item.sortable.cancel();
+			}
+		},
 		stop: function(e, ui) {
 			console.log("stop: songData = ", $scope.songData);
 			var songOrder = $scope.songData.map(function(i) {
 				return i["_id"];
 			});
 			console.log("song order: ", songOrder);
-			// console.log("original order: ", $scope.playlistData[$scope.playlistIndices]);
-			$scope.playlistData[$scope.playlistIndices]["contents"] = songOrder;
+			console.log("original order: ", $scope.playlistData[$scope.playlistIndices]["contents"]);
+			// $scope.playlistData[$scope.playlistIndices]["contents"] = songOrder;
 			// console.log("new order: ", $scope.playlistData[$scope.playlistIndices]);
 			//update DB of new order
-			$http.post("/editPlaylist", {"_id": $scope.playlistData[$scope.playlistIndices]["_id"], "contents": songOrder}).then(function(resp) {
-				console.log("successful update of song order");
-			}, function(error) {
-				console.log(error);
-			});
+			if (!sameArrays(songOrder, $scope.playlistData[$scope.playlistIndices]["contents"])) {
+				$http.post("/editPlaylist", {"_id": $scope.playlistData[$scope.playlistIndices]["_id"], "contents": songOrder}).then(function(resp) {
+					console.log("successful update of song order");
+					$scope.playlistData[$scope.playlistIndices] = resp["data"];
+					updatePlaylistSortable();
+				}, function(error) {
+					console.log(error);
+				});
+			}
 		}
 	});
 
@@ -147,9 +194,39 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		$scope.songIndices = $(this).find('.ui-sortable-selected').map(function(i, element){
 		  return $(this).index();
 		}).toArray();
+		console.log("before apply: indices");
+		console.log($scope.songIndices);
 		$scope.$apply();
+		console.log("after apply: indices");
+		console.log($scope.songIndices);
 		// console.log($scope.songIndices);
 	});
+
+	//sorts the playlist data and selects the updated playlist
+	function updatePlaylistSortable(modifiedID=null) {
+		console.log("updating positions and selecting");
+		var oldID = $scope.playlistIndices.length == 1 ? $scope.playlistData[$scope.playlistIndices]["_id"] : null;
+		var oldIndex = $scope.playlistIndices;
+		$scope.sortBy($scope.orderVar, true);
+		if (modifiedID != null) {
+			$scope.playlistIndices = [$scope.playlistData.findIndex(function(p) { return p["_id"] == modifiedID; })];
+		}
+		else {
+			if (oldID == null) {
+				clearPlaylistSelected();
+				return;
+			}
+			$scope.playlistIndices = [$scope.playlistData.findIndex(function(p) { return p["_id"] == oldID; })];
+		}
+		if (oldIndex != $scope.playlistIndices) {
+			angular.element(document).ready(function() {
+				// $scope.songIndices = [];
+				clearSongSelected();
+				// $scope.$apply();
+				$(".playlistItem").eq($scope.playlistIndices).click();
+			});
+		}
+	}
 
 	$(function() {
 		// $(".playlistItem").not(".ui-sortable-placeholder").droppable({
@@ -158,47 +235,93 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 				$(this).removeClass("over");
 				//$(this) refers to the target
 				//ui.draggable refers to the source
+				var targetIndex = $(".playlistItem:not(.ui-sortable-placeholder)").index(this);
+				var targetID = $scope.playlistData[targetIndex]["_id"];
+				var updatedContents = $scope.playlistData[targetIndex]["contents"];
 				if (ui["draggable"][0].className.split(/\s+/).includes("playlistItem")) {	//merge two playlists together into target
 					console.log("merging playlists");
 					console.log(ui["draggable"]["sortableMultiSelect"]["selectedModels"]);
-					console.log($(".playlistItem:not(.ui-sortable-placeholder)").index(this));
-					console.log($scope.playlistData[$(".playlistItem:not(.ui-sortable-placeholder)").index(this)]);
+					// console.log($(".playlistItem:not(.ui-sortable-placeholder)").index(this));
+					// console.log($scope.playlistData[$(".playlistItem:not(.ui-sortable-placeholder)").index(this)]);
+					console.log(targetIndex);
+					console.log($scope.playlistData[targetIndex]);
 					//perform merge
-					console.log("merging playlists");
-					var targetPlaylist = $scope.playlistData[$(".playlistItem:not(.ui-sortable-placeholder)").index(this)];
-					var curContents = targetPlaylist["contents"];
+					// console.log("merging playlists");
+					// var targetPlaylist = $scope.playlistData[$(".playlistItem:not(.ui-sortable-placeholder)").index(this)];
+					// var curContents = targetPlaylist["contents"];
+					// var curContents = $scope.playlistData[targetIndex]["contents"];
 					$.each(ui["draggable"]["sortableMultiSelect"]["selectedModels"], function(i, e) {
-						curContents = curContents.concat(e["contents"]);
+						console.log("source:");
+						console.log(e);
+						// curContents = curContents.concat(e["contents"]);
+						// $scope.playlistData[targetIndex]["contents"] = $scope.playlistData[targetIndex]["contents"].concat(e["contents"]);
+						updatedContents = updatedContents.concat(e["contents"]);
 					});
-					targetPlaylist["contents"] = curContents;
+					console.log("result:");
+					console.log($scope.playlistData);
+					// targetPlaylist["contents"] = curContents;
 					//write to DB
-					$http.post("/editPlaylist", {"_id": targetPlaylist["_id"], "contents": curContents}).then(function(resp) {
-						console.log("playlist merge successful");
+					// $http.post("/editPlaylist", {"_id": targetPlaylist["_id"], "contents": curContents}).then(function(resp) {
+					// $http.post("/editPlaylist", {"_id": $scope.playlistData[targetIndex]["_id"], "contents": $scope.playlistData[targetIndex]["contents"]}).then(function(resp) {
+					// 	console.log("playlist merge successful");
+					// 	// targetPlaylist = resp["data"];
+					// 	$scope.playlistData[targetIndex] = resp["data"];
+					// 	updatePlaylistSortable($scope.playlistData[targetIndex]["_id"]);
+					// }, function(err) {
+					// 	console.log(err);
+					// });
+					$http.post("/editPlaylist", {"_id": targetID, "contents": updatedContents}).then(function(resp) {
+						//find the new index
+						var newIndex = $scope.playlistData.findIndex(function(p) { return p["_id"] == targetID; });
+						console.log(newIndex);
+						console.log($scope.playlistIndices);
+						$scope.playlistData[newIndex] = resp["data"];
+						updatePlaylistSortable(targetID);
 					}, function(err) {
 						console.log(err);
 					});
 				}
 				else if (ui["draggable"][0].className.split(/\s+/).includes("songItem")) {	//add songs to target
+					updatingPlaylist = true;
 					console.log("adding songs");
+					console.log(targetIndex);
 					console.log(ui["draggable"]["sortableMultiSelect"]["selectedModels"]);
-					console.log($scope.playlistData[$(".playlistItem:not(.ui-sortable-placeholder)").index(this)]);
+					// console.log($scope.playlistData[$(".playlistItem:not(.ui-sortable-placeholder)").index(this)]);
 					//perform merge
-					var targetPlaylist = $scope.playlistData[$(".playlistItem:not(.ui-sortable-placeholder)").index(this)];
+					// var targetPlaylist = $scope.playlistData[$(".playlistItem:not(.ui-sortable-placeholder)").index(this)];
 					// var songsToAdd = [];
 					$.each(ui["draggable"]["sortableMultiSelect"]["selectedModels"], function(i, e) {
-						targetPlaylist["contents"].push(e["_id"]);
+						// targetPlaylist["contents"].push(e["_id"]);
+						// $scope.playlistData[targetIndex]["contents"].push(e["_id"]);
+						updatedContents.push(e["_id"]);
 					});
-					$scope.$apply();
+					// $scope.$apply();
 					//write to DB
-					$http.post("/editPlaylist", {"_id": targetPlaylist["_id"], "contents": targetPlaylist["contents"]}).then(function(resp) {
-						console.log("song merge successful");
+					// $http.post("/editPlaylist", {"_id": targetPlaylist["_id"], "contents": targetPlaylist["contents"]}).then(function(resp) {
+					// $http.post("/editPlaylist", {"_id": $scope.playlistData[targetIndex]["_id"], "contents": $scope.playlistData[targetIndex]["contents"]}).then(function(resp) {
+					// 	console.log("song merge successful");
+					// 	$scope.playlistData[targetIndex] = resp["data"];
+					// 	updatePlaylistSortable($scope.playlistData[targetIndex]["_id"]);
+					// }, function(err) {
+					// 	console.log(err);
+					// });
+					//cancel the sorting event
+					console.log(ui);
+					// ui.item.sortable.cancel();
+					// event.preventDefault();
+					$http.post("/editPlaylist", {"_id": targetID, "contents": updatedContents}).then(function(resp) {
+						//find the new index
+						var newIndex = $scope.playlistData.findIndex(function(p) { return p["_id"] == targetID; });
+						$scope.playlistData[newIndex] = resp["data"];
+						updatePlaylistSortable(targetID);
+						updatingPlaylist = false;
 					}, function(err) {
 						console.log(err);
+						updatingPlaylist = false;
 					});
 				}
 			},
 			over: function(event, ui) {
-				console.log("over");
 				$(this).addClass("over");
 			},
 			out: function(event, ui) {
@@ -282,7 +405,9 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 			console.log('editing');
 			console.log($scope.playlistData[$scope.playlistIndices])
 			$http.post("/editPlaylist", {"_id": $scope.playlistData[$scope.playlistIndices]["_id"], "name": $scope.newPlaylistName}).then(function(resp) {
-				$scope.getPlaylistData(undefined, undefined, undefined, selectFirst=true);
+				// $scope.getPlaylistData(undefined, undefined, undefined, selectFirst=true);
+				$scope.playlistData[$scope.playlistIndices] = resp["data"];
+				updatePlaylistSortable();
 			}, function(error) {
 				console.log("failed to update playlist data");
 				console.log(error);
@@ -292,7 +417,10 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 			console.log("adding");
 			$http.post("/addPlaylist", {"name": $scope.newPlaylistName, "contents": []}).then(function(resp) {
 				console.log("added playlist data, getting new");
-				$scope.getPlaylistData(undefined, undefined, undefined, selectFirst=true);
+				console.log(resp);
+				// $scope.getPlaylistData(undefined, undefined, undefined, selectFirst=true);
+				$scope.playlistData.push(resp["data"]);
+				updatePlaylistSortable(resp["data"]["_id"]);
 			}, function(error) {
 				console.log("failed to add playlist");
 			});
@@ -324,6 +452,13 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	}
 
 	//SONG BUTTONS##################################################################################################################################
+	function getSongIDList() {
+		var idList = [];
+		for (var i = 0; i < $scope.songData.length; i++) {
+			idList.push($scope.songData[i]["_id"]);
+		}
+		return idList;
+	}
 	//add a song
 	$scope.addSongs = function() {
 		console.log("adding song");
@@ -333,18 +468,49 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 
 	$scope.submitSongs = function() {
 		console.log(songDatashare);
-		//TODO: add songs and update db
+		//add selected songs
+		if (songDatashare.tab == "#existingSongSearch") {
+			for (const i of songDatashare.songIndices) {
+				$scope.songData.push(songDatashare.songData[i]);
+			}
+			$http.post("/editPlaylist", {"_id": $scope.playlistData[$scope.playlistIndices]["_id"], "contents": getSongIDList()}).then(function(resp) {
+				console.log("adding songs to playlist ok");
+				$scope.playlistData[$scope.playlistIndices] = resp["data"];
+				updatePlaylistSortable();
+			}, function(err) {
+				console.log(err);
+			});
+		}
+		//add a new song
+		else if (songDatashare.tab == "#addNewSong") {
+			songDatashare.addSong(function(insertedData) {
+				//now append to local song data and push to DB
+				// var localSongCopy = angular.copy(insertedData);
+				// songDatashare.songData.push(localSongCopy);
+				// localSongCopy["_id"] = insertedId;
+				$scope.songData.push(insertedData);
+				$http.post("/editPlaylist", {"_id": $scope.playlistData[$scope.playlistIndices]["_id"], "contents": getSongIDList()}).then(function(resp) {
+					console.log("adding new song to playlist ok");
+					$scope.playlistData[$scope.playlistIndices] = resp["data"];
+					updatePlaylistSortable();
+				}, function(err) {
+					console.log(err);
+				});
+			});
+		}
+		$scope.closeAddSongsModal();
 	}
 
 	$scope.closeAddSongsModal = function() {
+		songDatashare.clearSelected();
 		$("#addMusicListModal").hide();
 	}
 
 	$scope.editSong = function() {
 		//load the edit song file
-		songDatashare.loadEditTemplate("#playlistEditTemplate", $scope);
+		songDatashare.loadEditTemplate("#playlistEditTemplate", $scope, $scope.songData[$scope.songIndices]);
 		//share the data
-		songDatashare.setEditData($scope.songData[$scope.songIndices]);
+		// songDatashare.setEditData($scope.songData[$scope.songIndices]);
 		//display modal
 		$("#editMusicModal").css("display", "flex");
 	}
@@ -357,10 +523,11 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 			return;
 		}
 		//data is now coerced and ready to push
-		//update local
-		$scope.songData[$scope.songIndices] = angular.copy(songDatashare.editData);
+		//update DB
 		$http.post("/editMusic", songDatashare.editData).then(function(resp) {
 			console.log("edit song ok");
+			//update local
+			$scope.songData[$scope.songIndices] = resp["data"];
 		}, function(err) {
 			console.log(err);
 		});
@@ -379,15 +546,19 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		for (var i = $scope.songIndices.length - 1; i >= 0; i--) {
 			$scope.songData.splice($scope.songIndices[i], 1);
 		}
-		$scope.songIndices = [];	//clear selection
-		var idList = [];
-		for (var i = 0; i < $scope.songData.length; i++) {
-			idList.push($scope.songData[i]["_id"]);
-		}
-		$scope.playlistData[$scope.playlistIndices]["contents"] = idList;
+		// $scope.songIndices = [];	//clear selection
+		clearSongSelected();
+		// var idList = [];
+		// for (var i = 0; i < $scope.songData.length; i++) {
+		// 	idList.push($scope.songData[i]["_id"]);
+		// }
+		var idList = getSongIDList();
+		// $scope.playlistData[$scope.playlistIndices]["contents"] = idList;
 		//update DB
 		$http.post("/editPlaylist", {"_id": $scope.playlistData[$scope.playlistIndices]["_id"], "contents": idList}).then(function(resp) {
 			console.log("removal of songs from playlist ok");
+			$scope.playlistData[$scope.playlistIndices] = resp["data"];
+			updatePlaylistSortable();
 		}, function(err) {
 			console.log(err);
 		});

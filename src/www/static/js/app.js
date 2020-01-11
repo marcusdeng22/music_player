@@ -61,59 +61,121 @@ app.factory("sortingFuncs", ["orderByFilter", function(orderBy) {
 	return sortingFuncs;
 }]);
 
-app.factory("songDatashare", ["$timeout", "$compile", function($timeout, $compile) {
+app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", function($compile, $timeout, $http, sortingFuncs) {
 	var data = {};
 	//tab info
 	data.tab = "#existingSongSearch";	//#existingSongSearch or #addNewSong	//TODO: reset on template load
 	data.listTemplateId = "";
 	data.loadListTemplate = function(targetId, $scope) {
-		if (data.listTemplateId != ""){
+		// if (data.listTemplateId != "" || data.listTemplateId != targetId){
+		if (data.listTemplateId != "") {
 			$(data.listTemplateId).empty();
 		}
-		//load template
-		data.listTemplateId = targetId;
-		$(targetId).load("/shared/list_edit_song.html");
-		data.tab = "#existingSongSearch";
-		$timeout(function() {
-			$compile(angular.element(document.querySelector(targetId)).contents())($scope);
-			if (targetId == "#songEditDiv") {
-				//load the edit template
-				console.log("loading edit template");
-				data.loadEditTemplate("#addNewSong", $scope);
-			}
-		}, 1000);
+		// if (data.listTemplateId != targetId) {		//or should it always recompile?
+			//load template
+			data.listTemplateId = targetId;
+			$(targetId).load("/shared/list_edit_song.html", function() {
+				$compile($(targetId).contents())($scope);
+				// if (targetId == "#songEditDiv") {
+					//load the edit template
+					console.log("loading edit template");
+					data.loadEditTemplate("#addNewSong", $scope);
+				// }
+			});
+		// }
+		//$templateRequest does not work for some reason; fails to bind properly
 	};
 	//song data below
 	data.songData = [];
 	data.songIndices = [];
+	data.orderVar = "date";
+	data.reverse = true;
+	data.sortBy = function(propertyName, preserveOrder=false) {
+		var res = sortingFuncs.sortBy(data.songData, data.reverse, data.orderVar, propertyName, preserveOrder);
+		data.reverse = res["reverse"];
+		data.orderVar = res["orderVar"];
+		data.songData = res["data"];
+	};
+	data.sortGlyph = function(type) {
+		return sortingFuncs.sortGlyph(data.reverse, data.orderVar, type);
+	};
+	// data.songSortable = uiSortableMultiSelectionMethods.extendOptions({
+	// 	refreshPositions: true
+	// });
+	data.clearSelected = function() {
+		console.log("datashare clearing");
+		$("#editSongSelect > .ui-sortable-selected").removeClass("ui-sortable-selected");
+		data.songIndices = [];
+	};
 	//edit data below
 	data.editTemplateId = "";
 	data.editData = {};	//store the song info here
 	data.playem = undefined;	//store the preview player info here
-	data.loadEditTemplate = function(targetId, $scope) {
-		console.log("loading edit template");
-		//unload playem
-		data.stopPlayem();
+	data.loadEditTemplate = function(targetId, $scope, toAdd=null) {
+		// if (data.editTemplateId != "" || data.editTemplateId != targetId) {
 		if (data.editTemplateId != "") {
-			//unload template
 			$(data.editTemplateId).empty();
 		}
-		//load template
-		data.editTemplateId = targetId;
-		$(targetId).load("/shared/editSong.html");
-		//clear old data
-		data.editData = {};
-		$timeout(function() {
-			//build playem object
-			console.log("adding playem");
-			data.playem = new Playem();
-			var config = {
-				playerContainer: document.getElementById("previewDisplay")
-			};
-			data.playem.addPlayer(YoutubePlayer, config);	//ADD MORE PLAYERS HERE
-			console.log("compiling edit template");
-			$compile(angular.element(document.querySelector(targetId)).contents())($scope);
-		}, 1000);
+		// if (data.editTemplateId != targetId) {
+			console.log("loading edit template");
+			data.editTemplateId = targetId;
+			//unload playem
+			data.stopPlayem();
+			//set new data
+			// var templateSong = {"url": "", "type": "youtube", "name": "", "artist": []};
+			if (toAdd != null) {
+				data.setEditData(toAdd);
+			}
+			else {
+				// data.setEditData(templateSong);
+				data.resetEdit();
+			}
+			//load and compile
+			$(targetId).load("/shared/editSong.html", function() {
+				//load playem
+				data.playem = new Playem();
+				var config = {
+					playerContainer: document.getElementById("previewDisplay")
+				};
+				data.playem.addPlayer(YoutubePlayer, config);	//ADD MORE PLAYERS HERE
+				// data.playem = new Playem();
+				// data.playem.addPlayer(YoutubePlayer, {playerContainer: document.getElementById("previewDisplay")});
+				$timeout(function() {
+					$compile($(targetId).contents())($scope);
+				});
+			});
+		// }
+		// if (data.editTemplateId != targetId) {
+		// 	console.log("loading edit template");
+		// 	//unload playem
+		// 	data.stopPlayem();
+		// 	if (data.editTemplateId != "") {
+		// 		//unload template
+		// 		$(data.editTemplateId).empty();
+		// 	}
+		// 	//load template
+		// 	data.editTemplateId = targetId;
+		// 	console.log("loading");
+		// 	$(targetId).load("/shared/editSong.html");
+		// 	//clear old data
+		// 	// data.editData = {};
+		// 	//load the edit song template in the new song tab with a dict with default vals
+		// 	//keys: ["url", "type", "name", "artist"]
+		// 	console.log("setting new data");
+		// 	var templateSong = {"url": "", "type": "youtube", "name": "", "artist": []};
+		// 	data.setEditData(templateSong);
+		// 	$timeout(function() {
+		// 		//build playem object
+		// 		console.log("adding playem");
+		// 		data.playem = new Playem();
+		// 		var config = {
+		// 			playerContainer: document.getElementById("previewDisplay")
+		// 		};
+		// 		data.playem.addPlayer(YoutubePlayer, config);	//ADD MORE PLAYERS HERE
+		// 		console.log("compiling edit template");
+		// 		$compile(angular.element(document.querySelector(targetId)).contents())($scope);
+		// 	}, 1000);
+		// }
 	};
 	data.stopPlayem = function() {
 		$("#previewDisplay").empty();	//stops loading of video if stopping early
@@ -122,19 +184,22 @@ app.factory("songDatashare", ["$timeout", "$compile", function($timeout, $compil
 			data.playem.clearQueue();
 			delete data.playem;
 		}
-	}
+	};
+	data.resetEdit = function() {
+		data.editData = {"url": "", "type": "youtube", "name": "", "artist": []};
+	};
 	data.setEditData = function(dataToCopy) {
 		data.editData = angular.copy(dataToCopy);
-	}
+	};
 	data.checkSongFields = function() {	//check fields of editted data before pushing; returns true if a field is bad
-		console.log("checking edit song fields");
-		console.log(data.editData);
+		// console.log("checking edit song fields");
+		// console.log(data.editData);
 		var reqKeys = ["url", "type", "name", "artist"];
 		var mediaTypes = ["youtube"];
 		for (var i = 0; i < reqKeys.length; i ++) {
 			var key = reqKeys[i];
 			if (data.editData[key] == undefined || data.editData[key] == "") {
-				console.log(key + " is bad");
+				// console.log(key + " is bad");
 				return true;
 			}
 			if (key == "type") {
@@ -199,6 +264,29 @@ app.factory("songDatashare", ["$timeout", "$compile", function($timeout, $compil
 		}
 		console.log("edit data ok");
 		return false;
+	};
+	data.addSong = function(toCall) {
+		if (data.checkSongFields()) {
+			return;
+		}
+		$http.post("/addMusic", data.editData).then(function(resp) {
+			console.log("add music ok");
+			console.log(resp);
+			data.songData.push(resp["data"]);
+			data.sortBy(data.orderVar, true);
+
+			if (toCall != null) {
+				toCall(resp["data"]);
+			}
+			data.resetEdit();
+		}, function(err) {
+			console.log(err);
+		});
+	};
+	data.editSong = function(toCall) {
+		if (data.checkSongFields()) {
+			return;
+		}
 	}
 	return data;
 }]);

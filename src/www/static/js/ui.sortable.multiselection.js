@@ -256,8 +256,6 @@ angular.module('ui.sortable.multiselection', [])
         },
         stop: function (e, ui) {
           var sourceElement = ui.item.sortableMultiSelect.sourceElement || ui.item.parent();
-          //ME: trigger selected event on parent
-          ui.item.parent().trigger("ui-sortable-selectionschanged");  //ME
           if (!ui.item.sortable.received &&
              // ('dropindex' in ui.item.sortable) &&
              !ui.item.sortable.isCanceled()) {  //ME: this is to control normal stop
@@ -272,7 +270,12 @@ angular.module('ui.sortable.multiselection', [])
 
             var draggedElementIndexes = ui.item.sortableMultiSelect.indexes;
             if (!draggedElementIndexes.length) {
-              // ui.item.removeClass('' + selectedItemClass); //ME: this is for clearing the select when dragging only one
+              if (typeof newPosition != "undefined") {  //ME: newPosition is only defined if dragging to a new index
+                ui.item.removeClass('' + selectedItemClass); //ME: this is for clearing the select when dragging only one - this is the old position
+                ui.item.parent().children().eq(newPosition).addClass(selectedItemClass);  //ME: this is to update the display for the new position of the element
+              }
+              //ME: trigger selected event on parent
+              ui.item.parent().trigger("ui-sortable-selectionschanged");  //ME
               return;
             }
 
@@ -292,19 +295,33 @@ angular.module('ui.sortable.multiselection', [])
             // so that the indexes will not break
             var models = extractGroupedModelsFromIndexes(ngModel, indexes.above, indexes.below);
 
+            var newIndex = ngModel.indexOf(draggedModel);
             // add the models to the list
             Array.prototype.splice.apply(
               ngModel,
-              [ngModel.indexOf(draggedModel) + 1, 0]
+              [newIndex + 1, 0]
               .concat(models.below));
 
             Array.prototype.splice.apply(
               ngModel,
-              [ngModel.indexOf(draggedModel), 0]
+              [newIndex, 0]
               .concat(models.above));
 
-            // ui.item.parent().find('> .' + selectedItemClass).removeClass('' + selectedItemClass).show(); //ORIG
-            ui.item.parent().find('> .' + selectedItemClass).show();  //ME
+            ui.item.parent().find('> .' + selectedItemClass).removeClass('' + selectedItemClass).show(); //ORIG - restores the display of the dragged items
+            // console.log("STOP MULTI SELECT");
+            // console.log(newPosition); //this is index where the items are dropped to
+            // console.log(newIndex);
+            // console.log(newIndex - indexes.above.length);
+            // console.log(newIndex + indexes.below.length);
+            // console.log(indexes); //i think this is the offset above/below the first selection of the selected items
+            // console.log(draggedElementIndexes);
+            ui.item.parent().children().filter(function(i) {  //ME: this is to update the display for the new positions of the selected elements
+              // console.log(i);
+              return i >= newIndex - indexes.above.length && i <= newIndex + indexes.below.length;
+            }).addClass(selectedItemClass);
+            //ME: trigger selected event on parent
+            ui.item.parent().trigger("ui-sortable-selectionschanged");  //ME
+            // ui.item.parent().find('> .' + selectedItemClass).show();  //ME: don't use this; is based on the original indices
           } else if (ui.item.sortable.isCanceled()) {
             sourceElement.find('> .' + selectedItemClass).show();
           }

@@ -1,7 +1,7 @@
 <div id="editSongDiv" ng-controller="editSongCtrl as $ctrl" style="height: 100%; width: 100%">
 	<p>temp edit text</p>
 	<table class="table ng-cloak" style="width: 100%; display: table; margin-bottom: 5px;">
-		<tr ng-repeat = "(key, val) in songDatashare.editData" ng-if="key!='_id' && key!='order'">
+		<tr ng-repeat = "(key, val) in songDatashare.editData track by $index" ng-if="key!='_id' && key!='order'">
 			<td>{{key}}</td>
 			<td ng-if="key!='url'">
 				<input type="text" ng-model="songDatashare.editData[key]" ng-model-options='{debounce: 500}' style="width: 100%;">

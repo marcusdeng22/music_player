@@ -1,30 +1,47 @@
 app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatcher', 'uiSortableMultiSelectionMethods', 'sortingFuncs', 'songDatashare',
 		function($scope, $http, $location, $timeout, dispatcher, uiSortableMultiSelectionMethods, sortingFuncs, songDatashare) {
 	//data model
-	$scope.songs = songDatashare;
+	$scope.songDatashare = songDatashare;
 
 	//order vars
 	$scope.orderVar = "date";
 	$scope.reverse = true;
 	//sorting funcs
+	// $scope.sortBy = function(propertyName, preserveOrder=false) {
+	// 	var res = sortingFuncs.sortBy($scope.songs.songData, $scope.reverse, $scope.orderVar, propertyName, preserveOrder);
+	// 	$scope.reverse = res["reverse"];
+	// 	$scope.orderVar = res["orderVar"];
+	// 	$scope.songs.songData = res["data"];
+	// }
 	$scope.sortBy = function(propertyName, preserveOrder=false) {
-		var res = sortingFuncs.sortBy($scope.songs.songData, $scope.reverse, $scope.orderVar, propertyName, preserveOrder);
-		$scope.reverse = res["reverse"];
-		$scope.orderVar = res["orderVar"];
-		$scope.songs.songData = res["data"];
-	}
+		songDatashare.sortBy(propertyName, preserveOrder);
+	};
 
+	// $scope.sortGlyph = function(type) {
+	// 	return sortingFuncs.sortGlyph($scope.reverse, $scope.orderVar, type);
+	// }
 	$scope.sortGlyph = function(type) {
-		return sortingFuncs.sortGlyph($scope.reverse, $scope.orderVar, type);
+		return songDatashare.sortGlyph(type);
 	}
 
 	$scope.sortableSongs = uiSortableMultiSelectionMethods.extendOptions({
-		refreshPositions: true
+		refreshPositions: true,
+		// items: "> :not(.item)"
+		update: function(e, ui) {
+			ui.item.sortable.cancel();
+		}
 	});
+	// $scope.sortableSongs = songDatashare.songSortable;
+
+	// console.log("sortablesongs:");
+	// console.log($scope.sortableSongs);
 
 	$("#editSongSelect").on('ui-sortable-selectionschanged', function (e, args) {
 		console.log("song select changed");
-		$scope.songs.songIndices = $(this).find('.ui-sortable-selected').map(function(i, element){
+		console.log(e);
+		console.log(args);
+		$scope.songDatashare.songIndices = $(this).find('.ui-sortable-selected').map(function(i, element){
+		// songDatashare.songIndices = $(this).find('.ui-sortable-selected').map(function(i, element){
 			return $(this).index();
 		}).toArray();
 		$scope.$apply();
@@ -33,8 +50,8 @@ app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$timeout', 
 	$scope.getSongData = function(query={}, sortVar="date", sortRev=true) {
 		$http.post("/findMusic", query).then(function(resp) {
 			console.log("edit music query success");
-			$scope.songs.songData = resp.data;
-			console.log("songs returned: ", $scope.songs.songData);
+			$scope.songDatashare.songData = resp.data;
+			console.log("songs returned: ", $scope.songDatashare.songData);
 			//sort data
 			$scope.sortBy(sortVar, sortRev);
 		}, function(error) {
@@ -46,7 +63,7 @@ app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$timeout', 
 
 	$scope.songNameSearch = "";
 	$scope.advSearch = function() {
-		$scope.songs.songIndices = [];
+		$scope.songDatashare.songIndices = [];
 		// create query
 		// available keys: "name", "start_date", "end_date", "artist_names" "_id"
 		var query = {};
@@ -74,12 +91,12 @@ app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$timeout', 
 	}
 
 	$(function() {
-		//TODO: load the edit song template in the new song tab with a dict with default vals
 		//handle subtab click
 		$("#listEditSongDiv .nav-link").on("click", function(e) {
 			console.log("subtab clicked");
 			console.log($(this)[0]);
 			songDatashare.tab = $(this)[0]["dataset"]["target"];
+			$scope.$apply();
 			console.log(songDatashare);
 			e.preventDefault();
 			$(".tab-pane").removeClass("show active");

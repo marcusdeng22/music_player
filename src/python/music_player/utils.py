@@ -11,6 +11,7 @@ import operator
 
 from bson.objectid import ObjectId
 from bson.regex import Regex
+from pymongo.cursor import Cursor
 
 supportedTypes = ["youtube", "mp3"]
 
@@ -103,7 +104,7 @@ def createMusic(data):
 	# string fields
 	for key in ("url", "name"):
 		myMusic[key] = checkValidData(key, data, str)
-	if data["type"] in supportTypes:
+	if data["type"] in supportedTypes:
 		myMusic["type"] = checkValidData("type", data, str)
 	else:
 		raise cherrypy.HTTPError(400, "Bad file type")
@@ -235,16 +236,38 @@ def makePlaylistQuery(data, playlistDB, musicDB):
 	return cleanRet(ret)
 
 def cleanRet(dataList):
-	ret = list()
-	for data in dataList:
-		if "_id" in data:
-			data["_id"] = str(data["_id"])
-		if "date" in data:
-			data["date"] = data["date"].isoformat()[:19]    # gets only up to seconds; add "Z" for UTC?
-			data["dateStr"] = data["date"][:10]
-		if "contents" in data:
-			data["contents"] = [str(c) for c in data["contents"]]
-		ret.append(data)
-	print("returning:", ret)
-	return ret
-
+	print("cleaning called")
+	print(dataList)
+	if (isinstance(dataList, list) or isinstance(dataList, Cursor)):
+		print("cleaning list")
+		ret = list()
+		for data in dataList:
+			if "_id" in data:
+				data["_id"] = str(data["_id"])
+			if "date" in data:
+				data["date"] = data["date"].isoformat()[:19]    # gets only up to seconds; add "Z" for UTC?
+				data["dateStr"] = data["date"][:10]
+			if "contents" in data:
+				data["contents"] = [str(c) for c in data["contents"]]
+			ret.append(data)
+		print("returning:", ret)
+		return ret
+	elif (isinstance(dataList, dict)):
+		print("cleaning dict")
+		ret = {}
+		for key in dataList:
+			if key == "_id":
+				ret["_id"] = str(dataList["_id"])
+			elif key == "date":
+				ret["date"] = dataList["date"].isoformat()[:19]    # gets only up to seconds; add "Z" for UTC?
+				ret["dateStr"] = ret["date"][:10]
+			elif key == "contents":
+				ret["contents"] = [str(c) for c in dataList["contents"]]
+			else:
+				ret[key] = dataList[key]
+		print("returing:", ret)
+		return ret
+	else:
+		print("unknown clean")
+		print(dataList)
+		raise cherrypy.HTTPError(400, "could not clean return value")

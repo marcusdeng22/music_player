@@ -41,7 +41,7 @@
 			</div>
 			<div class="joinCollapseContainer sortableDataContainer playlistCollapse collapse show">
 				<div ui-sortable="sortablePlaylist" ng-model="playlistData" id="playlistSelect" class="list" style="width: 100%; min-height: 100%;">
-					<div ui-sortable-selectable ng-repeat="item in playlistData" class="item playlistItem">
+					<div ui-sortable-selectable ng-repeat="item in playlistData track by $index" class="item playlistItem">
 						<div style="width: 100%; display: table; table-layout: fixed;">
 							<div style="width: 100%; display: table-row;">
 								<div style="width: calc(100% - 80px); display: table-cell; overflow: hidden;">{{item.name}}</div>
@@ -62,7 +62,7 @@
 			<!--- TODO: add a search filter here; disable ordering when searching?-->
 			<div id="songContainer" class="sortableDataContainer" style="height: calc(100% - 33px);">
 				<div ui-sortable="sortableSongs" ng-model="songData" id="songSelect" class="list" style="width: 100%; min-height: 100%;">
-					<div ui-sortable-selectable ng-repeat="song in songData" class="item songItem">
+					<div ui-sortable-selectable ng-repeat="song in songData track by $index" class="item songItem">
 						{{song.name}}
 					</div>
 				</div>
@@ -90,7 +90,7 @@
 				<!-- put file here -->
 			</div>
 			<div>
-				<button type="button" class="col-md-3 btn btn-success" ng-click="submitSongs()" ng-disabled="songDatashare.songIndices.length == 0">Add</button>
+				<button type="button" class="col-md-3 btn btn-success" ng-click="submitSongs()" ng-disabled="(songDatashare.tab=='#existingSongSearch' && songDatashare.songIndices.length == 0) || (songDatashare.tab=='#addNewSong' && songDatashare.checkSongFields())">{{songDatashare.tab=="#existingSongSearch" ? "Add Selected" : "Add Song"}}</button>
 				<button type="button" class="col-md-3 btn btn-danger" ng-click="closeAddSongsModal()">Cancel</button>
 			</div>
 		</div>
