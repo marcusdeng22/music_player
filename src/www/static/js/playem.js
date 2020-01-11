@@ -422,6 +422,9 @@ function Playem (playemPrefs) {
         players.push(player)
         return player
       },
+      clearPlayers: function() {
+        players = [];
+      },
       getPlayers: function () {
         return players
       },

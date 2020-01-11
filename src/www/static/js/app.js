@@ -67,11 +67,11 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", f
 	data.tab = "#existingSongSearch";	//#existingSongSearch or #addNewSong	//TODO: reset on template load
 	data.listTemplateId = "";
 	data.loadListTemplate = function(targetId, $scope) {
-		// if (data.listTemplateId != "" || data.listTemplateId != targetId){
-		if (data.listTemplateId != "") {
+		if (data.listTemplateId != "" && data.listTemplateId != targetId){
+		// if (data.listTemplateId != "") {
 			$(data.listTemplateId).empty();
 		}
-		// if (data.listTemplateId != targetId) {		//or should it always recompile?
+		if (data.listTemplateId != targetId) {		//or should it always recompile?
 			//load template
 			data.listTemplateId = targetId;
 			$(targetId).load("/shared/list_edit_song.html", function() {
@@ -79,10 +79,10 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", f
 				// if (targetId == "#songEditDiv") {
 					//load the edit template
 					console.log("loading edit template");
-					data.loadEditTemplate("#addNewSong", $scope);
+					data.loadEditTemplate("#addNewSong", $scope, null, true);
 				// }
 			});
-		// }
+		}
 		//$templateRequest does not work for some reason; fails to bind properly
 	};
 	//song data below
@@ -110,13 +110,14 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", f
 	//edit data below
 	data.editTemplateId = "";
 	data.editData = {};	//store the song info here
-	data.playem = undefined;	//store the preview player info here
-	data.loadEditTemplate = function(targetId, $scope, toAdd=null) {
-		// if (data.editTemplateId != "" || data.editTemplateId != targetId) {
-		if (data.editTemplateId != "") {
+	// data.playem = null;	//store the preview player info here
+	data.playem = new Playem();
+	data.loadEditTemplate = function(targetId, $scope, toAdd=null, force=false) {
+		if ((data.editTemplateId != "" && data.editTemplateId != targetId) || force) {
+		// if (data.editTemplateId != "") {
 			$(data.editTemplateId).empty();
 		}
-		// if (data.editTemplateId != targetId) {
+		if (data.editTemplateId != targetId || force) {
 			console.log("loading edit template");
 			data.editTemplateId = targetId;
 			//unload playem
@@ -133,7 +134,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", f
 			//load and compile
 			$(targetId).load("/shared/editSong.html", function() {
 				//load playem
-				data.playem = new Playem();
+				// data.playem = new Playem();
 				var config = {
 					playerContainer: document.getElementById("previewDisplay")
 				};
@@ -144,7 +145,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", f
 					$compile($(targetId).contents())($scope);
 				});
 			});
-		// }
+		}
 		// if (data.editTemplateId != targetId) {
 		// 	console.log("loading edit template");
 		// 	//unload playem
@@ -179,10 +180,12 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", f
 	};
 	data.stopPlayem = function() {
 		$("#previewDisplay").empty();	//stops loading of video if stopping early
-		if (data.playem != undefined) {
+		if (data.playem != null) {
 			data.playem.stop();
 			data.playem.clearQueue();
-			delete data.playem;
+			data.playem.clearPlayers();
+			console.log(data.playem.getPlayers());
+			// delete data.playem;
 		}
 	};
 	data.resetEdit = function() {

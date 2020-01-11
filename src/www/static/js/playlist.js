@@ -527,7 +527,12 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		$http.post("/editMusic", songDatashare.editData).then(function(resp) {
 			console.log("edit song ok");
 			//update local
-			$scope.songData[$scope.songIndices] = resp["data"];
+			// $scope.songData[$scope.songIndices] = resp["data"];
+			for (var i = 0; i < $scope.songData.length; i ++) {
+				if ($scope.songData[i]["_id"] == resp["data"]["_id"]) {
+					$scope.songData[i] = resp["data"];
+				}
+			}
 		}, function(err) {
 			console.log(err);
 		});
