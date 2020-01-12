@@ -10,14 +10,10 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatc
 			//date now
 			"contents": []
 		};
-		// if ($scope.playlistIndices.length == 1) {
-		// 	passedList = $scope.playlistData[$scope.playlistIndices];
-		// }
-		// else {
-		// 	for (var curList in $scope.playlistIndices) {
-		// 			passedList["contents"].push($scope.playlistData[curList]["contents"]);
-		// 	}
-		// }
+		songDatashare.songIndices.sort((a, b) => a-b);
+		for (var i = 0; i < songDatashare.songIndices.length; i ++) {
+			passedList["contents"].push(songDatashare.songData[songDatashare.songIndices[i]]);
+		}
 		dispatcher.emit("startPlay", passedList);
 		$location.hash("play");
 	};
