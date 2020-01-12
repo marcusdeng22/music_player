@@ -42,7 +42,7 @@
 			<div class="joinCollapseContainer sortableDataContainer playlistCollapse collapse show">
 				<div ui-sortable="sortablePlaylist" ng-model="playlistData" id="playlistSelect" class="list" style="width: 100%; min-height: 100%;">
 					<div ui-sortable-selectable ng-repeat="item in playlistData track by $index" class="item playlistItem">
-						<div style="width: 100%; display: table; table-layout: fixed;">
+						<div ng-dblclick="triggerPlay()" style="width: 100%; display: table; table-layout: fixed;">
 							<div style="width: 100%; display: table-row;">
 								<div style="width: calc(100% - 80px); display: table-cell; overflow: hidden;">{{item.name}}</div>
 								<div style="width: 80px; display: table-cell;">{{item.dateStr}}</div>

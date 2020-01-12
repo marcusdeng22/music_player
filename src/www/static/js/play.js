@@ -1,75 +1,58 @@
-app.controller('sortableController', function ($scope, uiSortableMultiSelectionMethods) {
-	var tmpList = [];
-	
-	for (var i = 1; i <= 6; i++){
-		tmpList.push({
-			text: 'Item ' + i,
-			value: i
-		});
-	}
-	
-	$scope.list = tmpList;
-	
-	$scope.sortingLog = [];
-	
-	$scope.sortableOptions = uiSortableMultiSelectionMethods.extendOptions({
+app.controller('playCtrl', ["$scope", "$timeout", "uiSortableMultiSelectionMethods", "dispatcher",
+		function ($scope, $timeout, uiSortableMultiSelectionMethods, dispatcher) {
+	$scope.playlistData = {};
+	$scope.songIndices = [];
+	$scope.playem = new Playem();
+	$scope.playem.addPlayer(YoutubePlayer, {playerContainer: document.getElementById("mainPlayer")});
+	dispatcher.on("startPlay", function(data) {
+		console.log("starting to play");
+		console.log(data);
+		$scope.playlistData = data;
+		for (var i = 0; i < data["contents"].length; i ++) {
+			$scope.playlistData["contents"][i]["artistStr"] = data["contents"][i]["artist"].join(", ");
+		}
+		selectIndex(0);
+	});
+
+	$scope.sortablePlayingList = uiSortableMultiSelectionMethods.extendOptions({
+		refreshPositions: true,
 		stop: function(e, ui) {
-			console.log("custom stop");
-			// this callback has the changed model
-			var logEntry = tmpList.map(function(i){
-				return i.value;
-			}).join(', ');
-			$scope.sortingLog.push('Stop: ' + logEntry);
+			//update playem queue here
 		}
 	});
-	
-	// bonus: listen for sortable item selections
-	// angular.element('[ui-sortable]').on('ui-sortable-selectionschanged', function (e, args) {
-	$('#testList').on('ui-sortable-selectionschanged', function (e, args) {
-		console.log("selection changed from test");
-		var $this = $(this);	//$(this) refers to the div containing each item
-		console.log($this);
-		console.log($this.find('.ui-sortable-selected'));
-		var selectedItemIndexes = $this.find('.ui-sortable-selected')//, .' + $this[0]["id"])
-		.map(function(i, element){
-			return $(this).index();
-		})
-		.toArray();
-		console.log(selectedItemIndexes);
-		
-		//this gets the actual objects stored in elements
-		// var selectedItems = $.map(selectedItemIndexes, function(i) {
-		//   return $scope.list[i]
-		// });
-		// console.log(selectedItems);
+
+	$("#playingSelect").on('ui-sortable-selectionschanged', function (e, args) {
+		$scope.songIndices = $(this).find('.ui-sortable-selected').map(function(i, element){
+		  return $(this).index();
+		}).toArray();
+		$scope.$apply();
 	});
 
-	$scope.getSelected = function() {
-		console.log('clicked');
-		// console.log($scope.list);
-		console.log($(this));
-		console.log($(this).parent());
-		console.log($(this).parent().find('.ui-sortable-selected').map(function(i, ele){return $(this).index();}).toArray());
+	$scope.startPlay = function() {
+		//play
+		$scope.playem.stop();
+		$scope.playem.clearQueue();
+		console.log("playing now!");
 	}
 
-	$(function() {
-		$(".testItem").droppable({
-			tolerance: "pointer",
-			drop: function(event, ui) {
-				console.log("dropped from play.js");
-				console.log($(this));
-				console.log(event);
-				//use the selectedItems to see what is being dragged, then use event.target.id to get the box that is being dropped on
-			}
-		});
-	});
+	// $(function() {
+	// 	$(".playItem").dblclick(function() {
+	// 		//play this
+	// 		console.log("playing " + $(this));
+	// 	}).click(function() {
+	// 		console.log("clicked ele");
+	// 	});
+	// });
 
-	// $scope.preserveSingle = function(origin, e) {
-	//   console.log(origin);
-	//   console.log(e);
-	//   if (!(e.originalEvent.ctrlKey || e.originalEvent.shiftKey) && !$("#" + origin).hasClass("ui-sortable-selected")) {
-	//     $("#" + origin).addClass("ui-sortable-selected");
-	//     console.log("selected already");
-	//   }
-	// }
-});
+	function selectIndex(index) {
+		$scope.songIndices = [index];
+		console.log($scope.songIndices);
+		// angular.element(document).ready(function() {
+		$timeout(function() {
+			console.log($(".playItem"));
+			//find and click
+			$(".playItem").eq($scope.songIndices).click();
+			$scope.startPlay();
+		});
+	};
+}]);

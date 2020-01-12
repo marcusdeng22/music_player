@@ -64,7 +64,7 @@ app.factory("sortingFuncs", ["orderByFilter", function(orderBy) {
 app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "dispatcher", function($compile, $timeout, $http, sortingFuncs, dispatcher) {
 	var data = {};
 	//tab info
-	data.tab = "#existingSongSearch";	//#existingSongSearch or #addNewSong	//TODO: reset on template load
+	data.tab = "#existingSongSearch";	//#existingSongSearch or #addNewSong
 	data.listTemplateId = "";
 	data.loadListTemplate = function(targetId, $scope) {
 		if (data.listTemplateId != "" && data.listTemplateId != targetId){
@@ -140,7 +140,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "
 				var config = {
 					playerContainer: document.getElementById("previewDisplay")
 				};
-				data.playem.addPlayer(YoutubePlayer, config);	//ADD MORE PLAYERS HERE
+				data.playem.addPlayer(YoutubePlayer, config);	//TODO: ADD MORE PLAYERS HERE
 				// data.playem = new Playem();
 				// data.playem.addPlayer(YoutubePlayer, {playerContainer: document.getElementById("previewDisplay")});
 				$timeout(function() {

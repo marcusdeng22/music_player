@@ -390,12 +390,19 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 			passedList = $scope.playlistData[$scope.playlistIndices];
 		}
 		else {
-			for (var curList in $scope.playlistIndices) {
-					passedList["contents"].push($scope.playlistData[curList]["contents"]);
+			$scope.playlistIndices.sort((a, b) => a-b);
+			for (var i = 0; i < $scope.playlistIndices.length; i ++) {
+				passedList["contents"] = passedList["contents"].concat($scope.playlistData[$scope.playlistIndices[i]]["contents"]);
 			}
 		}
-		dispatcher.emit("startPlay", passedList);
-		$location.hash("play");
+		//resolve the contents to the actual data
+		$http.post("/findMusicList", {"content": passedList["contents"]}).then(function(resp) {
+			passedList["contents"] = resp["data"];
+			dispatcher.emit("startPlay", passedList);
+			$location.hash("play");
+		}, function(err) {
+			console.log(err);
+		});
 	}
 
 	//add new or edit playlist
