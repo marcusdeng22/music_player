@@ -27,6 +27,18 @@
 	padding: 5px;
 }
 
+.playCol {
+	float: left;
+	width: 50%;
+	padding: 5px;
+}
+
+.playRow:after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
 .icon {
 	position: relative;
 	top: 0px;

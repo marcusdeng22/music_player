@@ -1,16 +1,19 @@
-<div id="playDiv" ng-controller="playCtrl as $ctrl" style="padding: 10px; width: 100%; height: 100%; display: table;">
-	<div style="display: table-row; height: 100%;">
-		<div id="playerDiv" class="playlistCol" style="width: 60%;">
-			<div style="width: 100%; height: auto; position: relative;">
-				<div id="mainPlayer" style="position: absolute; width: 100%;">
-			<!-- <div style="width: 100%;"> -->
-				<!-- <div id="mainPlayer" style="width: 100%;"> -->
+<!-- <div id="playDiv" ng-controller="playCtrl as $ctrl" style="padding: 10px; width: 100%; height: 100%; display: table;"> -->
+<div id="playDiv" ng-controller="playCtrl as $ctrl" style="padding: 10px; width: 100%; height: 100%;">
+	<!-- <div style="display: table-row; height: 100%;"> -->
+	<div class="playRow">
+		<!-- <div id="playerDiv" class="playlistCol" style="width: 60%;"> -->
+		<div id="playerDiv" class="playCol" style="width: calc(100% - 400px);">
+			<!-- <div style="width: 100%; height: auto; position: relative;"> -->
+				<!-- <div id="mainPlayer" style="position: absolute; width: 100%;"> -->
+			<div style="width: 100%;">
+				<div id="mainPlayer" style="width: 100%;">
 					Select a playlist first!
 					<!-- player here -->
 				</div>
 			</div>
-			<div id="playerCtrlDiv" style="position: relative; top: 26px;">
-			<!-- <div id="playerCtrlDiv"> -->
+			<!-- <div id="playerCtrlDiv" style="position: relative; top: 26px;"> -->
+			<div id="playerCtrlDiv" style="padding-top: 10px;">
 				<div id="playerCtrlBtns">
 					<button id="prevSong"><</button>
 					<button id="nextSong">></button>
@@ -20,7 +23,8 @@
 				</div>
 			</div>
 		</div>
-		<div id="playerContentsDiv" class="playlistCol" style="width: 40%; max-width: 400px;">
+		<!-- <div id="playerContentsDiv" class="playlistCol" style="width: 40%; max-width: 400px;"> -->
+		<div id="playerContentsDiv" class="playCol" style="width: 400px;">
 			<div>
 				<button>Shuffle</button>
 				<button>Repeat</button>

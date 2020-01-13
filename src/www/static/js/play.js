@@ -61,7 +61,8 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 	$scope.playem.on("onPlay", function(data) {
 		console.log("playing");
 		if (!controlDisplayed) {
-			setCtrlPosition();
+			// setPlayerSize();
+			// setCtrlPosition();
 			controlDisplayed = true;
 		}
 	});
@@ -91,8 +92,36 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 	};
 
 	$(window).resize(function() {
-		setCtrlPosition();
+		// setPlayerSize();
+		// setCtrlPosition();
 	});
+
+	function setPlayerSize() {
+		var curWidth = $("#mainPlayer").outerWidth();
+		var setHeight = 240;
+		if (curWidth >= 3840) {
+			setHeight = 2160;
+		}
+		else if (curWidth >= 2560) {
+			setHeight = 1440;
+		}
+		else if (curWidth >= 1920) {
+			setHeight = 1080;
+		}
+		else if (curWidth >= 1280) {
+			setHeight = 720;
+		}
+		else if (curWidth >= 854) {
+			setHeight = 480;
+		}
+		else if (curWidth >= 640) {
+			setHeight = 360;
+		}
+		else {
+			setHeight = 240;
+		}
+		$("#mainPlayer").height(setHeight);
+	}
 
 	function setCtrlPosition() {
 		console.log("setting ctrl position");
