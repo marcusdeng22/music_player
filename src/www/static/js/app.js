@@ -125,18 +125,15 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "
 			//unload playem
 			data.stopPlayem();
 			//set new data
-			// var templateSong = {"url": "", "type": "youtube", "name": "", "artist": []};
 			if (toAdd != null) {
 				data.setEditData(toAdd);
 			}
 			else {
-				// data.setEditData(templateSong);
 				data.resetEdit();
 			}
 			//load and compile
 			$(targetId).load("/shared/editSong.html", function() {
 				//load playem
-				// data.playem = new Playem();
 				var config = {
 					playerContainer: document.getElementById("previewDisplay")
 				};
@@ -148,37 +145,6 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "
 				});
 			});
 		}
-		// if (data.editTemplateId != targetId) {
-		// 	console.log("loading edit template");
-		// 	//unload playem
-		// 	data.stopPlayem();
-		// 	if (data.editTemplateId != "") {
-		// 		//unload template
-		// 		$(data.editTemplateId).empty();
-		// 	}
-		// 	//load template
-		// 	data.editTemplateId = targetId;
-		// 	console.log("loading");
-		// 	$(targetId).load("/shared/editSong.html");
-		// 	//clear old data
-		// 	// data.editData = {};
-		// 	//load the edit song template in the new song tab with a dict with default vals
-		// 	//keys: ["url", "type", "name", "artist"]
-		// 	console.log("setting new data");
-		// 	var templateSong = {"url": "", "type": "youtube", "name": "", "artist": []};
-		// 	data.setEditData(templateSong);
-		// 	$timeout(function() {
-		// 		//build playem object
-		// 		console.log("adding playem");
-		// 		data.playem = new Playem();
-		// 		var config = {
-		// 			playerContainer: document.getElementById("previewDisplay")
-		// 		};
-		// 		data.playem.addPlayer(YoutubePlayer, config);	//ADD MORE PLAYERS HERE
-		// 		console.log("compiling edit template");
-		// 		$compile(angular.element(document.querySelector(targetId)).contents())($scope);
-		// 	}, 1000);
-		// }
 	};
 	data.stopPlayem = function() {
 		$("#previewDisplay").empty();	//stops loading of video if stopping early

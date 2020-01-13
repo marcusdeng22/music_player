@@ -31,6 +31,8 @@ console.log(window.location);
     DEFAULT_PARAMS = {
       // width: '200',
       // height: '200',
+      width: "100%",
+      height: "100%",
       playerVars: {
         autoplay: 1,
         version: 3,
