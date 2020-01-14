@@ -2,9 +2,10 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 		function ($scope, $timeout, $location, uiSortableMultiSelectionMethods, dispatcher) {
 	$scope.playlistData = {};
 	$scope.songIndices = [];
+	$scope.focusMode = false;
+	$scope.nowPlaying = null;
 	var curIndex = 0;
 	var userSet = false;	//used to handle user selecting a song
-	var playingID;
 	$scope.playem = new Playem();
 	var config = {
 		playerContainer: document.getElementById("mainPlayer")
@@ -47,7 +48,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 			}
 			console.log($scope.playem.getQueue());
 			//select the current playing
-			curIndex = $scope.playlistData.contents.findIndex(function(song) { return song["_id"] == playingID; });
+			curIndex = $scope.playlistData.contents.findIndex(function(song) { return song["_id"] == $scope.nowPlaying["_id"]; });
 			$scope.selectIndex(curIndex, false);
 			userSet = false;
 			//set the current playing
@@ -68,7 +69,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 			// userSet = false;
 		}
 		$scope.selectIndex(curIndex, false);
-		playingID = $scope.playlistData.contents[data.index]["_id"];
+		$scope.nowPlaying = $scope.playlistData.contents[data.index];
 		userSet = false;
 		console.log(data);
 	});
@@ -107,5 +108,12 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 
 	$scope.$on("$locationChangeStart", function() {
 		$scope.playem.pause();
+	});
+
+	$(function() {
+		$("#focusSwitch").bootstrapToggle({
+			on: "Focus Mode",
+			off: "Watch Mode"
+		});
 	})
 }]);

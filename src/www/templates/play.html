@@ -2,15 +2,20 @@
 	<div class="playRow">
 		<div id="playerDiv" class="playCol" style="width: calc(100% - 400px);">
 			<div style="width: 100%;">
-				<div id="mainPlayer" style="width: 100%;">
+				<div id="mainPlayer" style="width: 100%;" ng-show="focusMode==false || nowPlaying == null">
 					Select a playlist first!
 					<!-- player here -->
 				</div>
 			</div>
 			<div id="playerCtrlDiv" style="padding-top: 10px;">
+				<div id="nowPlaying" ng-show="focusMode==true && nowPlaying" ng-model="nowPlaying">Now playing: {{nowPlaying.name}} - {{nowPlaying.artistStr}}</div>
 				<div id="playerCtrlBtns">
 					<button id="prevSong"><</button>
+					<button id="playPause" ng-show="focusMode==true">Play</button>
 					<button id="nextSong">></button>
+					<div style="float: right;">
+						<input type="checkbox" id="focusSwitch" ng-model="focusMode" data-toggle="toggle">
+					</div>
 				</div>
 				<div id="recommended">
 					<!-- TODO: add recommended list here? -->
