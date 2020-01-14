@@ -62,7 +62,8 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 		console.log(userSet);
 		//set the new index here if continuing (ie not user set)
 		if (!userSet) {
-			curIndex ++;
+			// curIndex ++;
+			curIndex = $scope.playem.getCurrentTrack().index;
 		}
 		$scope.selectIndex(curIndex, false);
 		$scope.nowPlaying = $scope.playlistData.contents[data.index];
