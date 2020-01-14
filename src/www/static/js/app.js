@@ -114,7 +114,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "
 	data.editData = {};	//store the song info here
 	// data.playem = null;	//store the preview player info here
 	data.playem = new Playem();
-	data.loadEditTemplate = function(targetId, $scope, toAdd=null, force=false) {
+	data.loadEditTemplate = function(targetId, $scope, toAdd=null, force=false, callback=null) {
 		if ((data.editTemplateId != "" && data.editTemplateId != targetId) || force) {
 		// if (data.editTemplateId != "") {
 			$(data.editTemplateId).empty();
@@ -142,8 +142,29 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "
 				// data.playem.addPlayer(YoutubePlayer, {playerContainer: document.getElementById("previewDisplay")});
 				$timeout(function() {
 					$compile($(targetId).contents())($scope);
+					if (callback != null) {
+						callback();
+					}
 				});
 			});
+		}
+		else {
+			data.stopPlayem();
+			var config = {
+				playerContainer: document.getElementById("previewDisplay")
+			};
+			data.playem.addPlayer(YoutubePlayer, config);
+			//set new data
+			if (toAdd != null) {
+				data.setEditData(toAdd);
+			}
+			else {
+				data.resetEdit();
+			}
+			if (callback != null) {
+				console.log("callback");
+				callback();
+			}
 		}
 	};
 	data.stopPlayem = function() {

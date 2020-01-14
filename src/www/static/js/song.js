@@ -20,7 +20,9 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatc
 
 	$scope.editSong = function() {
 		//load the edit song file
-		songDatashare.loadEditTemplate("#songEditTemplate", $scope, songDatashare.songData[songDatashare.songIndices], true);
+		songDatashare.loadEditTemplate("#songEditTemplate", $scope, songDatashare.songData[songDatashare.songIndices], undefined, function() {
+			dispatcher.emit("preview");
+		});
 		//display modal
 		$("#songEditModal").css("display", "flex");
 		// songDatashare.editSong(null, true);

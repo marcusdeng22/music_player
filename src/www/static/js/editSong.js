@@ -12,11 +12,13 @@ app.controller('editSongCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		songDatashare.playem.play();
 	}
 
-	//only auto preview if editing song
-	if (songDatashare.editTemplateId == "#playlistEditTemplate" || songDatashare.editTemplateId == "#songEditTemplate") {
-		console.log("auto previewing");
-		$scope.previewSong();
-	}
+	// //only auto preview if editing song
+	// if (songDatashare.editTemplateId == "#playlistEditTemplate" || songDatashare.editTemplateId == "#songEditTemplate") {
+	// 	console.log("auto previewing");
+	// 	$scope.previewSong();
+	// }
+
+	dispatcher.on("preview", $scope.previewSong);
 
 	//update song url preview on enter key
 	$(document).keyup(function(e) {

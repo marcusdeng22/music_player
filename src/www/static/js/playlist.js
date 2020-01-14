@@ -538,7 +538,9 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 
 	$scope.editSong = function() {
 		//load the edit song file
-		songDatashare.loadEditTemplate("#playlistEditTemplate", $scope, $scope.songData[$scope.songIndices]);
+		songDatashare.loadEditTemplate("#playlistEditTemplate", $scope, $scope.songData[$scope.songIndices], undefined, function() {
+			dispatcher.emit("preview");
+		});
 		//share the data
 		// songDatashare.setEditData($scope.songData[$scope.songIndices]);
 		//display modal
