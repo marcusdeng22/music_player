@@ -61,6 +61,26 @@
 	content: url("../images/arrow-down.svg");
 }
 
+.icon-next {
+	content: url("../images/next.svg");
+}
+
+.icon-prev {
+	content: url("../images/previous.svg");
+}
+
+.icon-play {
+	content: url("../images/play.svg");
+}
+
+.icon-pause {
+	content: url("../images/pause.svg");
+}
+
+.icon-shuffle {
+	content: url("../images/shuffle.svg");
+}
+
 .sortableDataContainer {
 	overflow: auto;
 	margin: 10px 0;

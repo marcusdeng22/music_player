@@ -10,9 +10,9 @@
 			<div id="playerCtrlDiv" style="padding-top: 10px;">
 				<div id="nowPlaying" ng-show="focusMode==true && nowPlaying" ng-model="nowPlaying">Now playing: {{nowPlaying.name}} - {{nowPlaying.artistStr}}</div>
 				<div id="playerCtrlBtns">
-					<button id="prevSong"><</button>
-					<button id="playPause" ng-show="focusMode==true">Play</button>
-					<button id="nextSong">></button>
+					<button id="prevSong" class="btn" ng-click="previousSong()"><img class="icon icon-prev" style="top: 0px;"></img></button>
+					<button id="playPause" ng-show="focusMode==true" class="btn" ng-click="playPause()"><img class="icon" ng-model="currentState" ng-class="(currentState==1) ? 'icon-pause' : 'icon-play'" style="top: 0px;"></img></button>
+					<button id="nextSong" class="btn" ng-click="nextSong()"><img class="icon icon-next" style="top: 0px;"></img></button>
 					<div style="float: right;">
 						<input type="checkbox" id="focusSwitch" ng-model="focusMode" data-toggle="toggle">
 					</div>
@@ -26,7 +26,7 @@
 		<div id="playerContentsDiv" class="playCol" style="width: 400px;">
 			<div>
 				<input type=text ng-model="playlistData.name">
-				<button style="float: right;">Shuffle</button>
+				<button style="float: right;" ng-click="toggleRepeat()">Shuffle</button>
 				<button style="float: right;">Repeat</button>
 				<!-- replace with icons ^ -->
 			</div>

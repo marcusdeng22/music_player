@@ -5,7 +5,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 	$scope.focusMode = false;
 	$scope.nowPlaying = null;
 	var curIndex = 0;
-	var userSet = false;	//used to handle user selecting a song
+	var userSet = false;	//used to handle user playing a song; true if action is from user or simulates user, false if normal progression of tracks
 	$scope.playem = new Playem();
 	var config = {
 		playerContainer: document.getElementById("mainPlayer")
@@ -40,17 +40,17 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 	$scope.sortablePlayingList = uiSortableMultiSelectionMethods.extendOptions({
 		refreshPositions: true,
 		stop: function(e, ui) {
-			//TODO: update playem queue here
-			$scope.playem.clearQueue(false);	//does not stop, but stops resuming (TODO: allow resuming)
+			//update playem queue here
+			$scope.playem.clearQueue();
 			console.log($scope.playlistData.contents);
 			for (var i = 0; i < $scope.playlistData.contents.length; i ++) {
 				$scope.playem.addTrackByUrl($scope.playlistData.contents[i]["url"]);
 			}
 			console.log($scope.playem.getQueue());
 			//select the current playing
-			curIndex = $scope.playlistData.contents.findIndex(function(song) { return song["_id"] == $scope.nowPlaying["_id"]; });
+			curIndex = $scope.playlistData.contents.findIndex(function(song) { return song["_id"] == $scope.nowPlaying["_id"]; });		//TODO: this picks the first index, which may not be correct
 			$scope.selectIndex(curIndex, false);
-			userSet = false;
+			// userSet = false;
 			//set the current playing
 			$scope.playem.setCurrentTrack(curIndex);
 		}
@@ -63,14 +63,10 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 		//set the new index here if continuing (ie not user set)
 		if (!userSet) {
 			curIndex ++;
-			// userSet = false;
-		}
-		else {
-			// userSet = false;
 		}
 		$scope.selectIndex(curIndex, false);
 		$scope.nowPlaying = $scope.playlistData.contents[data.index];
-		userSet = false;
+		// userSet = false;
 		console.log(data);
 	});
 
@@ -84,15 +80,12 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 	});
 
 	$scope.startPlay = function(index) {
-		//TODO: switch to track, and play
 		console.log("playing now!");
-		// selectIndex(index, false);
-		// $scope.playem.jumpToTrack(index);
 		$scope.playem.play(index);
 	};
 
 	$scope.selectIndex = function(index, play=true) {
-		userSet = true;
+		// userSet = true;
 		curIndex = index;
 		$scope.songIndices = [index];
 		console.log($scope.songIndices);
@@ -101,13 +94,19 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 			//find and click
 			$(".playItem").eq($scope.songIndices).click();
 			if (play) {
+				userSet = true;
 				$scope.startPlay(index);
+			}
+			else {
+				userSet = false;
 			}
 		});
 	};
 
 	$scope.$on("$locationChangeStart", function() {
-		$scope.playem.pause();
+		if ($scope.playem != null) {
+			$scope.playem.pause();
+		}
 	});
 
 	$(function() {
@@ -115,5 +114,56 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 			on: "Focus Mode",
 			off: "Watch Mode"
 		});
-	})
+	});
+
+	$scope.previousSong = function() {
+		if ($scope.playem != null) {
+			$scope.playem.prev();	//TODO: onTrackChange triggers + instead of -
+		}
+	};
+
+	$scope.nextSong = function() {
+		if ($scope.playem != null) {
+			$scope.playem.next();
+		}
+	};
+
+	$scope.currentState = 0;	//1 for play, 0 for pause
+	$scope.playPause = function() {
+		console.log("play pause btn pressed");
+		console.log($scope.currentState);
+		if ($scope.playem != null) {
+			if ($scope.currentState == 1) {
+				$scope.playem.pause();
+			}
+			else if ($scope.currentState == 0) {
+				$scope.playem.resume();
+			}
+		}
+		// $scope.currentState = ~$scope.currentState;	//handled by events below
+	};
+
+	$scope.playem.on("onPlay", function() {
+		console.log("playing!");
+		$scope.currentState = 1;
+		if (!$scope.$$phase) {
+			$scope.$apply();
+		}
+	});
+
+	$scope.playem.on("onPause", function() {
+		console.log("paused!");
+		$scope.currentState = 0;
+		if (!$scope.$$phase) {
+			$scope.$apply();
+		}
+	});
+
+	$scope.toggleRepeat = function() {
+		//TODO implement
+	};
+
+	$scope.toggleShuffle = function() {
+		//TODO implement
+	};
 }]);

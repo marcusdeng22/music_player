@@ -380,12 +380,12 @@ function Playem (playemPrefs) {
           that.emit('onTrackInfo', currentTrack)
         },
         onPaused: function (player) {
-          // console.log(player.label + ".onPaused");
+          console.log(player.label + ".onPaused");
           setPlayTimeout()
           if (progress) { clearInterval(progress) }
           progress = null
           // if (!avoidPauseEventPropagation)
-          //  that.emit("onPause");
+           that.emit("onPause");
           // avoidPauseEventPropagation = false;
         },
         onEnded: function (player) {
@@ -478,6 +478,9 @@ function Playem (playemPrefs) {
       searchTracks: searchTracks,
       setCurrentTrack: function(index) {
         currentTrack = trackList[index];
+      },
+      getCurrentTrack: function() {
+        return currentTrack;
       }
       // jumpToTrack: function(index) {
       //   if (index < trackList.length) {
