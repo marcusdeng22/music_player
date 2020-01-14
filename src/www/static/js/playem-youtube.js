@@ -43,7 +43,8 @@ console.log(window.location);
         wmode: "opaque",
         iv_load_policy: 3,
         allowscriptaccess: "always",
-        origin: window.location
+        origin: window.location,
+        rel: 0
       }
     };
 

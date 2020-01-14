@@ -435,6 +435,12 @@ function Playem (playemPrefs) {
         trackList = [];
         currentTrack = null;
       },
+      // clearQueue: function (clearCurrent=true) {
+      //   trackList = [];
+      //   if (clearCurrent) {
+      //     currentTrack = null;
+      //   }
+      // },
       addTrackByUrl: function (url, metadata) {
         var p, player, eid
         for (p = 0; p < players.length; ++p) {
@@ -469,7 +475,15 @@ function Playem (playemPrefs) {
         if ((currentTrack || {}).trackDuration) { callPlayerFct('setTrackPosition', pos * currentTrack.trackDuration) }
       },
       setVolume: setVolume,
-      searchTracks: searchTracks
+      searchTracks: searchTracks,
+      setCurrentTrack: function(index) {
+        currentTrack = trackList[index];
+      }
+      // jumpToTrack: function(index) {
+      //   if (index < trackList.length) {
+      //     playTrack(trackList[index]);
+      //   }
+      // }
     }
     // return exportedMethods;
     for (i in exportedMethods) { this[i] = exportedMethods[i] }

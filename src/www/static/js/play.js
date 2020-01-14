@@ -2,15 +2,17 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 		function ($scope, $timeout, $location, uiSortableMultiSelectionMethods, dispatcher) {
 	$scope.playlistData = {};
 	$scope.songIndices = [];
+	var curIndex = 0;
+	var userSet = false;	//used to handle user selecting a song
+	var playingID;
 	$scope.playem = new Playem();
 	var config = {
 		playerContainer: document.getElementById("mainPlayer")
 	};
 	//test
-	$scope.playem.addPlayer(YoutubePlayer, config);
-	$scope.playem.addTrackByUrl("https://www.youtube.com/watch?v=L16vTRw9mDQ");
-	$scope.playem.play();
-	var controlDisplayed = false;
+	// $scope.playem.addPlayer(YoutubePlayer, config);
+	// $scope.playem.addTrackByUrl("https://www.youtube.com/watch?v=L16vTRw9mDQ");
+	// $scope.playem.play();
 
 	dispatcher.on("startPlay", function(data) {
 		console.log("starting to play");
@@ -31,107 +33,75 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 			$scope.playem.addTrackByUrl(data["contents"][i]["url"]);
 		}
 		console.log($scope.playem);
-		//hide controls in prep
-		$("#playerCtrlDiv").hide();
-		controlDisplayed = false;
-		selectIndex(0);	//triggers play
+		$scope.selectIndex(0);	//triggers play
 	});
 
 	$scope.sortablePlayingList = uiSortableMultiSelectionMethods.extendOptions({
 		refreshPositions: true,
 		stop: function(e, ui) {
-			//update playem queue here
-			$scope.playem.clearQueue();	//this causes a stop?
+			//TODO: update playem queue here
+			$scope.playem.clearQueue(false);	//does not stop, but stops resuming (TODO: allow resuming)
 			console.log($scope.playlistData.contents);
 			for (var i = 0; i < $scope.playlistData.contents.length; i ++) {
 				$scope.playem.addTrackByUrl($scope.playlistData.contents[i]["url"]);
 			}
+			console.log($scope.playem.getQueue());
+			//select the current playing
+			curIndex = $scope.playlistData.contents.findIndex(function(song) { return song["_id"] == playingID; });
+			$scope.selectIndex(curIndex, false);
+			userSet = false;
+			//set the current playing
+			$scope.playem.setCurrentTrack(curIndex);
 		}
 	});
 
-	// $scope.playem.on("onTrackChange", function(data) {
-	// 	console.log("track changed");
-	// 	// setCtrlPosition();	//doesn't work
-	// 	//set the new index here
-	// 	console.log(data);
-	// });
-
-	//only these two events are triggered
-	// $scope.playem.on("onTrackInfo", function(data) {
-	$scope.playem.on("onPlay", function(data) {
-		console.log("playing");
-		if (!controlDisplayed) {
-			// setPlayerSize();
-			// setCtrlPosition();
-			controlDisplayed = true;
+	$scope.playem.on("onTrackChange", function(data) {
+		console.log("track changed");
+		console.log(curIndex);
+		console.log(userSet);
+		//set the new index here if continuing (ie not user set)
+		if (!userSet) {
+			curIndex ++;
+			// userSet = false;
 		}
+		else {
+			// userSet = false;
+		}
+		$scope.selectIndex(curIndex, false);
+		playingID = $scope.playlistData.contents[data.index]["_id"];
+		userSet = false;
+		console.log(data);
 	});
+
 
 	$("#playingSelect").on('ui-sortable-selectionschanged', function (e, args) {
+		//updates new indices; track ordering handled by stop
 		$scope.songIndices = $(this).find('.ui-sortable-selected').map(function(i, element){
 		  return $(this).index();
 		}).toArray();
 		$scope.$apply();
 	});
 
-	$scope.startPlay = function() {
-		//play
+	$scope.startPlay = function(index) {
+		//TODO: switch to track, and play
 		console.log("playing now!");
-		$scope.playem.play();
+		// selectIndex(index, false);
+		// $scope.playem.jumpToTrack(index);
+		$scope.playem.play(index);
 	};
 
-	function selectIndex(index) {
+	$scope.selectIndex = function(index, play=true) {
+		userSet = true;
+		curIndex = index;
 		$scope.songIndices = [index];
 		console.log($scope.songIndices);
 		$timeout(function() {
 			console.log($(".playItem"));
 			//find and click
 			$(".playItem").eq($scope.songIndices).click();
-			$scope.startPlay();
-		});
-	};
-
-	$(window).resize(function() {
-		// setPlayerSize();
-		// setCtrlPosition();
-	});
-
-	function setPlayerSize() {
-		var curWidth = $("#mainPlayer").outerWidth();
-		var setHeight = 240;
-		if (curWidth >= 3840) {
-			setHeight = 2160;
-		}
-		else if (curWidth >= 2560) {
-			setHeight = 1440;
-		}
-		else if (curWidth >= 1920) {
-			setHeight = 1080;
-		}
-		else if (curWidth >= 1280) {
-			setHeight = 720;
-		}
-		else if (curWidth >= 854) {
-			setHeight = 480;
-		}
-		else if (curWidth >= 640) {
-			setHeight = 360;
-		}
-		else {
-			setHeight = 240;
-		}
-		$("#mainPlayer").height(setHeight);
-	}
-
-	function setCtrlPosition() {
-		console.log("setting ctrl position");
-		console.log($("#mainPlayer").outerHeight());
-		console.log($("#mainPlayer").height());
-		// set position of controls
-		$("#playerCtrlDiv").css({
-			"display": "block",
-			"position": "absolute",
-			"top": $("#mainPlayer").outerHeight() + 60 + 20	//height of the header bar + margins
+			if (play) {
+				$scope.startPlay(index);
+			}
 		});
 	};
 
