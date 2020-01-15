@@ -1,5 +1,5 @@
-app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiSelectionMethods", "dispatcher",
-		function ($scope, $timeout, $location, uiSortableMultiSelectionMethods, dispatcher) {
+app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSortableMultiSelectionMethods", "dispatcher",
+		function ($scope, $timeout, $location, $http, uiSortableMultiSelectionMethods, dispatcher) {
 	$scope.playlistData = {touched: false};
 	$scope.songIndices = [];
 	$scope.focusMode = false;
@@ -264,6 +264,32 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 	};
 
 	$scope.savePlaylist = function() {
-		//TODO implement
+		var submission = {};
+		submission["name"] = $scope.playlistData["name"];
+		submission["contents"] = [];
+		for (var i = 0; i < $scope.playlistData.contents.length; i ++) {
+			submission["contents"].push($scope.playlistData.contents[i]["_id"]);
+		}
+		if ($scope.playlistData["_id"]) {
+			console.log("saving playlist");
+			submission["_id"] = $scope.playlistData["_id"];
+			$http.post("/editPlaylist", submission).then(function(resp) {
+				console.log("editting playlist ok");
+				dispatcher.emit("songsRemoved");
+				$scope.playlistData.touched = false;
+			}, function(err) {
+				console.log(err);
+			});
+		}
+		else {
+			console.log("adding playlist");
+			$http.post("/addPlaylist", submission).then(function(resp) {
+				console.log("adding playlist ok");
+				dispatcher.emit("songsRemoved");
+				$scope.playlistData.touched = false;
+			}, function(err) {
+				console.log(err);
+			});
+		}
 	};
 }]);

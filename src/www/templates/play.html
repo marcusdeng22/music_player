@@ -24,7 +24,7 @@
 		</div>
 		<div id="playerContentsDiv" class="playCol" style="width: 400px;">
 			<div>
-				<input type=text ng-model="playlistData.name" style="font-size: 22px;">
+				<input type=text ng-model="playlistData.name" ng-change="(playlistData.contents) ? playlistData.touched = true : playlistData" style="font-size: 22px;">
 				<button style="float: right;" class="btn" ng-click="toggleShuffle()"><img class="icon-l icon-shuffle" ng-class="shuffleOn ? 'icon-toggled' : ''"></img></button>
 				<button style="float: right;" class="btn" ng-click="toggleRepeat()"><img class="icon-l icon-repeat" ng-class="repeatOn ? 'icon-toggled' : ''"></img></button>
 			</div>

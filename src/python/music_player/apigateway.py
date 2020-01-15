@@ -286,7 +286,7 @@ class ApiGateway(object):
 		myContent = []
 		for song in contentList:
 			# if self.colMusic.count({"_id": ObjectId(song)}) > 0:
-			if self.colMusic.count({"_id": checkValidID(song)}) > 0:
+			if self.colMusic.count({"_id": m_utils.checkValidID(song)}) > 0:
 				myContent.append(song)
 			else:
 				raise cherrypy.HTTPError(400, "Invalid song ID")
