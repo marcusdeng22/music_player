@@ -218,4 +218,16 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 		}
 		setQueue();
 	};
+
+	function cleanUrl(id){
+		// return /([a-zA-Z0-9_\-]+)/.test(id) && RegExp.lastParen;
+		return id.match(/^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*/)[1];
+	};
+
+	$scope.getThumbnail = function(url) {
+		console.log("THUMBNAIL");
+		console.log(url);
+		console.log(cleanUrl(url));
+		return "https://img.youtube.com/vi/" + cleanUrl(url) + "/0.jpg";
+	};
 }]);

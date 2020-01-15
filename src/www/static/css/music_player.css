@@ -39,6 +39,11 @@
 	clear: both;
 }
 
+.item-contents {
+	float: left;
+	padding: 0px 5px;
+}
+
 .icon,.icon-l{
 	position: relative;
 	top: 0px;
