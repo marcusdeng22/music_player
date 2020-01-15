@@ -14,7 +14,7 @@
 					<button id="playPause" ng-show="focusMode==true" class="btn" ng-click="playPause()"><img class="icon-l" ng-class="(currentState==1) ? 'icon-pause' : 'icon-play'"></img></button>
 					<button id="nextSong" class="btn" ng-click="nextSong()"><img class="icon-l icon-next"></img></button>
 					<div style="float: right;">
-						<input type="checkbox" id="focusSwitch" ng-model="focusMode" data-toggle="toggle">
+						<input type="checkbox" id="focusSwitch" ng-model="focusMode" data-toggle="toggle" data-on="Focus Mode" data-off="Watch Mode" data-width="110">
 					</div>
 				</div>
 				<div id="recommended">

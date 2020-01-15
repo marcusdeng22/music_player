@@ -121,10 +121,11 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 	});
 
 	$(function() {
-		$("#focusSwitch").bootstrapToggle({
-			on: "Focus Mode",
-			off: "Watch Mode"
-		});
+		console.log("bootstrapToggle");
+		// $("#focusSwitch").bootstrapToggle({
+		// 	on: "Focus Mode",
+		// 	off: "Watch Mode"
+		// });
 	});
 
 	$scope.previousSong = function() {
