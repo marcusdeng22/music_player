@@ -31,6 +31,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 		$scope.playlistData = data;
 		for (var i = 0; i < data["contents"].length; i ++) {
 			$scope.playlistData["contents"][i]["artistStr"] = data["contents"][i]["artist"].join(", ");
+			$scope.playlistData["contents"][i]["origOrder"] = i;
 			$scope.playem.addTrackByUrl(data["contents"][i]["url"]);
 		}
 		console.log($scope.playem);
@@ -39,7 +40,13 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 
 	$scope.sortablePlayingList = uiSortableMultiSelectionMethods.extendOptions({
 		refreshPositions: true,
+		beforeStop: function(e, ui) {
+			console.log("BEFORE STOP");
+			console.log($scope.playlistData.contents);
+		},
 		stop: function(e, ui) {
+			console.log("STOP");
+			console.log($scope.playlistData.contents);
 			//update playem queue here
 			$scope.playem.clearQueue();
 			console.log($scope.playlistData.contents);
@@ -48,7 +55,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 			}
 			console.log($scope.playem.getQueue());
 			//select the current playing
-			curIndex = $scope.playlistData.contents.findIndex(function(song) { return song["_id"] == $scope.nowPlaying["_id"]; });		//TODO: this picks the first index, which may not be correct
+			curIndex = $scope.playlistData.contents.findIndex(function(song) { return song["origOrder"] == $scope.nowPlaying["origOrder"]; });
 			$scope.selectIndex(curIndex, false);
 			// userSet = false;
 			//set the current playing
