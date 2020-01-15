@@ -37,10 +37,12 @@
 			<div class="joinCollapseContainer sortableDataContainer songCollapse collapse show" style="height: calc(100% - 100px);">
 				<div ui-sortable="sortableSongs" ng-model="songDatashare.songData" id="editSongSelect" class="ng-cloak list" style="width: 100%; min-height: 100%;">
 					<div ui-sortable-selectable ng-repeat="song in songDatashare.songData track by $index" class="item songItem">
-						<div style="width: 100%; display: table; table-layout: fixed;">
-							<div style="width: 100%; display: table-row;">
-								<div style="width: calc(100% - 80px); display: table-cell; overflow: hidden;">{{song.name}}</div>
-								<div style="width: 80px; display: table-cell;">{{song.dateStr}}</div>
+						<!-- TODO: make this use infinite scroll -->
+						<div class="playRow">
+							<div class="item-contents"><img ng-src="{{getThumbnail(song)}}" height="48px"/></div>
+							<div class="item-contents">
+								<div>{{song.name}}</div>
+								<div>{{song.artistStr}}</div>
 							</div>
 						</div>
 					</div>

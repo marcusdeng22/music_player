@@ -41,7 +41,7 @@
 							<div style="width: 100%; overflow: hidden;">{{item.artistStr}}</div> -->
 							<div class="playRow">
 								<div class="item-contents" style="text-align: right; width: 30px;">{{$index==nowPlayingIndex ? ">" : ''}}{{$index + 1}}</div>
-								<div class="item-contents"><img ng-src="{{getThumbnail(item.url)}}" height="48px"/></div>
+								<div class="item-contents"><img ng-src="{{getThumbnail(item)}}" height="48px"/></div>
 								<div class="item-contents">
 									<div>{{item.name}}</div>
 									<div>{{item.artistStr}}</div>

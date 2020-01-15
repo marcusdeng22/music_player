@@ -1,5 +1,5 @@
-app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSortableMultiSelectionMethods", "dispatcher",
-		function ($scope, $timeout, $location, $http, uiSortableMultiSelectionMethods, dispatcher) {
+app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSortableMultiSelectionMethods", "dispatcher", "youtubeFuncs",
+		function ($scope, $timeout, $location, $http, uiSortableMultiSelectionMethods, dispatcher, youtubeFuncs) {
 	$scope.playlistData = {touched: false};
 	$scope.songIndices = [];
 	$scope.focusMode = false;
@@ -31,7 +31,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 		$scope.playem.addPlayer(YoutubePlayer, config);	//TODO: add more players here
 		$scope.playlistData = data;
 		for (var i = 0; i < data["contents"].length; i ++) {
-			$scope.playlistData["contents"][i]["artistStr"] = data["contents"][i]["artist"].join(", ");
+			// $scope.playlistData["contents"][i]["artistStr"] = data["contents"][i]["artist"].join(", ");
 			$scope.playlistData["contents"][i]["origOrder"] = i;
 			$scope.playem.addTrackByUrl(data["contents"][i]["url"]);
 		}
@@ -226,17 +226,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 		setQueue();
 	};
 
-	function cleanUrl(id){
-		// return /([a-zA-Z0-9_\-]+)/.test(id) && RegExp.lastParen;
-		return id.match(/^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*/)[1];
-	};
-
-	$scope.getThumbnail = function(url) {
-		console.log("THUMBNAIL");
-		console.log(url);
-		console.log(cleanUrl(url));
-		return "https://img.youtube.com/vi/" + cleanUrl(url) + "/0.jpg";
-	};
+	$scope.getThumbnail = youtubeFuncs.getThumbnail;
 
 	$scope.removeSelected = function() {
 		//remove from scope, then set queue, then play the next track if removing currently playing (handled in setQueue)

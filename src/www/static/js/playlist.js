@@ -1,5 +1,5 @@
-app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatcher', 'uiSortableMultiSelectionMethods', 'sortingFuncs', 'songDatashare',
-		function($scope, $http, $location, $timeout, dispatcher, uiSortableMultiSelectionMethods, sortingFuncs, songDatashare) {
+app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatcher', 'uiSortableMultiSelectionMethods', 'sortingFuncs', 'songDatashare', 'youtubeFuncs',
+		function($scope, $http, $location, $timeout, dispatcher, uiSortableMultiSelectionMethods, sortingFuncs, songDatashare, youtubeFuncs) {
 	$scope.playlistData = [];
 	$scope.playlistIndices = [];
 	$scope.songData = [];
@@ -377,9 +377,11 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		// $('#playlistStartDate, #playlistEndDate').datepicker("setDate", new Date());
 	});
 
+	$scope.getThumbnail = youtubeFuncs.getThumbnail;
+
 	//PLAYLIST BUTTONS##############################################################################################################################
 	//play the playlist
-	$scope.triggerPlay = function() {
+	$scope.triggerPlay = function() {	//TODO: allow double click on song to start from an index
 		//switch tabs to "Play" and pass the playlist data
 		var passedList = {
 			"name": "Unnamed playlist",

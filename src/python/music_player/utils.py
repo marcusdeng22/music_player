@@ -249,6 +249,8 @@ def cleanRet(dataList):
 				data["dateStr"] = data["date"][:10]
 			if "contents" in data:
 				data["contents"] = [str(c) for c in data["contents"]]
+			if "artist" in data:
+				data["artistStr"] = ", ".join(data["artist"])
 			ret.append(data)
 		print("returning:", ret)
 		return ret
@@ -265,6 +267,8 @@ def cleanRet(dataList):
 				ret["contents"] = [str(c) for c in dataList["contents"]]
 			else:
 				ret[key] = dataList[key]
+				if key == "artist":
+					ret["artistStr"] = ", ".join(dataList[key])
 		print("returing:", ret)
 		return ret
 	else:

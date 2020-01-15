@@ -1,5 +1,5 @@
-app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatcher', 'uiSortableMultiSelectionMethods', 'sortingFuncs', 'songDatashare',
-		function($scope, $http, $location, $timeout, dispatcher, uiSortableMultiSelectionMethods, sortingFuncs, songDatashare) {
+app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatcher', 'uiSortableMultiSelectionMethods', 'sortingFuncs', 'songDatashare', 'youtubeFuncs',
+		function($scope, $http, $location, $timeout, dispatcher, uiSortableMultiSelectionMethods, sortingFuncs, songDatashare, youtubeFuncs) {
 	//data model
 	$scope.songDatashare = songDatashare;
 
@@ -120,6 +120,8 @@ app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$timeout', 
 		});
 		$('#songStartDate, #songEndDate').datepicker("clearDates");
 	});
+
+	$scope.getThumbnail = youtubeFuncs.getThumbnail;
 
 	console.log("edit controller exec");
 	

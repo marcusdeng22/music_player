@@ -1,5 +1,5 @@
 // var app = angular.module('MusicApp', []);
-var app = angular.module('MusicApp', ['ui.sortable', 'ui.sortable.multiselection']);
+var app = angular.module('MusicApp', ['ui.sortable', 'ui.sortable.multiselection', 'infinite-scroll']);
 // app.config(["$controllerProvider", function($controllerProvider) {
 // 	app.register = {
 // 		controller: $controllerProvider.register
@@ -24,6 +24,23 @@ app.value('dispatcher', {
 		this.callbacks[event].push(callback);
 	}
 
+});
+
+app.factory("youtubeFuncs", function() {
+	var data = {};
+	function cleanUrl(id){
+		// return /([a-zA-Z0-9_\-]+)/.test(id) && RegExp.lastParen;
+		return id.match(/^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*/)[1];
+	};
+
+	data.getThumbnail = function(item) {
+		console.log("THUMBNAIL");
+		console.log(item);
+		if (item.url) {
+			return "https://img.youtube.com/vi/" + cleanUrl(item.url) + "/0.jpg";
+		}
+	}
+	return data;
 });
 
 app.factory("sortingFuncs", ["orderByFilter", function(orderBy) {
