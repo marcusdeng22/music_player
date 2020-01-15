@@ -170,17 +170,21 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 		}
 	});
 
+	$scope.repeatOn = false;
 	$scope.toggleRepeat = function() {
-		$scope.playem.toggleRepeat();
+		$scope.repeatOn = $scope.playem.toggleRepeat();
 	};
 
-	var shuffleOn = false;
+	$scope.shuffleOn = false;
 	$scope.toggleShuffle = function() {
-		shuffleOn = !shuffleOn;
-		if (!shuffleOn) {
+		$scope.shuffleOn = !$scope.shuffleOn;
+		if (!$scope.playlistData.contents) {
+			return;
+		}
+		if (!$scope.shuffleOn) {
+			//rearrange to the original order
 			$scope.playlistData.contents.sort((a, b) => a.origOrder - b.origOrder);
 			setQueue();
-			//rearrange to the original order
 			return;
 		}
 		//modified from: https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array

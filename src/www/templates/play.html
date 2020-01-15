@@ -10,9 +10,9 @@
 			<div id="playerCtrlDiv" style="padding-top: 10px;">
 				<div id="nowPlaying" ng-show="focusMode==true && nowPlaying" ng-model="nowPlaying">Now playing: {{nowPlaying.name}} - {{nowPlaying.artistStr}}</div>
 				<div id="playerCtrlBtns">
-					<button id="prevSong" class="btn" ng-click="previousSong()"><img class="icon icon-prev" style="top: 0px;"></img></button>
-					<button id="playPause" ng-show="focusMode==true" class="btn" ng-click="playPause()"><img class="icon" ng-model="currentState" ng-class="(currentState==1) ? 'icon-pause' : 'icon-play'" style="top: 0px;"></img></button>
-					<button id="nextSong" class="btn" ng-click="nextSong()"><img class="icon icon-next" style="top: 0px;"></img></button>
+					<button id="prevSong" class="btn" ng-click="previousSong()"><img class="icon-l icon-prev"></img></button>
+					<button id="playPause" ng-show="focusMode==true" class="btn" ng-click="playPause()"><img class="icon-l" ng-class="(currentState==1) ? 'icon-pause' : 'icon-play'"></img></button>
+					<button id="nextSong" class="btn" ng-click="nextSong()"><img class="icon-l icon-next"></img></button>
 					<div style="float: right;">
 						<input type="checkbox" id="focusSwitch" ng-model="focusMode" data-toggle="toggle">
 					</div>
@@ -22,15 +22,13 @@
 				</div>
 			</div>
 		</div>
-		<!-- <div id="playerContentsDiv" class="playlistCol" style="width: 40%; max-width: 400px;"> -->
 		<div id="playerContentsDiv" class="playCol" style="width: 400px;">
 			<div>
-				<input type=text ng-model="playlistData.name">
-				<button style="float: right;" ng-click="toggleShuffle()">Shuffle</button>
-				<button style="float: right;" ng-click="toggleRepeat()">Repeat</button>
-				<!-- replace with icons ^ -->
+				<input type=text ng-model="playlistData.name" style="font-size: 22px;">
+				<button style="float: right;" class="btn" ng-click="toggleShuffle()"><img class="icon-l icon-shuffle" ng-class="shuffleOn ? 'icon-toggled' : ''"></img></button>
+				<button style="float: right;" class="btn" ng-click="toggleRepeat()"><img class="icon-l icon-repeat" ng-class="repeatOn ? 'icon-toggled' : ''"></img></button>
 			</div>
-			<div id="currentPlaylistContainer" class="sortableDataContainer" style="height: calc(100% - 36px);">
+			<div id="currentPlaylistContainer" class="sortableDataContainer" style="height: calc(100% - 46px);">
 				<div ui-sortable="sortablePlayingList" ng-model="playlistData.contents" id="playingSelect" class="list" style="width: 100%; min-height: 100%;">
 					<div ui-sortable-selectable ng-repeat="item in playlistData.contents track by $index" class="item songItem playItem">
 						<div ng-dblclick="selectIndex($index)" style="width: 100%">

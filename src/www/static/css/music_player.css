@@ -39,7 +39,7 @@
 	clear: both;
 }
 
-.icon {
+.icon,.icon-l{
 	position: relative;
 	top: 0px;
 	height: 14px;
@@ -47,6 +47,11 @@
 	display: inline-block;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+}
+
+.icon-l {
+	height: 22px;
+	width: 22px;
 }
 
 .icon-refresh {
@@ -79,6 +84,14 @@
 
 .icon-shuffle {
 	content: url("../images/shuffle.svg");
+}
+
+.icon-repeat {
+	content: url("../images/repeat.svg");
+}
+
+.icon-toggled {
+	filter: invert(25%) sepia(70%) saturate(6430%) hue-rotate(207deg) brightness(93%) contrast(95%);
 }
 
 .sortableDataContainer {

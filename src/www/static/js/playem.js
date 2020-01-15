@@ -485,6 +485,7 @@ function Playem (playemPrefs) {
       },
       toggleRepeat: function() {
         playemPrefs.loop = !playemPrefs.loop;
+        return playemPrefs.loop;
       }
       // jumpToTrack: function(index) {
       //   if (index < trackList.length) {
