@@ -384,16 +384,19 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		var passedList = {
 			"name": "Unnamed playlist",
 			//date now
-			"contents": []
+			"contents": [],
+			"touched": false
 		};
 		if ($scope.playlistIndices.length == 1) {
-			passedList = $scope.playlistData[$scope.playlistIndices];
+			passedList = angular.copy($scope.playlistData[$scope.playlistIndices]);
+			passedList["touched"] = false;
 		}
 		else {
 			$scope.playlistIndices.sort((a, b) => a-b);
 			for (var i = 0; i < $scope.playlistIndices.length; i ++) {
 				passedList["contents"] = passedList["contents"].concat($scope.playlistData[$scope.playlistIndices[i]]["contents"]);
 			}
+			passedList["touched"] = true;
 		}
 		//resolve the contents to the actual data
 		$http.post("/findMusicList", {"content": passedList["contents"]}).then(function(resp) {

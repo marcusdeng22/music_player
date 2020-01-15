@@ -1,11 +1,11 @@
 app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiSelectionMethods", "dispatcher",
 		function ($scope, $timeout, $location, uiSortableMultiSelectionMethods, dispatcher) {
-	$scope.playlistData = {};
+	$scope.playlistData = {touched: false};
 	$scope.songIndices = [];
 	$scope.focusMode = false;
 	$scope.nowPlaying = null;
 	$scope.nowPlayingIndex = 0;
-	var curIndex = 0;
+	// var curIndex = 0;
 	var userSet = false;	//used to handle user playing a song; true if action is from user or simulates user, false if normal progression of tracks
 	$scope.playem = new Playem();
 	var config = {
@@ -39,7 +39,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 		$scope.selectIndex(0);	//triggers play
 	});
 
-	function setQueue() {
+	function setQueue(nextIndex=0) {
 		//update playem queue here
 		$scope.playem.clearQueue();
 		console.log($scope.playlistData.contents);
@@ -48,11 +48,20 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 		}
 		console.log($scope.playem.getQueue());
 		//select the current playing
-		curIndex = $scope.playlistData.contents.findIndex(function(song) { return song["origOrder"] == $scope.nowPlaying["origOrder"]; });
-		$scope.selectIndex(curIndex, false);
-		// userSet = false;
-		//set the current playing
-		$scope.nowPlayingIndex = $scope.playem.setCurrentTrack(curIndex).index;
+		$scope.nowPlayingIndex = $scope.playlistData.contents.findIndex(function(song) { return song["origOrder"] == $scope.nowPlaying["origOrder"]; });
+		if ($scope.nowPlayingIndex == -1) {
+			//can't find the index, so it must have been removed. select the next index and play
+			$scope.selectIndex(nextIndex);
+		}
+		else {
+			// curIndex = $scope.playlistData.contents.findIndex(function(song) { return song["origOrder"] == $scope.nowPlaying["origOrder"]; });
+			// $scope.selectIndex(curIndex, false);
+			$scope.selectIndex($scope.nowPlayingIndex, false);
+			// userSet = false;
+			//set the current playing
+			// $scope.nowPlayingIndex = $scope.playem.setCurrentTrack(curIndex).index;
+			$scope.playem.setCurrentTrack($scope.nowPlayingIndex).index;
+		}
 	};
 
 	$scope.sortablePlayingList = uiSortableMultiSelectionMethods.extendOptions({
@@ -62,19 +71,22 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 			for (var i = 0; i < $scope.playlistData.contents.length; i ++) {
 				$scope.playlistData.contents["origOrder"] = i;
 			}
+			$scope.playlistData.touched = true;
 		}
 	});
 
 	$scope.playem.on("onTrackChange", function(data) {
 		console.log("track changed");
-		console.log(curIndex);
+		// console.log(curIndex);
 		console.log(userSet);
 		//set the new index here if continuing (ie not user set)
 		if (!userSet) {
 			// curIndex ++;
-			curIndex = $scope.playem.getCurrentTrack().index;
+			// curIndex = $scope.playem.getCurrentTrack().index;
+			$scope.nowPlayingIndex = $scope.playem.getCurrentTrack().index;
 		}
-		$scope.selectIndex(curIndex, false);
+		$scope.selectIndex($scope.nowPlayingIndex, false);
+		// $scope.selectIndex(curIndex, false);
 		$scope.nowPlaying = $scope.playlistData.contents[data.index];
 		$scope.nowPlayingIndex = data.index;
 		// userSet = false;
@@ -97,7 +109,8 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 
 	$scope.selectIndex = function(index, play=true) {
 		// userSet = true;
-		curIndex = index;
+		// curIndex = index;
+		$scope.nowPlayingIndex = index;
 		$scope.songIndices = [index];
 		console.log($scope.songIndices);
 		$timeout(function() {
@@ -118,14 +131,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 		if ($scope.playem != null) {
 			$scope.playem.pause();
 		}
-	});
-
-	$(function() {
-		console.log("bootstrapToggle");
-		// $("#focusSwitch").bootstrapToggle({
-		// 	on: "Focus Mode",
-		// 	off: "Watch Mode"
-		// });
+		//TODO: check if touched, and if true, verify to discard or save
 	});
 
 	$scope.previousSong = function() {
@@ -230,5 +236,34 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 		console.log(url);
 		console.log(cleanUrl(url));
 		return "https://img.youtube.com/vi/" + cleanUrl(url) + "/0.jpg";
+	};
+
+	$scope.removeSelected = function() {
+		//remove from scope, then set queue, then play the next track if removing currently playing (handled in setQueue)
+		$scope.playlistData.touched = true;
+		var lastSelectedIndex = $scope.nowPlayingIndex;
+		var reduce = false;
+		$scope.songIndices.sort((a, b) => a-b);
+		for (var i = $scope.songIndices.length - 1; i >= 0; i--) {
+			$scope.playlistData.contents.splice($scope.songIndices[i], 1);
+			if (lastSelectedIndex == $scope.songIndices[i]) {
+				reduce = true;
+			}
+			else if (reduce && lastSelectedIndex < $scope.songIndices[i]) {
+				lastSelectedIndex --;
+			}
+		}
+		if ($scope.playlistData.contents.length == 0) {
+			$scope.playem.clearQueue();
+			$scope.playem.stop();
+			$("#mainPlayer").empty();
+		}
+		else {
+			setQueue(Math.min(lastSelectedIndex, $scope.playlistData.contents.length - 1));
+		}
+	};
+
+	$scope.savePlaylist = function() {
+		//TODO implement
 	};
 }]);

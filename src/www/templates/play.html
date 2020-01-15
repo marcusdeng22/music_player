@@ -40,7 +40,7 @@
 							</div>
 							<div style="width: 100%; overflow: hidden;">{{item.artistStr}}</div> -->
 							<div class="playRow">
-								<div class="item-contents">{{$index + 1}}</div>
+								<div class="item-contents" style="text-align: right; width: 30px;">{{$index==nowPlayingIndex ? ">" : ''}}{{$index + 1}}</div>
 								<div class="item-contents"><img ng-src="{{getThumbnail(item.url)}}" height="48px"/></div>
 								<div class="item-contents">
 									<div>{{item.name}}</div>
@@ -52,9 +52,9 @@
 				</div>
 			</div>
 			<div style="margin-top: 10px;">
-				<button id="playPlaylist" class="btn btn-success">Play</button>
-				<button id="saveNewPlaylist" class="btn btn-primary">Save</button>
-				<button id="removeFromPlaying" class="btn btn-danger">Remove</button>
+				<button id="playPlaylist" class="btn btn-success" ng-disabled="songIndices.length != 1" ng-click="selectIndex(songIndices)">Play</button>
+				<button id="saveNewPlaylist" class="btn btn-primary" ng-disabled="!playlistData.touched" ng-click="savePlaylist()">Save</button>
+				<button id="removeFromPlaying" class="btn btn-danger" ng-disabled="songIndices.length == 0" ng-click="removeSelected()">Remove</button>
 			</div>
 		</div>
 	</div>

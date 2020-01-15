@@ -8,7 +8,8 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatc
 		var passedList = {
 			"name": "Unnamed playlist",
 			//date now
-			"contents": []
+			"contents": [],
+			"touched": true
 		};
 		songDatashare.songIndices.sort((a, b) => a-b);
 		for (var i = 0; i < songDatashare.songIndices.length; i ++) {
