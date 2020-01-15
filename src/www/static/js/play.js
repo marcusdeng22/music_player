@@ -4,6 +4,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 	$scope.songIndices = [];
 	$scope.focusMode = false;
 	$scope.nowPlaying = null;
+	$scope.nowPlayingIndex = 0;
 	var curIndex = 0;
 	var userSet = false;	//used to handle user playing a song; true if action is from user or simulates user, false if normal progression of tracks
 	$scope.playem = new Playem();
@@ -38,28 +39,29 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 		$scope.selectIndex(0);	//triggers play
 	});
 
+	function setQueue() {
+		//update playem queue here
+		$scope.playem.clearQueue();
+		console.log($scope.playlistData.contents);
+		for (var i = 0; i < $scope.playlistData.contents.length; i ++) {
+			$scope.playem.addTrackByUrl($scope.playlistData.contents[i]["url"]);
+		}
+		console.log($scope.playem.getQueue());
+		//select the current playing
+		curIndex = $scope.playlistData.contents.findIndex(function(song) { return song["origOrder"] == $scope.nowPlaying["origOrder"]; });
+		$scope.selectIndex(curIndex, false);
+		// userSet = false;
+		//set the current playing
+		$scope.nowPlayingIndex = $scope.playem.setCurrentTrack(curIndex).index;
+	};
+
 	$scope.sortablePlayingList = uiSortableMultiSelectionMethods.extendOptions({
 		refreshPositions: true,
-		beforeStop: function(e, ui) {
-			console.log("BEFORE STOP");
-			console.log($scope.playlistData.contents);
-		},
 		stop: function(e, ui) {
-			console.log("STOP");
-			console.log($scope.playlistData.contents);
-			//update playem queue here
-			$scope.playem.clearQueue();
-			console.log($scope.playlistData.contents);
+			setQueue();
 			for (var i = 0; i < $scope.playlistData.contents.length; i ++) {
-				$scope.playem.addTrackByUrl($scope.playlistData.contents[i]["url"]);
+				$scope.playlistData.contents["origOrder"] = i;
 			}
-			console.log($scope.playem.getQueue());
-			//select the current playing
-			curIndex = $scope.playlistData.contents.findIndex(function(song) { return song["origOrder"] == $scope.nowPlaying["origOrder"]; });
-			$scope.selectIndex(curIndex, false);
-			// userSet = false;
-			//set the current playing
-			$scope.playem.setCurrentTrack(curIndex);
 		}
 	});
 
@@ -74,6 +76,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 		}
 		$scope.selectIndex(curIndex, false);
 		$scope.nowPlaying = $scope.playlistData.contents[data.index];
+		$scope.nowPlayingIndex = data.index;
 		// userSet = false;
 		console.log(data);
 	});
@@ -126,7 +129,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 
 	$scope.previousSong = function() {
 		if ($scope.playem != null) {
-			$scope.playem.prev();	//TODO: onTrackChange triggers + instead of -
+			$scope.playem.prev();
 		}
 	};
 
@@ -168,10 +171,47 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "uiSortableMultiS
 	});
 
 	$scope.toggleRepeat = function() {
-		//TODO implement
+		$scope.playem.toggleRepeat();
 	};
 
+	var shuffleOn = false;
 	$scope.toggleShuffle = function() {
-		//TODO implement
+		shuffleOn = !shuffleOn;
+		if (!shuffleOn) {
+			$scope.playlistData.contents.sort((a, b) => a.origOrder - b.origOrder);
+			setQueue();
+			//rearrange to the original order
+			return;
+		}
+		//modified from: https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
+		//if currently playing is index 0, shuffle all but 0
+		//else set currently playing to index 0, and shuffle rest
+		var j, x, i;
+		if ($scope.playlistData.contents.length < 2) {	//need at least 2 elements, otherwise no shuffling
+			return;
+		}
+		else if ($scope.playlistData.contents.length == 2) {	//simple swap
+			x = $scope.playlistData.contents[0];
+			$scope.playlistData.contents[0] = $scope.playlistData.contents[1];
+			$scope.playlistData.contents[1] = x;
+			setQueue();
+			return;
+		}
+
+		console.log("SHUFFLING");
+		console.log($scope.nowPlayingIndex);
+		if ($scope.nowPlayingIndex != 0) {	//then swap the current playing with 0
+			x = $scope.playlistData.contents[0];
+			$scope.playlistData.contents[0] = $scope.playlistData.contents[$scope.nowPlayingIndex];
+			$scope.playlistData.contents[$scope.nowPlayingIndex] = x;
+			$scope.nowPlayingIndex = 0;
+		}
+		for (i = $scope.playlistData.contents.length - 1; i > 1; i--) {
+			j = Math.floor(Math.random() * i) + 1;
+			x = $scope.playlistData.contents[i];
+			$scope.playlistData.contents[i] = $scope.playlistData.contents[j];
+			$scope.playlistData.contents[j] = x;
+		}
+		setQueue();
 	};
 }]);

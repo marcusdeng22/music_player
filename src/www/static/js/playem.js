@@ -478,9 +478,13 @@ function Playem (playemPrefs) {
       searchTracks: searchTracks,
       setCurrentTrack: function(index) {
         currentTrack = trackList[index];
+        return currentTrack;
       },
       getCurrentTrack: function() {
         return currentTrack;
+      },
+      toggleRepeat: function() {
+        playemPrefs.loop = !playemPrefs.loop;
       }
       // jumpToTrack: function(index) {
       //   if (index < trackList.length) {
