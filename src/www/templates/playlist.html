@@ -3,7 +3,9 @@
 		<div id="playlistAllDiv" class="playlistCol">
 			<p>Playlists</p>
 			<div>
-				<input type="text" id="playlistNameSearch" ng-model="playlistNameSearch" ng-model-options='{debounce: 500}' ng-change="advSearch()" placeholder="Search for playlist name" style="width: 100%;">
+				<div data-tip="Use commas to separate entries" style="width: 100%">
+					<input type="text" id="playlistNameSearch" ng-model="playlistNameSearch" ng-model-options='{debounce: 500}' ng-change="advSearch()" placeholder="Search for playlist name" style="width: 100%;">
+				</div>
 				<a data-toggle="collapse" data-target=".playlistCollapse" href="">Advanced Search</a>
 				<div id="advSearchDiv" class="playlistCollapse collapse" style="padding-bottom: 10px;">
 					<div id="playlistDatePicker" class="input-daterange input-group" style="z-index: 1;">
@@ -16,17 +18,33 @@
 					<div class="input-group">
 						<div class="input-group">
 							<span class="input-group-addon">Includes songs:</span>
-							<div data-tip="Use semicolons to separate entries">
-								<input type="text" id="playlistSongSearch" class="input-sm form-control" ng-model="playlistSongSearch">
+							<div data-tip="Use commas to separate entries">
+								<input type="text" class="playlist-search input-sm form-control" ng-model="playlistSongSearch">
 							</div>
 							<span class="input-group-addon">OR</span>
 						</div>
 						<div class="input-group">
 							<span class="input-group-addon">Includes artists:</span>
-							<div data-tip="Use semicolons to separate entries">
-								<input type="text" id="playlistArtistSearch" class="input-sm form-control" ng-model="playlistArtistSearch">
+							<div data-tip="Use commas to separate entries">
+								<input type="text" class="playlist-search input-sm form-control" ng-model="playlistArtistSearch">
 							</div>
+							<span class="input-group-addon">OR</span>
 							<!--TODO: add a drop down for artists-->
+						</div>
+						<div class="input-group">
+							<span class="input-group-addon">Includes albums:</span>
+							<div data-tip="Use commas to separate entries">
+								<input type="text" class="playlist-search input-sm form-control" ng-model="playlistAlbumSearch">
+							</div>
+							<span class="input-group-addon">OR</span>
+							<!--TODO: add a drop down for albums-->
+						</div>
+						<div class="input-group">
+							<span class="input-group-addon">Includes genres:</span>
+							<div data-tip="Use commas to separate entries">
+								<input type="text" class="playlist-search input-sm form-control" ng-model="playlistGenreSearch">
+							</div>
+							<!--TODO: add a drop down for genres-->
 						</div>
 					</div>
 					<div class="input-group">
@@ -56,6 +74,7 @@
 			<button type="button" class="btn btn-success" ng-click="newPlaylist()">New</button>
 			<button type="button" class="btn btn-primary" ng-click="newPlaylist('edit')" ng-disabled="playlistIndices.length != 1">Edit Playlist</button>
 			<button type="button" class="btn btn-danger" ng-click="deletePlaylist()" ng-disabled="playlistIndices.length == 0">Delete</button>
+			<button type="button" class="btn btn-success" ngiclick="downloadPlaylist()" ng-disabled="playlistIndices.length == 0">Download</button>
 		</div>
 		<div id="playlistContentsDiv" class="playlistCol">
 			<p>Songs</p>

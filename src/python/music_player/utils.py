@@ -102,7 +102,7 @@ def createMusic(data):
 	myMusic = dict()
 
 	# string fields
-	for key in ("url", "name"):
+	for key in ("url", "name", "album", "genre"):
 		myMusic[key] = checkValidData(key, data, str)
 	if data["type"] in supportedTypes:
 		myMusic["type"] = checkValidData("type", data, str)
@@ -135,12 +135,19 @@ def makeMusicQuery(data, musicDB, fast=False):
 	myProjection = {"relev": {"$meta": "textScore"}}
 
 	# string fields
-	for key in ["url", "name", "type", "artist_names", "start_date", "end_date", "_id"]:
+	for key in ["url", "song_names", "type", "artist_names", "album_names", "genre_names", "start_date", "end_date", "_id"]:
 		if key in data:
 			if key in "url":
 				myMusic[key] = checkValidData(key, data, str)
-			if key == "name":
-				myMusic[key] = {"$regex": r".*" + checkValidData(key, data, str) + r".*", "$options": "i"}
+			if key == "song_names":
+				# myMusic[key] = {"$regex": r".*" + checkValidData(key, data, str) + r".*", "$options": "i"}
+				mySongNames = []
+				for n in checkValidData(key, data, list):
+					if isinstance(n, str):
+						mySongNames.append(Regex(r".*" + n.strip() + r".*", "i"))
+					else:
+						raise cherrypy.HTTPError(400, "Invalid song name")
+				myMusic["name"] = {"$in": mySongNames}
 				# myMusic["$text"] = {"$search": '"' + checkValidData(key, data, str).strip() + '"'}
 			if key == "type":
 				if checkValidData("type", data, str) in supportedTypes:
@@ -160,6 +167,24 @@ def makeMusicQuery(data, musicDB, fast=False):
 					else:
 						raise cherrypy.HTTPError(400, "Bad artist name")
 				myMusic["artist"] = {"$in": myArtists}
+			if key == "album_names":
+				#TODO: add an album DB?
+				myAlbumNames = []
+				for n in checkValidData(key, data, list):
+					if isinstance(n, str):
+						myAlbumNames.append(Regex(r".*" + n.strip() + r".*", "i"))
+					else:
+						raise cherrypy.HTTPError(400, "Invalid album name")
+				myMusic["album"] = {"$in": myAlbumNames}
+			if key == "genre_names":
+				#TODO: add a genre DB?
+				myGenreNames = []
+				for n in checkValidData(key, data, list):
+					if isinstance(n, str):
+						myGenreNames.append(Regex(r".*" + n.strip() + r".*", "i"))
+					else:
+						raise cherrypy.HTTPError(400, "Invalid genre name")
+				myMusic["genre"] = {"$in": myGenreNames}
 			if key == "start_date":
 				if "date" not in myMusic:
 					myMusic["date"] = {"$gte": checkValidData(key, data, datetime.datetime, coerce=True)}
@@ -190,11 +215,18 @@ def makePlaylistQuery(data, playlistDB, musicDB):
 	myPlaylist = dict()
 	musicList = set()
 
-	for key in ["name", "start_date", "end_date", "song_names", "artist_names", "_id"]:
+	for key in ["playlist_names", "start_date", "end_date", "song_names", "artist_names", "album_names", "genre_names", "_id"]:
 		if key in data:
-			if key == "name":
+			if key == "playlist_names":
 				# myPlaylist[key] = r"/.*" + checkValidData(key, data, str) + r".*/i"
-				myPlaylist[key] = {"$regex": r".*" + checkValidData(key, data, str) + r".*", "$options": "i"}
+				# myPlaylist[key] = {"$regex": r".*" + checkValidData(key, data, str) + r".*", "$options": "i"}
+				myPlaylistNames = []
+				for n in checkValidData(key, data, list):
+					if isinstance(n, str):
+						myPlaylistNames.append(Regex(r".*" + n.strip() + r".*", "i")) 
+					else:
+						raise cherrypy.HTTPError(400, "Invalid playlist name given")
+				myPlaylist["name"] = {"$in": myPlaylistNames}
 			if key == "start_date":
 				print("checking start")
 				print(checkValidData(key, data, datetime.datetime, coerce=True))
@@ -210,12 +242,20 @@ def makePlaylistQuery(data, playlistDB, musicDB):
 					myPlaylist["date"]["$lte"] = checkValidData(key, data, datetime.datetime, coerce=True) + datetime.timedelta(days=1)
 			if key == "song_names":
 				print("querying for song names")
-				for n in checkValidData(key, data, list):
-					for v in makeMusicQuery({"name": n}, musicDB, fast=True):
-						musicList.add(v["_id"])
+				# for n in checkValidData(key, data, list):
+				# 	for v in makeMusicQuery({"name": n}, musicDB, fast=True):
+				# 		musicList.add(v["_id"])
+				for v in makeMusicQuery({"song_names": data[key]}, musicDB, fast=True):
+					musicList.add(v["_id"])
 				print("done with song name query")
 			if key == "artist_names":
-				for v in makeMusicQuery({"artist": data[key]}, musicDB, fast=True):
+				for v in makeMusicQuery({"artist_names": data[key]}, musicDB, fast=True):
+					musicList.add(v["_id"])
+			if key == "album_names":
+				for v in makeMusicQuery({"album_names": data[key]}, musicDB, fast=True):
+					musicList.add(v["_id"])
+			if key == "genre_names":
+				for v in makeMusicQuery({"genre_names": data[key]}, musicDB, fast=True):
 					musicList.add(v["_id"])
 			if key == "_id":
 				myPlaylist[key] = checkValidID(data)

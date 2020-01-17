@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from __future__ import unicode_literals
+
 import cherrypy
 import os
 import pymongo as pm
@@ -11,6 +13,8 @@ from uuid import uuid4
 import music_player.utils as m_utils
 
 from datetime import datetime, timedelta
+
+import youtube_dl
 
 absDir = os.getcwd()
 playlistFields = ["_id", "date", "dateStr", "contents", "name"]
@@ -42,8 +46,10 @@ class ApiGateway(object):
 				"vol": (int) (0-100),
 				"name": (string),
 				"artist": [(string)],
-				"start": (int) (in seconds,
-				"end": (int) (number of seconds from the end of video to stop")
+				"album": (string),
+				"genre": (string),
+				"start": (int) (in seconds),
+				"end": (int) (number of seconds from the end of video to stop)
 			}
 
 		Returns::
@@ -52,7 +58,7 @@ class ApiGateway(object):
 				"_id": (string),
 			}
 
-		:return: a dict containing the MongoDB objectId     ?
+		:return: a dict containing the MongoDB objectId
 		"""
 		# check that we actually have json
 		if hasattr(cherrypy.request, 'json'):
@@ -86,8 +92,10 @@ class ApiGateway(object):
 			{
 				"url": (string),
 				"type": (string),
-				"name": (string),
+				"song_names": [(string)],
 				"artist_names": [(string)],
+				"album_names": [(string)],
+				"genre_names": [(string)],
 				"start_date": (datetime),
 				"end_date": (datetime),
 				"_id": (string)
@@ -181,6 +189,8 @@ class ApiGateway(object):
 				"type": (string) (optional),
 				"name": (string) (optional),
 				"artist": [(string)] (optional),
+				"album": (string) (optional),
+				"genre": (string) (optional),
 				"vol": (int) (optional),
 				"start": (int) (optional),
 				"end": (int) (optional),
@@ -200,13 +210,13 @@ class ApiGateway(object):
 
 		# sanitize the input
 		myQuery = {}
-		for key in ["url", "type", "name", "artist", "vol", "start", "end"]:
+		for key in ["url", "type", "name", "artist", "album", "genre", "vol", "start", "end"]:
 			if key in data:
 				if key == "artist":
 					myQuery[key] = []
 					for artist in m_utils.checkValidData(key, data, list):
 						if isinstance(artist, str):
-							myQuery[key] = artist
+							myQuery[key].append(artist)
 						else:
 							raise cherrypy.HTTPError(400, "Invalid artist provided")
 				elif key == "type":
@@ -221,6 +231,7 @@ class ApiGateway(object):
 
 		myQuery["date"] = datetime.now()
 		inserted = self.colMusic.update_one({"_id": myID}, {"$set": myQuery})
+		#TODO: update artist, album, genre DBs
 		print("updated music:", inserted.raw_result)
 		return m_utils.cleanRet(self.colMusic.find_one({"_id": myID}))
 
@@ -310,11 +321,13 @@ class ApiGateway(object):
 
 		Expected input (no field present -> return all):
 			{
-				"name": (string),
+				"playlist_names": [(string)],
 				"start_date": (datetime),
 				"end_date": (datetime),
 				"artist_names": [(string)],
 				"song_names": [(string)],
+				"album_names": [(string)],
+				"genre_names": [(string)],
 				"_id": (string)
 			}
 		"""
@@ -399,3 +412,73 @@ class ApiGateway(object):
 		else:
 			raise cherrypy.HTTPError(400, "No data given")
 
+
+	@cherrypy.expose
+	@cherrypy.tools.json_in()
+	@cherrypy.tools.json_out()
+	def download(self):
+		"""
+		Downloads a lists of songs from youtube
+
+		Expected input:
+			{
+				"name": (string),
+				"songs": [(Music dict)],
+				"type": "mp3" or "mp4"
+			}
+
+		Output:
+			{
+				"path": (path to file or zipfile)
+			}
+		"""
+		# check that we actually have json
+		if hasattr(cherrypy.request, 'json'):
+			data = cherrypy.request.json
+		else:
+			raise cherrypy.HTTPError(400, 'No data was given')
+
+		# sanitize the input
+		for key in ["name", "songs", "type"]:
+			if key not in data:
+				raise cherrypy.HTTPError(400, "Invalid download parameters")
+			if key != "songs":
+				m_utils.checkValidData(key, data, str)
+			else:
+				for u in m_utils.checkValidData(key, data, dict):
+					if u in ["url", "title", "album", "artistStr", "genre"]:
+						m_utils.checkValidData(u, data[key], str)
+				for k in ["url", "title"]:
+					if k not in data[key]:
+						raise cherrypy.HTTPError(400, "Missing {} key".format(k))
+		if "songs" in data and "type" in data:
+			if data["type"] in ["mp3", "mp4"]:
+				class MyLogger(object):
+					def debug(self, msg):
+						print("debug:", msg)
+					def warning(self, msg):
+						print("warning:", msg)
+					def error(self, msg):
+						print("error:", msg)
+
+				# def my_hook(d):
+				# 	# print("HOOK")
+				# 	# print(d)
+				# 	if d["status"] == "finished":
+				# 		print("done downloading!")
+				randDir = uuid4()
+				yt_opts = {
+					"format": "bestaudio",
+					"postprocessors": [{
+						"key": "FFmpegExtractAudio",
+						"preferredcodec": data["type"],
+						"preferredquality": "0"
+					}],
+					"outtmpl": "download/{}/%(id)s.%(ext)s".format(randDir),		#TODO: replace this with a combination of artist-title; from input
+					"logger": MyLogger(),
+					# "progress_hooks": [my_hook]
+				}
+				#download
+				with youtube_dl.YoutubeDL(yt_opts) as ydl:
+					print(ydl.params)
+					print(ydl.download([s["url"] for s in data["songs"]]))	#TODO: output to a randomly named folder, and provide this link

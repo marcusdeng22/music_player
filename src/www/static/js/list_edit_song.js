@@ -63,14 +63,20 @@ app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$timeout', 
 
 	$scope.getSongData();
 
+	//search variables
 	$scope.songNameSearch = "";
+	$scope.songStartDate = "";
+	$scope.songEndDate = "";
+	$scope.songArtistSearch = "";
+	$scope.songAlbumSearch = "";
+	$scope.songGenreSearch = "";
 	$scope.advSearch = function() {
 		$scope.songDatashare.songIndices = [];
 		// create query
 		// available keys: "name", "start_date", "end_date", "artist_names" "_id"
 		var query = {};
 		if ($scope.songNameSearch != "") {
-			query["name"] = $scope.songNameSearch;
+			query["song_names"] = $scope.songNameSearch.split(",").map(i => i.trim()).filter(function(i) {return i != "";});
 		}
 		if (!($scope.songStartDate == undefined || $scope.songStartDate == "")) {
 			query["start_date"] = $scope.songStartDate;
@@ -80,7 +86,15 @@ app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$timeout', 
 		}
 		var sortByRelev = false;
 		if (!($scope.songArtistSearch == undefined || $scope.songArtistSearch == "")) {
-			query["artist_names"] = $scope.songArtistSearch.split(";").map(i => i.trim()).filter(function(i) {return i != "";});
+			query["artist_names"] = $scope.songArtistSearch.split(",").map(i => i.trim()).filter(function(i) {return i != "";});
+			sortByRelev = true;
+		}
+		if (!($scope.songAlbumSearch == undefined || $scope.songAlbumSearch == "")) {
+			query["album_names"] = $scope.songAlbumSearch.split(",").map(i => i.trim()).filter(function(i) {return i != "";});
+			sortByRelev = true;
+		}
+		if (!($scope.songGenreSearch == undefined || $scope.songGenreSearch == "")) {
+			query["genre_names"] = $scope.songGenreSearch.split(",").map(i => i.trim()).filter(function(i) {return i != "";});
 			sortByRelev = true;
 		}
 		console.log("query:", query)
@@ -91,6 +105,12 @@ app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$timeout', 
 			$scope.getSongData(query);
 		}
 	}
+
+	$(".song-search").keypress(function(evt) {
+		if (evt.which == 13) {	//enter key
+			$("#advSongSearchBtn").click();
+		}
+	});
 
 	$(function() {
 		//handle subtab click

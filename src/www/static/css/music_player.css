@@ -122,12 +122,12 @@
 }
 
 .joinCollapseContainer.collapse:not(.show) {	/*hidden state*/
-	height: calc(100% - 241px) !important;
+	height: calc(100% - 301px) !important;
 	display: block !important;
 }
 
 .joinCollapseContainer.collapsing {
-	height: calc(100% - 241px) !important;
+	height: calc(100% - 301px) !important;
 }
 
 [data-tip] {

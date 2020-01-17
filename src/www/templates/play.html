@@ -55,6 +55,7 @@
 				<button id="playPlaylist" class="btn btn-success" ng-disabled="songIndices.length != 1" ng-click="selectIndex(songIndices)">Play</button>
 				<button id="saveNewPlaylist" class="btn btn-primary" ng-disabled="!playlistData.touched" ng-click="savePlaylist()">Save</button>
 				<button id="removeFromPlaying" class="btn btn-danger" ng-disabled="songIndices.length == 0" ng-click="removeSelected()">Remove</button>
+				<button class="btn btn-success" ng-click="downloadPlaylist()">Download</button>
 			</div>
 		</div>
 	</div>

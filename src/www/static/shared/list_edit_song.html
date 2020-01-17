@@ -7,7 +7,9 @@
 	<div class="tab-content" style="margin: 10px; height: calc(100% - 50px);">
 		<div id="existingSongSearch" class="existingSongSearch tab-pane show active" role="tabpanel">
 			<div>
-				<input type="text" id="songNameSearch" ng-model="songNameSearch" ng-model-options='{debounce: 500}' ng-change="advSearch()" placeholder="Search for song name" style="width: 100%;">
+				<div data-tip="Use commas to separate entries" style="width: 100%">
+					<input type="text" id="songNameSearch" ng-model="songNameSearch" ng-model-options='{debounce: 500}' ng-change="advSearch()" placeholder="Search for song name" style="width: 100%;">
+				</div>
 				<a id="editCollapse" data-toggle="collapse" data-target=".songCollapse" href="">Advanced Search</a>
 				<div class="songCollapse collapse" style="padding-bottom: 10px;">
 					<div id="songDatePicker" class="input-daterange input-group" style="z-index: 1;">
@@ -19,13 +21,29 @@
 					</div>
 					<div class="input-group">
 						<span class="input-group-addon">Includes artists:</span>
-						<div data-tip="Use semicolons to separate entries">
-							<input type="text" id="songArtistSearch" class="input-sm form-control" ng-model="songArtistSearch">
+						<div data-tip="Use commas to separate entries">
+							<input type="text" class="song-search input-sm form-control" ng-model="songArtistSearch">
 						</div>
+						<span class="input-group-addon">OR</span>
 						<!--TODO: add a drop down for artists-->
 					</div>
 					<div class="input-group">
-						<button type="button" id="advSearchBtn" ng-click="advSearch()">Search</button>
+						<span class="input-group-addon">Includes albums:</span>
+						<div data-tip="Use commas to separate entries">
+							<input type="text" class="song-search input-sm form-control" ng-model="songAlbumSearch">
+						</div>
+						<span class="input-group-addon">OR</span>
+						<!--TODO: add a drop down for albums-->
+					</div>
+					<div class="input-group">
+						<span class="input-group-addon">Includes genres:</span>
+						<div data-tip="Use commas to separate entries">
+							<input type="text" class="song-search input-sm form-control" ng-model="songGenreSearch">
+						</div>
+						<!--TODO: add a drop down for genres-->
+					</div>
+					<div class="input-group">
+						<button type="button" id="advSongSearchBtn" ng-click="advSearch()">Search</button>
 					</div>
 				</div>
 			</div>

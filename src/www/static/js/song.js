@@ -1,5 +1,5 @@
-app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatcher', 'uiSortableMultiSelectionMethods', 'sortingFuncs', 'songDatashare',
-		function($scope, $http, $location, $timeout, dispatcher, uiSortableMultiSelectionMethods, sortingFuncs, songDatashare) {
+app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatcher', 'uiSortableMultiSelectionMethods', 'sortingFuncs', 'songDatashare', 'youtubeFuncs',
+		function($scope, $http, $location, $timeout, dispatcher, uiSortableMultiSelectionMethods, sortingFuncs, songDatashare, youtubeFuncs) {
 	//data model
 	$scope.songDatashare = songDatashare;
 
@@ -63,4 +63,13 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatc
 		songDatashare.resetEdit();
 		$("#songListTab").click();
 	};
+
+	$scope.downloadSongs = function() {
+		//TODO: use a modal, but temp send direct request
+		var songList = [];
+		for (var i = 0; i < songDatashare.songIndices.length; i ++) {
+			songList.push(songDatashare.songData[songDatashare.songIndices[i]]);
+		}
+		youtubeFuncs.download("test", songList);
+	}
 }]);

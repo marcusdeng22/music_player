@@ -26,7 +26,7 @@ app.value('dispatcher', {
 
 });
 
-app.factory("youtubeFuncs", function() {
+app.factory("youtubeFuncs", ["$http", function($http) {
 	var data = {};
 	function cleanUrl(id){
 		// return /([a-zA-Z0-9_\-]+)/.test(id) && RegExp.lastParen;
@@ -34,14 +34,26 @@ app.factory("youtubeFuncs", function() {
 	};
 
 	data.getThumbnail = function(item) {
-		console.log("THUMBNAIL");
-		console.log(item);
+		// console.log("THUMBNAIL");
+		// console.log(item);
 		if (item.url) {
 			return "https://img.youtube.com/vi/" + cleanUrl(item.url) + "/0.jpg";
 		}
 	}
+
+	data.download = function(name, songs, format="mp3") {
+		console.log("DOWNLOAD");
+		if (!Array.isArray(songs)) {
+			return;
+		}
+		$http.post("/download", {"name": name, "songs": songs, "type": format}).then(function(resp) {
+			console.log(resp);
+		}, function(err) {
+			console.log(err);
+		});
+	}
 	return data;
-});
+}]);
 
 app.factory("sortingFuncs", ["orderByFilter", function(orderBy) {
 	var sortingFuncs = {};
@@ -195,7 +207,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "
 		}
 	};
 	data.resetEdit = function() {
-		data.editData = {"url": "", "type": "youtube", "name": "", "artist": []};
+		data.editData = {"url": "", "type": "youtube", "name": "", "artist": [], "album": "", "genre": "", "vol": 100, "start": 0, "end": 0};
 	};
 	data.setEditData = function(dataToCopy) {
 		data.editData = angular.copy(dataToCopy);
@@ -221,11 +233,23 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "
 			if (key == "artist") {
 				//force to array if str
 				if (typeof data.editData[key] === "string" || data.editData[key] instanceof String) {
-					data.editData[key] = data.editData[key].split(",").filter(function(el) {return el;});
+					data.editData[key] = data.editData[key].split(";").filter(function(el) {return el;});
 				}
 			}
 		}
 		//unrequired keys
+		if (data.editData["album"] != undefined) {
+			data.editData["album"] = String(data.editData["album"]);
+		}
+		else {
+			data.editData["album"] = "";
+		}
+		if (data.editData["genre"] != undefined) {
+			data.editData["genre"] = String(data.editData["genre"]);
+		}
+		else {
+			data.editData["genre"] = "";
+		}
 		if (data.editData["vol"] != undefined) {
 			if (isNaN(parseInt(data.editData["vol"]))) {
 				data.editData["vol"] = 100;

@@ -16,7 +16,13 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	$scope.reverse = true;
 
 	//search vars
+	$scope.playlistNameSearch = "";
 	$scope.playlistStartDate = "";
+	$scope.playlistEndDate = "";
+	$scope.playlistSongSearch = "";
+	$scope.playlistArtistSearch = "";
+	$scope.playlistAlbumSearch = "";
+	$scope.playlistGenreSearch = "";
 
 	$scope.getPlaylistData = function(query={}, sortVar="date", sortRev=true, callback=null) {
 		$http.post("/findPlaylist", query).then(function(resp) {
@@ -35,12 +41,13 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 
 	$scope.getPlaylistData();
 
-	$scope.playlistNameSearch = "";
 	$scope.advSearch = function(callback=null) {
 		// create query
 		// available keys: "name", "start_date", "end_date", "song_names", "artist_names" "_id"
 		var query = {};
-		query["name"] = $scope.playlistNameSearch;
+		if (!($scope.playlistNameSearch == "")) {
+			query["playlist_names"] = $scope.playlistNameSearch.split(",").map(i => i.trim()).filter(function(i) {return i != "";});
+		}
 		if (!($scope.playlistStartDate == undefined || $scope.playlistStartDate == "")) {
 			query["start_date"] = $scope.playlistStartDate;
 		}
@@ -49,11 +56,19 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		}
 		var sortByRelev = false;
 		if (!($scope.playlistSongSearch == undefined || $scope.playlistSongSearch == "")) {
-			query["song_names"] = $scope.playlistSongSearch.split(";").map(i => i.trim()).filter(function(i) {return i != "";});
+			query["song_names"] = $scope.playlistSongSearch.split(",").map(i => i.trim()).filter(function(i) {return i != "";});
 			sortByRelev = true;
 		}
 		if (!($scope.playlistArtistSearch == undefined || $scope.playlistArtistSearch == "")) {
-			query["artist_names"] = $scope.playlistArtistSearch.split(";").map(i => i.trim()).filter(function(i) {return i != "";});
+			query["artist_names"] = $scope.playlistArtistSearch.split(",").map(i => i.trim()).filter(function(i) {return i != "";});
+			sortByRelev = true;
+		}
+		if (!($scope.playlistAlbumSearch == undefined || $scope.playlistAlbumSearch == "")) {
+			query["album_names"] = $scope.playlistAlbumSearch.split(",").map(i => i.trim()).filter(function(i) {return i != "";});
+			sortByRelev = true;
+		}
+		if (!($scope.playlistGenreSearch == undefined || $scope.playlistGenreSearch == "")) {
+			query["genre_names"] = $scope.playlistGenreSearch.split(",").map(i => i.trim()).filter(function(i) {return i != "";});
 			sortByRelev = true;
 		}
 		console.log("query:", query)
@@ -69,10 +84,13 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		$scope.playlistNameSearch = "";
 		$scope.playlistSongSearch = "";
 		$scope.playlistArtistSearch = "";
+		$scope.playlistAlbumSearch = "";
+		$scope.playlistGenreSearch = "";
 		$('#playlistStartDate, #playlistEndDate').datepicker("clearDates");
 	}
 
-	$("#playlistSongSearch,#playlistArtistSearch").keypress(function(evt) {
+	// $("#playlistSongSearch,#playlistArtistSearch").keypress(function(evt) {
+	$(".playlist-search").keypress(function(evt) {
 		if (evt.which == 13) {	//enter key
 			$("#advSearchBtn").click();
 		}
