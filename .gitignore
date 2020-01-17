@@ -1,3 +1,6 @@
+!src/python/music_player
+src/python/*
+
 src/python/.notwindows
 
 # Development tool related things

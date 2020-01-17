@@ -412,6 +412,16 @@ class ApiGateway(object):
 		else:
 			raise cherrypy.HTTPError(400, "No data given")
 
+	def multiDownload(self, ytdl, urlList):
+		import threading
+		threads = []
+		for url in urlList:
+			print(url)
+			t = threading.Thread(target=ytdl.download, args=([url],))
+			threads.append(t)
+			t.start()
+		for t in threads:
+			t.join()
 
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
@@ -445,12 +455,19 @@ class ApiGateway(object):
 			if key != "songs":
 				m_utils.checkValidData(key, data, str)
 			else:
-				for u in m_utils.checkValidData(key, data, dict):
-					if u in ["url", "title", "album", "artistStr", "genre"]:
-						m_utils.checkValidData(u, data[key], str)
-				for k in ["url", "title"]:
-					if k not in data[key]:
-						raise cherrypy.HTTPError(400, "Missing {} key".format(k))
+				for s in m_utils.checkValidData(key, data, list):
+					print(s)
+					if isinstance(s, dict):
+						for u in s:
+							if u in ["url", "name", "album", "artistStr", "genre"]:
+								print(u)
+								m_utils.checkValidData(u, s, str)
+						print("passed")
+						for k in ["url", "name"]:
+							if k not in s:
+								raise cherrypy.HTTPError(400, "Missing {} key".format(k))
+					else:
+						raise cherrypy.HTTPError(400, "Invalid data download")
 		if "songs" in data and "type" in data:
 			if data["type"] in ["mp3", "mp4"]:
 				class MyLogger(object):
@@ -481,4 +498,6 @@ class ApiGateway(object):
 				#download
 				with youtube_dl.YoutubeDL(yt_opts) as ydl:
 					print(ydl.params)
-					print(ydl.download([s["url"] for s in data["songs"]]))	#TODO: output to a randomly named folder, and provide this link
+					# print(ydl.download([s["url"] for s in data["songs"]]))	#TODO: output to a randomly named folder, and provide this link
+					self.multiDownload(ydl, [s["url"] for s in data["songs"]])
+					print("done")
