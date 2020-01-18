@@ -13,6 +13,7 @@ The following tools were used:
 - http://github.com/sroze/ngInfiniteScroll/tree/1.0.0
 - https://www.bootstraptoggle.com/
 - https://github.com/ytdl-org/youtube-dl
+- https://eyed3.readthedocs.io/en/latest/
 Icons:
 - Icons made by <a href="https://www.flaticon.com/authors/roundicons" title="Roundicons">Roundicons</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a>
 - Icons made by <a href="https://www.flaticon.com/authors/dave-gandy" title="Dave Gandy">Dave Gandy</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>

@@ -41,12 +41,9 @@ app.factory("youtubeFuncs", ["$http", function($http) {
 		}
 	}
 
-	data.download = function(name, songs, format="mp3") {
+	data.download = function(query) {
 		console.log("DOWNLOAD");
-		if (!Array.isArray(songs)) {
-			return;
-		}
-		$http.post("/download", {"name": name, "songs": songs, "type": format}).then(function(resp) {
+		$http.post("/download", {"name": query.name, "songs": query.songs, "type": query.format}).then(function(resp) {
 			console.log(resp);
 		}, function(err) {
 			console.log(err);

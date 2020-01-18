@@ -42,6 +42,7 @@
 	<script src="/js/song.js"></script>
 	<script src="/js/list_edit_song.js"></script>
 	<script src="/js/editSong.js"></script>
+	<script src="/js/download.js"></script>
 	<link rel="stylesheet" type="text/css" href="/css/music_player.css">
 </head>
 
@@ -53,6 +54,12 @@
 	<%include file="playlist.html"/>
 	<%include file="play.html"/>
 	<%include file="song.html"/>
+</div>
+
+<div id="downloadPlaylistModal" class="modal" style="display: none;">
+	<div class="modal-content" style="width:75%;">
+		<%include file="download.html"/>
+	</div>
 </div>
 
 </body>

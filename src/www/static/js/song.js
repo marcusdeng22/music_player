@@ -70,6 +70,8 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatc
 		for (var i = 0; i < songDatashare.songIndices.length; i ++) {
 			songList.push(songDatashare.songData[songDatashare.songIndices[i]]);
 		}
-		youtubeFuncs.download("test", songList);
+		// youtubeFuncs.download("test", songList);
+
+		dispatcher.emit("loadDownload", songList);
 	}
 }]);
