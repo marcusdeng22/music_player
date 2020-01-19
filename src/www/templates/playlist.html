@@ -113,10 +113,10 @@
 
 	<div id="addMusicListModal" class="modal" style="display: none;">
 		<div class="modal-content" style="width:75%;">
-			<div id="playlistSongEditDiv">
+			<div id="playlistSongEditDiv" style="height: 700px;">
 				<!-- put file here -->
 			</div>
-			<div>
+			<div style="margin: 10px 5px;">
 				<button type="button" class="col-md-3 btn btn-success" ng-click="submitSongs()" ng-disabled="(songDatashare.tab=='#existingSongSearch' && songDatashare.songIndices.length == 0) || (songDatashare.tab=='#addNewSong' && songDatashare.checkSongFields())">{{songDatashare.tab=="#existingSongSearch" ? "Add Selected" : "Add Song"}}</button>
 				<button type="button" class="col-md-3 btn btn-danger" ng-click="closeAddSongsModal()">Cancel</button>
 			</div>

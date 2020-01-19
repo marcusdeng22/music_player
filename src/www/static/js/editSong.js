@@ -4,7 +4,9 @@ app.controller('editSongCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	$scope.songDatashare = songDatashare;
 	$scope.$apply();
 
-	$scope.songFields = ["type", "url", "name", "artist", "album", "genre", "vol", "start", "end"];
+	// $scope.songFields = ["type", "url", "name", "artist", "album", "genre", "vol", "start", "end"];
+	$scope.songFields = ["type", "url", "name", "artist", "album", "genre"];
+	$scope.songNumFields = ["vol", "start", "end"];
 
 	$scope.previewSong = function() {
 		console.log("previewing song");

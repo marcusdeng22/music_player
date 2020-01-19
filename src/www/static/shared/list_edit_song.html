@@ -52,7 +52,7 @@
 				<button type="button" ng-click="sortBy('relev')">Relevance<img ng-class="sortGlyph('relev')" style="left: 2px;"></img></button>
 				<button type="button" ng-click="sortBy('date')" style="float: right;">Date<img ng-class="sortGlyph('date')" style="left: 2px;"></img></button>
 			</div>
-			<div class="joinCollapseContainer sortableDataContainer songCollapse collapse show" style="height: calc(100% - 100px);">
+			<div class="joinCollapseContainer sortableDataContainer songCollapse collapse show" style="height: calc(100% - 85px);">
 				<div ui-sortable="sortableSongs" ng-model="songDatashare.songData" id="editSongSelect" class="ng-cloak list" style="width: 100%; min-height: 100%;">
 					<div ui-sortable-selectable ng-repeat="song in songDatashare.songData track by $index" class="item songItem">
 						<!-- TODO: make this use infinite scroll -->
@@ -67,7 +67,7 @@
 				</div>
 			</div>
 		</div>
-		<div id="addNewSong" class="addNewSong tab-pane" role="tabpanel">
+		<div id="addNewSong" class="addNewSong tab-pane" role="tabpanel" style="overflow: auto;">
 			<p>new song here</p>
 		</div>
 	</div>
