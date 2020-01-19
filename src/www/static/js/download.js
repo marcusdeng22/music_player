@@ -7,10 +7,13 @@ app.controller('downloadCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	$scope.genreOptions = "Genre";
 	$scope.outputFormat = "mp3";
 	$scope.readyDownload = false;
+	$scope.callDone = null;
 
 	$scope.data = [];
 
 	$scope.closeDownload = function() {
+		$scope.callDone = null;
+		$scope.readyDownload = false;
 		$("#downloadPlaylistModal").hide();
 	};
 
@@ -25,7 +28,7 @@ app.controller('downloadCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		}
 	});
 
-	dispatcher.on("loadDownload", function(data) {
+	dispatcher.on("loadDownload", function(data, callback) {
 		$("#downloadPlaylistModal").css("display", "flex");
 		//clean data and prepare to download
 		$scope.data = data;
@@ -36,6 +39,7 @@ app.controller('downloadCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 			$scope.downloadName = "";
 		}
 		$scope.readyDownload = false;
+		$scope.callDone = callback;
 		$scope.cleanData();
 	});
 
@@ -112,6 +116,10 @@ app.controller('downloadCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 			var link = $('<a href="' + resp.data.path + '" download="' + resp.data.name + '">download</a>').appendTo("#downloadPathDiv");
 			link[0].click()
 			link.remove();
+			if ($scope.callDone != null) {
+				$scope.callDone();
+			}
+			$scope.closeDownload();
 		}, function(err) {
 			console.log(err);
 		});

@@ -71,7 +71,7 @@ class ApiGateway(object):
 			raise cherrypy.HTTPError(400, 'No data was given')
 
 		# sanitize the input
-		myRequest = m_utils.createMusic(data)
+		myRequest = m_utils.createMusic(data, self.colMusic)
 		myRequest["date"] = datetime.now()
 
 		# insert the data into the database

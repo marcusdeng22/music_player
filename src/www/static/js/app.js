@@ -8,10 +8,10 @@ var app = angular.module('MusicApp', ['ui.sortable', 'ui.sortable.multiselection
 app.value('dispatcher', {
 
 	callbacks: {},
-	emit: function(event, data) {
+	emit: function(event, data, f=null) {
 		if (this.callbacks[event]) {
 			this.callbacks[event].forEach(function (callback) {
-				callback(data);
+				callback(data, f);
 			})
 		}
 	},

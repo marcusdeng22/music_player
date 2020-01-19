@@ -65,13 +65,21 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatc
 	};
 
 	$scope.downloadSongs = function() {
-		//TODO: use a modal, but temp send direct request
 		var songList = [];
 		for (var i = 0; i < songDatashare.songIndices.length; i ++) {
 			songList.push(songDatashare.songData[songDatashare.songIndices[i]]);
 		}
-		// youtubeFuncs.download("test", songList);
 
 		dispatcher.emit("loadDownload", songList);
+	};
+
+	$scope.addAndDownload = function() {
+		if (songDatashare.checkSongFields()) {
+			return;
+		}
+		console.log("add + download");
+		console.log(songDatashare.editData);
+		dispatcher.emit("loadDownload", [songDatashare.editData], songDatashare.addSong);
+		// songDatashare.addSong();	//this resets the input
 	}
 }]);

@@ -98,12 +98,16 @@ def checkValidID(data):
 		else:
 			raise cherrypy.HTTPError(400, "Object id not valid")
 
-def createMusic(data):
+def createMusic(data, musicDB):
 	myMusic = dict()
 
 	# string fields
 	for key in ("url", "name", "album", "genre"):
 		myMusic[key] = checkValidData(key, data, str)
+		if key == "url":
+			# check if url already exists; deny if true
+			if len(musicDB.find_one({"url": myMusic[key]})) != 0:
+				raise cherrypy.HTTPError(400, "Song URL already exists")
 	if data["type"] in supportedTypes:
 		myMusic["type"] = checkValidData("type", data, str)
 	else:
