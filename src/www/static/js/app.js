@@ -28,7 +28,7 @@ app.value('dispatcher', {
 
 app.factory("youtubeFuncs", ["$http", function($http) {
 	var data = {};
-	function cleanUrl(id){
+	data.cleanUrl = function(id){
 		// return /([a-zA-Z0-9_\-]+)/.test(id) && RegExp.lastParen;
 		return id.match(/^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*/)[1];
 	};
@@ -37,18 +37,18 @@ app.factory("youtubeFuncs", ["$http", function($http) {
 		// console.log("THUMBNAIL");
 		// console.log(item);
 		if (item.url) {
-			return "https://img.youtube.com/vi/" + cleanUrl(item.url) + "/0.jpg";
+			return "https://img.youtube.com/vi/" + data.cleanUrl(item.url) + "/0.jpg";
 		}
 	}
 
-	data.download = function(query) {
-		console.log("DOWNLOAD");
-		$http.post("/download", {"name": query.name, "songs": query.songs, "type": query.format}).then(function(resp) {
-			console.log(resp);
-		}, function(err) {
-			console.log(err);
-		});
-	}
+	// data.download = function(query) {
+	// 	console.log("DOWNLOAD");
+	// 	$http.post("/download", {"name": query.name, "songs": query.songs, "type": query.format}).then(function(resp) {
+	// 		console.log(resp);
+	// 	}, function(err) {
+	// 		console.log(err);
+	// 	});
+	// }
 	return data;
 }]);
 

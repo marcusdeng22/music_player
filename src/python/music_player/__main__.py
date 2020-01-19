@@ -9,6 +9,9 @@ def main():
     cherrypy.Application.wwwDir = os.path.join(os.path.dirname(os.path.realpath(__file__)),
         os.path.join('..', '..', 'www'))
 
+    # cherrypy.Application.downloadDir = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+    #     os.path.join('..', 'download'))
+
     server_config = os.path.abspath(os.path.join(
         os.path.dirname(os.path.realpath(__file__)),
         '..', '..', 'etc', 'server.conf'))

@@ -27,7 +27,7 @@ app.controller('downloadCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 
 	dispatcher.on("loadDownload", function(data) {
 		$("#downloadPlaylistModal").css("display", "flex");
-		//clean data and prepare to send to app.js
+		//clean data and prepare to download
 		$scope.data = data;
 		if (data.length == 1) {
 			$scope.downloadName = data[0]["name"];
@@ -49,6 +49,10 @@ app.controller('downloadCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		myQuery["format"] = $scope.outputFormat;
 
 		//clean data itself
+		if ($scope.data.length == 0) {
+			$scope.readyDownload = false;
+			return;
+		}
 		var mySongIDs = new Set();
 		var mySongs = [];
 		for (var i = 0; i < $scope.data.length; i ++) {
@@ -62,6 +66,7 @@ app.controller('downloadCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 				return;
 			}
 			mySong["url"] = $scope.data[i]["url"];
+			mySong["id"] = youtubeFuncs.cleanUrl(mySong["url"]);
 			if ($scope.data[i]["name"] == null) {
 				$scope.readyDownload = false;
 				return;
@@ -100,7 +105,15 @@ app.controller('downloadCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	};
 
 	$scope.download = function() {
-		//send to app.js to download
-		youtubeFuncs.download($scope.cleanData());
+		var query = $scope.cleanData();
+		console.log("DOWNLOAD");
+		$http.post("/download", {"name": query.name, "songs": query.songs, "type": query.format}).then(function(resp) {
+			console.log(resp);
+			var link = $('<a href="' + resp.data.path + '" download="' + resp.data.name + '">download</a>').appendTo("#downloadPathDiv");
+			link[0].click()
+			link.remove();
+		}, function(err) {
+			console.log(err);
+		});
 	};
 }]);

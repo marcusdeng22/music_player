@@ -4,6 +4,9 @@ from __future__ import unicode_literals
 
 import cherrypy
 import os
+import threading
+import glob
+import zipfile
 import pymongo as pm
 
 from bson.objectid import ObjectId
@@ -15,6 +18,7 @@ import music_player.utils as m_utils
 from datetime import datetime, timedelta
 
 import youtube_dl
+import eyed3
 
 absDir = os.getcwd()
 playlistFields = ["_id", "date", "dateStr", "contents", "name"]
@@ -413,11 +417,32 @@ class ApiGateway(object):
 			raise cherrypy.HTTPError(400, "No data given")
 
 	def multiDownload(self, ytdl, urlList):
-		import threading
 		threads = []
 		for url in urlList:
 			print(url)
 			t = threading.Thread(target=ytdl.download, args=([url],))
+			threads.append(t)
+			t.start()
+		for t in threads:
+			t.join()
+
+	def tagSong(self, dest, song, format):
+		targFile = "{}/{}.{}".format(dest, song["name"], format)
+		os.rename("{}/{}.{}".format(dest, song["id"], format), targFile)
+		toTag = eyed3.load(targFile)
+		toTag.tag.title = song["name"]
+		if "album" in song:
+			toTag.tag.album = song["album"]
+		if "artistStr" in song:
+			toTag.tag.artist = song["artistStr"]
+		if "genre" in song:
+			toTag.tag.genre = song["genre"]
+		toTag.tag.save()
+
+	def multiTag(self, dest, songs, format):
+		threads = []
+		for s in songs:
+			t = threading.Thread(target=self.tagSong, args=(dest, s, format))
 			threads.append(t)
 			t.start()
 		for t in threads:
@@ -428,7 +453,7 @@ class ApiGateway(object):
 	@cherrypy.tools.json_out()
 	def download(self):
 		"""
-		Downloads a lists of songs from youtube
+		Downloads a lists of songs from youtube and prepares them for client side download
 
 		Expected input:
 			{
@@ -459,45 +484,66 @@ class ApiGateway(object):
 					print(s)
 					if isinstance(s, dict):
 						for u in s:
-							if u in ["url", "name", "album", "artistStr", "genre"]:
+							if u in ["url", "id", "name", "album", "artistStr", "genre"]:
 								print(u)
 								m_utils.checkValidData(u, s, str)
 						print("passed")
-						for k in ["url", "name"]:
+						for k in ["url", "id", "name"]:
 							if k not in s:
 								raise cherrypy.HTTPError(400, "Missing {} key".format(k))
 					else:
 						raise cherrypy.HTTPError(400, "Invalid data download")
-		if "songs" in data and "type" in data:
-			if data["type"] in ["mp3", "mp4"]:
-				class MyLogger(object):
-					def debug(self, msg):
-						print("debug:", msg)
-					def warning(self, msg):
-						print("warning:", msg)
-					def error(self, msg):
-						print("error:", msg)
+		if "songs" in data and "type" in data and data["type"] in ["mp3", "mp4"]:
+			class MyLogger(object):
+				def debug(self, msg):
+					print("debug:", msg)
+				def warning(self, msg):
+					print("warning:", msg)
+				def error(self, msg):
+					print("error:", msg)
 
-				# def my_hook(d):
-				# 	# print("HOOK")
-				# 	# print(d)
-				# 	if d["status"] == "finished":
-				# 		print("done downloading!")
-				randDir = uuid4()
-				yt_opts = {
-					"format": "bestaudio",
-					"postprocessors": [{
-						"key": "FFmpegExtractAudio",
-						"preferredcodec": data["type"],
-						"preferredquality": "0"
-					}],
-					"outtmpl": "download/{}/%(id)s.%(ext)s".format(randDir),		#TODO: replace this with a combination of artist-title; from input
-					"logger": MyLogger(),
-					# "progress_hooks": [my_hook]
-				}
-				#download
-				with youtube_dl.YoutubeDL(yt_opts) as ydl:
-					print(ydl.params)
-					# print(ydl.download([s["url"] for s in data["songs"]]))	#TODO: output to a randomly named folder, and provide this link
-					self.multiDownload(ydl, [s["url"] for s in data["songs"]])
-					print("done")
+			# def my_hook(d):
+			# 	# print("HOOK")
+			# 	# print(d)
+			# 	if d["status"] == "finished":
+			# 		print("done downloading!")
+			randDir = "download/{}".format(uuid4())
+			if not os.path.exists(randDir):
+				os.makedirs(randDir)
+			yt_opts = {
+				"format": "bestaudio",
+				"postprocessors": [{
+					"key": "FFmpegExtractAudio",
+					"preferredcodec": data["type"],
+					"preferredquality": "0"
+				}],
+				"outtmpl": "{}/%(id)s.%(ext)s".format(randDir),		#TODO: replace this with a combination of artist-title; from input
+				"logger": MyLogger(),
+				# "progress_hooks": [my_hook]
+			}
+			#download
+			with youtube_dl.YoutubeDL(yt_opts) as ydl:
+				print(ydl.params)
+				urlList = [s["url"] for s in data["songs"]]
+				# print(ydl.download([s["url"] for s in data["songs"]]))	#TODO: output to a randomly named folder, and provide this link
+				self.multiDownload(ydl, urlList)
+				print("done downloading")
+			# now rename to titles and tag
+			self.multiTag(randDir, data["songs"], data["type"])
+			print("done tagging")
+			# now zip if multiple
+			retName = ""
+			if len(data["songs"]) > 1:
+				# print("directory:")
+				# for _,_,files in os.walk(randDir):
+				# 	print(files)
+				retName = "{}/{}.zip".format(randDir, data["name"])
+				with zipfile.ZipFile(retName, "w") as myZip:
+					for f in glob.glob("{}/*.{}".format(randDir, data["type"])):
+						myZip.write(f, os.path.basename(f))
+						os.remove(f)
+			else:
+				retName = "{}/{}.{}".format(randDir, data["name"], data["type"])
+			return {"path": retName, "name": os.path.basename(retName)}
+		else:
+			raise cherrypy.HTTPError(400, "Missing download data")
