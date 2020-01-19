@@ -32,8 +32,11 @@ app.controller('downloadCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		$("#downloadPlaylistModal").css("display", "flex");
 		//clean data and prepare to download
 		$scope.data = data;
-		if (data.length == 1) {
-			$scope.downloadName = data[0]["name"];
+		if (data.name != null) {
+			$scope.downloadName = data.name;
+		}
+		else if (data.songs.length == 1) {
+			$scope.downloadName = data.songs[0]["name"];
 		}
 		else {
 			$scope.downloadName = "";
@@ -53,51 +56,51 @@ app.controller('downloadCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		myQuery["format"] = $scope.outputFormat;
 
 		//clean data itself
-		if ($scope.data.length == 0) {
+		if ($scope.data.length == 0 || $scope.data.songs == null || $scope.data.songs.length == 0) {
 			$scope.readyDownload = false;
 			return;
 		}
 		var mySongIDs = new Set();
 		var mySongs = [];
-		for (var i = 0; i < $scope.data.length; i ++) {
-			if (mySongIDs.has($scope.data[i]["_id"])) {
+		for (var i = 0; i < $scope.data.songs.length; i ++) {
+			if (mySongIDs.has($scope.data.songs[i]["_id"])) {
 				continue;
 			}
-			mySongIDs.add($scope.data[i]["_id"]);
+			mySongIDs.add($scope.data.songs[i]["_id"]);
 			var mySong = {};
-			if ($scope.data[i]["url"] == null) {
+			if ($scope.data.songs[i]["url"] == null) {
 				$scope.readyDownload = false;
 				return;
 			}
-			mySong["url"] = $scope.data[i]["url"];
+			mySong["url"] = $scope.data.songs[i]["url"];
 			mySong["id"] = youtubeFuncs.cleanUrl(mySong["url"]);
-			if ($scope.data[i]["name"] == null) {
+			if ($scope.data.songs[i]["name"] == null) {
 				$scope.readyDownload = false;
 				return;
 			}
-			mySong["name"] = $scope.data[i]["name"];
+			mySong["name"] = $scope.data.songs[i]["name"];
 			switch ($scope.artistOptions) {
 				case "All":
-					mySong["artistStr"] = $scope.data[i]["artistStr"] || "";
+					mySong["artistStr"] = $scope.data.songs[i]["artistStr"] || "";
 					break;
 				case "First":
-					mySong["artistStr"] = $scope.data[i]["artist"][0] || "";
+					mySong["artistStr"] = $scope.data.songs[i]["artist"][0] || "";
 					break;
 			}
 			switch ($scope.albumOptions) {
 				case "Album":
-					mySong["album"] = $scope.data[i]["album"] || "";
+					mySong["album"] = $scope.data.songs[i]["album"] || "";
 					break;
 				case "AllArtists":
-					mySong["album"] = $scope.data[i]["artistStr"] || "";
+					mySong["album"] = $scope.data.songs[i]["artistStr"] || "";
 					break;
 				case "FirstArtist":
-					mySong["album"] = $scope.data[i]["artist"][0] || "";
+					mySong["album"] = $scope.data.songs[i]["artist"][0] || "";
 					break;
 			}
 			switch ($scope.genreOptions) {
 				case "Genre":
-					mySong["genre"] = $scope.data[i]["genre"] || "";
+					mySong["genre"] = $scope.data.songs[i]["genre"] || "";
 					break;
 			}
 			mySongs.push(mySong);

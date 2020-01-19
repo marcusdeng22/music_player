@@ -1,4 +1,4 @@
-!src/python/music_player
+src/python/download/*
 src/python/*
 
 src/python/.notwindows

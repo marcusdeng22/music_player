@@ -128,7 +128,8 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 	};
 
 	$scope.$on("$locationChangeStart", function() {
-		if ($scope.playem != null) {
+		if ($scope.playem != null && $scope.playem.getPlayers().length > 0 && $scope.playem.getCurrentTrack() != null) {
+			console.log($scope.playem.getPlayers());
 			$scope.playem.pause();
 		}
 		//TODO: check if touched, and if true, verify to discard or save
@@ -282,4 +283,8 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 			});
 		}
 	};
+
+	$scope.downloadPlaylist = function() {
+		dispatcher.emit("loadDownload", {"name": $scope.playlistData.name, "songs": $scope.playlistData.contents})
+	}
 }]);

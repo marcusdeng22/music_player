@@ -504,6 +504,31 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 		})
 	}
 
+	//download playlist
+	$scope.downloadPlaylist = function() {
+		var downloadData = {
+			"songs": [],
+			//"name" if single playlist
+		}
+		if ($scope.playlistIndices.length == 1) {
+			downloadData["songs"] = $scope.playlistData[$scope.playlistIndices]["contents"];
+			downloadData["name"] = $scope.playlistData[$scope.playlistIndices]["name"];
+		}
+		else {
+			$scope.playlistIndices.sort((a, b) => a-b);
+			for (var i = 0; i < $scope.playlistIndices.length; i ++) {	//download removes duplicates
+				downloadData["songs"] = downloadData["songs"].concat($scope.playlistData[$scope.playlistIndices[i]]["contents"]);
+			}
+		}
+		//resolve the contents to the actual data
+		$http.post("/findMusicList", {"content": downloadData["songs"]}).then(function(resp) {
+			downloadData["songs"] = resp["data"];
+			dispatcher.emit("loadDownload", downloadData);
+		}, function(err) {
+			console.log(err);
+		});
+	}
+
 	//SONG BUTTONS##################################################################################################################################
 	function getSongIDList() {
 		var idList = [];

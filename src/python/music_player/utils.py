@@ -106,7 +106,7 @@ def createMusic(data, musicDB):
 		myMusic[key] = checkValidData(key, data, str)
 		if key == "url":
 			# check if url already exists; deny if true
-			if len(musicDB.find_one({"url": myMusic[key]})) != 0:
+			if musicDB.find_one({"url": myMusic[key]}) != None:
 				raise cherrypy.HTTPError(400, "Song URL already exists")
 	if data["type"] in supportedTypes:
 		myMusic["type"] = checkValidData("type", data, str)

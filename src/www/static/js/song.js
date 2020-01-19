@@ -70,7 +70,7 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatc
 			songList.push(songDatashare.songData[songDatashare.songIndices[i]]);
 		}
 
-		dispatcher.emit("loadDownload", songList);
+		dispatcher.emit("loadDownload", {"songs": songList});
 	};
 
 	$scope.addAndDownload = function() {
@@ -79,7 +79,7 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatc
 		}
 		console.log("add + download");
 		console.log(songDatashare.editData);
-		dispatcher.emit("loadDownload", [songDatashare.editData], songDatashare.addSong);
+		dispatcher.emit("loadDownload", {"songs": [songDatashare.editData]}, songDatashare.addSong);
 		// songDatashare.addSong();	//this resets the input
 	}
 }]);
