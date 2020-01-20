@@ -1,10 +1,7 @@
-// var app = angular.module('MusicApp', []);
-var app = angular.module('MusicApp', ['ui.sortable', 'ui.sortable.multiselection', 'infinite-scroll']);
-// app.config(["$controllerProvider", function($controllerProvider) {
-// 	app.register = {
-// 		controller: $controllerProvider.register
-// 	};
-// }]);
+// import {Spinner} from "spin.js";
+
+var app = angular.module('MusicApp', ['ui.sortable', 'ui.sortable.multiselection', 'infinite-scroll', 'darthwade.loading']);
+
 app.value('dispatcher', {
 
 	callbacks: {},
@@ -356,21 +353,3 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "
 	}
 	return data;
 }]);
-// console.log("hi");
-// angular.element('[ui-sortable]').on('ui-sortable-selectionschanged', function (e, args) {
-//     console.log("selection changed");
-// //     var $this = $(this);
-// //     console.log($this);
-// //     var selectedItemIndexes = $this.find('.ui-sortable-selected')//, .' + $this[0]["id"])
-// //     .map(function(i, element){
-// //       return $(this).index();
-// //     })
-// //     .toArray();
-// //     console.log(selectedItemIndexes);
-
-// //     //this gets the actual objects stored in elements
-// //     // var selectedItems = $.map(selectedItemIndexes, function(i) {
-// //     //   return $scope.list[i]
-// //     // });
-// //     // console.log(selectedItems);
-// });

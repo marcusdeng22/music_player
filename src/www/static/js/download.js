@@ -1,5 +1,5 @@
-app.controller('downloadCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatcher', 'sortingFuncs', 'songDatashare', 'youtubeFuncs',
-		function($scope, $http, $location, $timeout, dispatcher, sortingFuncs, songDatashare, youtubeFuncs) {
+app.controller('downloadCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatcher', 'sortingFuncs', 'songDatashare', 'youtubeFuncs', '$loading',
+		function($scope, $http, $location, $timeout, dispatcher, sortingFuncs, songDatashare, youtubeFuncs, $loading) {
 	//scope vars
 	$scope.downloadName = "";
 	$scope.artistOptions = "All";
@@ -112,10 +112,12 @@ app.controller('downloadCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	};
 
 	$scope.download = function() {
+		$loading.start("downloadCtrl");
 		var query = $scope.cleanData();
 		console.log("DOWNLOAD");
 		$http.post("/download", {"name": query.name, "songs": query.songs, "type": query.format}).then(function(resp) {
 			console.log(resp);
+			$loading.finish("downloadCtrl");
 			var link = $('<a href="' + resp.data.path + '" download="' + resp.data.name + '">download</a>').appendTo("#downloadPathDiv");
 			link[0].click()
 			link.remove();

@@ -14,6 +14,8 @@ The following tools were used:
 - https://www.bootstraptoggle.com/
 - https://github.com/ytdl-org/youtube-dl
 - https://eyed3.readthedocs.io/en/latest/
+- https://spin.js.org/
+- https://github.com/darthwade/angular-loading
 Icons:
 - Icons made by <a href="https://www.flaticon.com/authors/roundicons" title="Roundicons">Roundicons</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a>
 - Icons made by <a href="https://www.flaticon.com/authors/dave-gandy" title="Dave Gandy">Dave Gandy</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
