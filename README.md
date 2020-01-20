@@ -1,7 +1,7 @@
 # Custom Music Player
 
 ## dev inst
-1. install python3, pip, mongodb, ffmpeg and create a virtual env
+1. install python3, pip, mongodb, ffmpeg, zlib (for zip) and create a virtual env
 2. run scripts/install_dependencies.sh
 3. populate database: mongo scripts/test_db.js
 

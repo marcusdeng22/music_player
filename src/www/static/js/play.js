@@ -230,27 +230,30 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 	$scope.getThumbnail = youtubeFuncs.getThumbnail;
 
 	$scope.removeSelected = function() {
-		//remove from scope, then set queue, then play the next track if removing currently playing (handled in setQueue)
-		$scope.playlistData.touched = true;
-		var lastSelectedIndex = $scope.nowPlayingIndex;
-		var reduce = false;
-		$scope.songIndices.sort((a, b) => a-b);
-		for (var i = $scope.songIndices.length - 1; i >= 0; i--) {
-			$scope.playlistData.contents.splice($scope.songIndices[i], 1);
-			if (lastSelectedIndex == $scope.songIndices[i]) {
-				reduce = true;
+		if (confirm("Remove selected song(s)?")) {
+			//remove from scope, then set queue, then play the next track if removing currently playing (handled in setQueue)
+			$scope.playlistData.touched = true;
+			var lastSelectedIndex = $scope.nowPlayingIndex;
+			var reduce = false;
+			$scope.songIndices.sort((a, b) => a-b);
+			for (var i = $scope.songIndices.length - 1; i >= 0; i--) {
+				$scope.playlistData.contents.splice($scope.songIndices[i], 1);
+				if (lastSelectedIndex == $scope.songIndices[i]) {
+					reduce = true;
+				}
+				else if (reduce && lastSelectedIndex < $scope.songIndices[i]) {
+					lastSelectedIndex --;
+				}
 			}
-			else if (reduce && lastSelectedIndex < $scope.songIndices[i]) {
-				lastSelectedIndex --;
+			if ($scope.playlistData.contents.length == 0) {
+				$scope.playem.clearQueue();
+				$scope.playem.stop();
+				$("#mainPlayer").empty().append("Select a playlist first!");
+				$scope.songIndices = [];
 			}
-		}
-		if ($scope.playlistData.contents.length == 0) {
-			$scope.playem.clearQueue();
-			$scope.playem.stop();
-			$("#mainPlayer").empty();
-		}
-		else {
-			setQueue(Math.min(lastSelectedIndex, $scope.playlistData.contents.length - 1));
+			else {
+				setQueue(Math.min(lastSelectedIndex, $scope.playlistData.contents.length - 1));
+			}
 		}
 	};
 

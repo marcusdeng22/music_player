@@ -52,7 +52,9 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatc
 	});
 
 	$scope.removeSongs = function() {
-		songDatashare.removeSongs();
+		if (confirm("Remove selected song(s)?")) {
+			songDatashare.removeSongs();
+		}
 	};
 
 	$scope.addSong = function() {

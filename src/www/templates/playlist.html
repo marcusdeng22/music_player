@@ -79,9 +79,10 @@
 		<div id="playlistContentsDiv" class="playlistCol">
 			<p>Songs</p>
 			<!--- TODO: add a search filter here; disable ordering when searching?-->
-			<div id="songContainer" class="sortableDataContainer" style="height: calc(100% - 33px);">
+			<input type="text" ng-model="songFilter" style="width: 100%;" placeholder="Search for song name, artist, album, genre, ...">
+			<div id="songContainer" class="sortableDataContainer" style="height: calc(100% - 69px);">
 				<div ui-sortable="sortableSongs" ng-model="songData" id="songSelect" class="list" style="width: 100%; min-height: 100%;">
-					<div ui-sortable-selectable ng-repeat="song in songData track by $index" class="item songItem">
+					<div ui-sortable-selectable ng-repeat="song in songData | filter:songFilter track by $index" class="item songItem">
 						<!-- TODO: make this use infinite scroll -->
 						<div class="playRow">
 							<div class="item-contents" style="text-align: right; width: 30px;">{{$index + 1}}</div>

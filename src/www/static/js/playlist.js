@@ -153,6 +153,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 			return $(this).index();
 		}).toArray();
 		// $scope.songIndices = [];
+		$scope.songFilter = "";
 		clearSongSelected();
 		if ($scope.playlistIndices.length > 1) {
 			$scope.songData = [];
@@ -491,17 +492,19 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	$scope.deletePlaylist = function() {
 		var toRemove = [];
 		if ($scope.playlistIndices.length > 0) {
-			for (const i in $scope.playlistIndices) {
-				toRemove.push($scope.playlistData[i]["_id"]);
+			for (var i = 0; i < $scope.playlistIndices.length; i ++) {
+				toRemove.push($scope.playlistData[$scope.playlistIndices[i]]["_id"]);
 			}
 		}
 		console.log("removing playlists");
 		console.log(toRemove);
-		$http.post("/removePlaylists", {"playlists": toRemove}).then(function(resp) {
-			$scope.getPlaylistData();
-		}, function(err) {
-			console.log("error removing playlists");
-		})
+		if (confirm("Delete selected playlist(s)?")) {
+			$http.post("/removePlaylists", {"playlists": toRemove}).then(function(resp) {
+				$scope.getPlaylistData();
+			}, function(err) {
+				console.log("error removing playlists");
+			});
+		}
 	}
 
 	//download playlist
@@ -633,27 +636,23 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 
 	//delete a song
 	$scope.deleteSong = function() {
-		//selected indices are to be removed; remove them
-		$scope.songIndices.sort((a, b) => a-b);
-		for (var i = $scope.songIndices.length - 1; i >= 0; i--) {
-			$scope.songData.splice($scope.songIndices[i], 1);
+		if (confirm("Remove selected song(s)?")) {
+			//selected indices are to be removed; remove them
+			$scope.songIndices.sort((a, b) => a-b);
+			for (var i = $scope.songIndices.length - 1; i >= 0; i--) {
+				$scope.songData.splice($scope.songIndices[i], 1);
+			}
+			clearSongSelected();
+			var idList = getSongIDList();
+			//update DB
+			$http.post("/editPlaylist", {"_id": $scope.playlistData[$scope.playlistIndices]["_id"], "contents": idList}).then(function(resp) {
+				console.log("removal of songs from playlist ok");
+				$scope.playlistData[$scope.playlistIndices] = resp["data"];
+				updatePlaylistSortable();
+			}, function(err) {
+				console.log(err);
+			});
 		}
-		// $scope.songIndices = [];	//clear selection
-		clearSongSelected();
-		// var idList = [];
-		// for (var i = 0; i < $scope.songData.length; i++) {
-		// 	idList.push($scope.songData[i]["_id"]);
-		// }
-		var idList = getSongIDList();
-		// $scope.playlistData[$scope.playlistIndices]["contents"] = idList;
-		//update DB
-		$http.post("/editPlaylist", {"_id": $scope.playlistData[$scope.playlistIndices]["_id"], "contents": idList}).then(function(resp) {
-			console.log("removal of songs from playlist ok");
-			$scope.playlistData[$scope.playlistIndices] = resp["data"];
-			updatePlaylistSortable();
-		}, function(err) {
-			console.log(err);
-		});
 	}
 
 	function closeAllModals() {

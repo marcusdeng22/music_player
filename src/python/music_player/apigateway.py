@@ -7,6 +7,7 @@ import os
 import threading
 import glob
 import zipfile
+import shutil
 import pymongo as pm
 
 from bson.objectid import ObjectId
@@ -23,6 +24,8 @@ import eyed3
 absDir = os.getcwd()
 playlistFields = ["_id", "date", "dateStr", "contents", "name"]
 musicFields = ["_id", "url", "type", "vol", "name", "artist", "start", "end"]
+
+DOWNLOAD_FOLDER = "download"
 
 class ApiGateway(object):
 
@@ -416,19 +419,10 @@ class ApiGateway(object):
 		else:
 			raise cherrypy.HTTPError(400, "No data given")
 
-	def multiDownload(self, ytdl, urlList):
-		threads = []
-		for url in urlList:
-			print(url)
-			t = threading.Thread(target=ytdl.download, args=([url],))
-			threads.append(t)
-			t.start()
-		for t in threads:
-			t.join()
-
-	def tagSong(self, dest, song, format):
-		targFile = "{}/{}.{}".format(dest, song["name"], format)
-		os.rename("{}/{}.{}".format(dest, song["id"], format), targFile)
+	def downloadTag(self, ytdl, dest, song, fmt):
+		ytdl.download([song["url"]])
+		targFile = os.path.join(dest, "{}.{}".format(song["name"], fmt))
+		os.rename(os.path.join(dest, "{}.{}".format(song["id"], fmt)), targFile)
 		toTag = eyed3.load(targFile)
 		toTag.tag.title = song["name"]
 		if "album" in song:
@@ -439,10 +433,10 @@ class ApiGateway(object):
 			toTag.tag.genre = song["genre"]
 		toTag.tag.save()
 
-	def multiTag(self, dest, songs, format):
+	def multiDownloadTag(self, ytdl, dest, songs, fmt):
 		threads = []
 		for s in songs:
-			t = threading.Thread(target=self.tagSong, args=(dest, s, format))
+			t = threading.Thread(target=self.downloadTag, args=(ytdl, dest, s, fmt))
 			threads.append(t)
 			t.start()
 		for t in threads:
@@ -451,7 +445,7 @@ class ApiGateway(object):
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
 	@cherrypy.tools.json_out()
-	def download(self):
+	def generate(self):
 		"""
 		Downloads a lists of songs from youtube and prepares them for client side download
 
@@ -494,22 +488,10 @@ class ApiGateway(object):
 					else:
 						raise cherrypy.HTTPError(400, "Invalid data download")
 		if "songs" in data and "type" in data and data["type"] in ["mp3", "mp4"]:
-			class MyLogger(object):
-				def debug(self, msg):
-					print("debug:", msg)
-				def warning(self, msg):
-					print("warning:", msg)
-				def error(self, msg):
-					print("error:", msg)
-
-			# def my_hook(d):
-			# 	# print("HOOK")
-			# 	# print(d)
-			# 	if d["status"] == "finished":
-			# 		print("done downloading!")
-			randDir = "download/{}".format(uuid4())
-			if not os.path.exists(randDir):
-				os.makedirs(randDir)
+			randDir = str(uuid4())
+			downloadDir = os.path.join(DOWNLOAD_FOLDER, randDir)
+			if not os.path.exists(downloadDir):
+				os.makedirs(downloadDir)
 			yt_opts = {
 				"format": "bestaudio",
 				"postprocessors": [{
@@ -517,33 +499,32 @@ class ApiGateway(object):
 					"preferredcodec": data["type"],
 					"preferredquality": "0"
 				}],
-				"outtmpl": "{}/%(id)s.%(ext)s".format(randDir),		#TODO: replace this with a combination of artist-title; from input
-				"logger": MyLogger(),
-				# "progress_hooks": [my_hook]
+				"outtmpl": os.path.join(downloadDir, "%(id)s.%(ext)s")
 			}
 			#download
 			with youtube_dl.YoutubeDL(yt_opts) as ydl:
-				print(ydl.params)
-				urlList = [s["url"] for s in data["songs"]]
-				# print(ydl.download([s["url"] for s in data["songs"]]))	#TODO: output to a randomly named folder, and provide this link
-				self.multiDownload(ydl, urlList)
-				print("done downloading")
-			# now rename to titles and tag
-			self.multiTag(randDir, data["songs"], data["type"])
-			print("done tagging")
+				self.multiDownloadTag(ydl, downloadDir, data["songs"], data["type"])
 			# now zip if multiple
 			retName = ""
 			if len(data["songs"]) > 1:
-				# print("directory:")
-				# for _,_,files in os.walk(randDir):
-				# 	print(files)
-				retName = "{}/{}.zip".format(randDir, data["name"])
-				with zipfile.ZipFile(retName, "w") as myZip:
-					for f in glob.glob("{}/*.{}".format(randDir, data["type"])):
+				retName = os.path.join(downloadDir, "{}.zip".format(data["name"]))
+				with zipfile.ZipFile(retName, "w", zipfile.ZIP_DEFLATED) as myZip:
+					for f in glob.glob(os.path.join(downloadDir, "*.{}".format(data["type"]))):
 						myZip.write(f, os.path.basename(f))
 						os.remove(f)
 			else:
-				retName = "{}/{}.{}".format(randDir, data["name"], data["type"])
-			return {"path": retName, "name": os.path.basename(retName)}
+				retName = os.path.join(downloadDir, "{}.{}".format(data["name"], data["type"]))
+			return {"path": retName}
+			# return cherrypy.lib.static.serve_download(os.path.join(absDir, retName), os.path.basename(retName))
 		else:
 			raise cherrypy.HTTPError(400, "Missing download data")
+
+	@cherrypy.expose
+	def download(self, *argv):
+		print("DOWNLOADING", argv)
+		targetPath = os.path.join(*argv)
+		if argv[0] != DOWNLOAD_FOLDER or not os.path.exists(targetPath) or len(argv) != 3:	#(DOWNLOAD_FOLDER, uuid, file name)
+			raise cherrypy.HTTPError(404, "File not found")
+		res = cherrypy.lib.static.serve_download(os.path.join(absDir, targetPath), os.path.basename(targetPath))
+		shutil.rmtree(os.path.join(argv[0], argv[1]), ignore_errors=True)
+		return res
