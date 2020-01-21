@@ -85,7 +85,12 @@ def checkValidID(data):
 	:param data: data dict
 	:return: data, if conditions are met
 	"""
-	if '_id' in data:
+	if isinstance(data, ObjectId):
+		if ObjectId.is_valid(data):
+			return data
+		else:
+			raise cherrypy.HTTPError(400, "Object id not valid")
+	elif '_id' in data:
 		myID = data['_id']
 		if ObjectId.is_valid(myID):
 			return ObjectId(myID)
@@ -142,7 +147,13 @@ def makeMusicQuery(data, musicDB, fast=False):
 	for key in ["url", "song_names", "type", "artist_names", "album_names", "genre_names", "start_date", "end_date", "_id"]:
 		if key in data:
 			if key in "url":
-				myMusic[key] = checkValidData(key, data, str)
+				myUrls = []
+				for u in checkValidData(key, data, list):
+					if isinstance(u, str):
+						myUrls.append(u)
+					else:
+						raise cherrypy.HTTPError(400, "Bad url given")
+				myMusic[key] = {"$in": myUrls}
 			if key == "song_names":
 				# myMusic[key] = {"$regex": r".*" + checkValidData(key, data, str) + r".*", "$options": "i"}
 				mySongNames = []
@@ -154,10 +165,13 @@ def makeMusicQuery(data, musicDB, fast=False):
 				myMusic["name"] = {"$in": mySongNames}
 				# myMusic["$text"] = {"$search": '"' + checkValidData(key, data, str).strip() + '"'}
 			if key == "type":
-				if checkValidData("type", data, str) in supportedTypes:
-					myMusic["type"] = checkValidData("type", data, str)
-				else:
-					raise cherrypy.HTTPError(400, "Bad file type")
+				myTypes = []
+				for t in checkValidData("type", data, list):
+					if isinstance(t, str) and t in supportedTypes:
+						myTypes.append(t)
+					else:
+						raise cherrypy.HTTPError(400, "Bad file type")
+					myMusic["type"] = {"$in": myTypes}
 			if key == "artist_names":		#TODO: replace this with a check against artist db?
 				print("finding artists")
 				artistList = checkValidData(key, data, list)
@@ -200,14 +214,17 @@ def makeMusicQuery(data, musicDB, fast=False):
 				else:
 					myMusic["date"]["$lte"] = checkValidData(key, data, datetime.datetime, coerce=True) + datetime.timedelta(days=1)
 			if key == "_id":
-				myMusic["_id"] = checkValidID(data)
+				myIDs = []
+				for i in checkValidData(key, data, list):
+					myIDs.append(checkValidID(i))
+				myMusic["_id"] = {"$in": myIDs}
 
-	# int fields
-	for key in ("vol", "start", "end"):
-		if key in data:
-			myMusic[key] = checkValidData(key, data, int)
-			if myMusic[key] < 0: myMusic[key] = 0
-			if key == "vol" and myMusic[key] > 100: myMusic[key] = 100
+	# # int fields
+	# for key in ("vol", "start", "end"):
+	# 	if key in data:
+	# 		myMusic[key] = checkValidData(key, data, int)
+	# 		if myMusic[key] < 0: myMusic[key] = 0
+	# 		if key == "vol" and myMusic[key] > 100: myMusic[key] = 100
 	# return myMusic
 	print("music query:", myMusic)
 	if fast:

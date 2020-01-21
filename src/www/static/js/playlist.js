@@ -543,7 +543,6 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	//add a song
 	$scope.addSongs = function() {
 		console.log("adding song");
-		// songDatashare.loadEditTemplate("#addNewSong", $scope);	//now handled by tab
 		$("#addMusicListModal").css("display", "flex");
 	}
 
@@ -589,9 +588,18 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 
 	$scope.editSong = function() {
 		//load the edit song file
-		songDatashare.loadEditTemplate("#playlistEditTemplate", $scope, $scope.songData[$scope.songIndices], undefined, function() {
-			dispatcher.emit("preview");
-		});
+		var toEdit = [];
+		for (var i = 0; i < $scope.songIndices.length; i ++) {
+			toEdit.push($scope.songData[$scope.songIndices[i]]);
+		}
+		if (toEdit.length == 1) {
+			songDatashare.loadEditTemplate("#playlistEditTemplate", $scope, toEdit, undefined, function() {
+				dispatcher.emit("preview");
+			});
+		}
+		else {
+			songDatashare.loadEditTemplate("#playlistEditTemplate", $scope, toEdit);
+		}
 		//share the data
 		// songDatashare.setEditData($scope.songData[$scope.songIndices]);
 		//display modal
@@ -606,23 +614,12 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 			return;
 		}
 		//data is now coerced and ready to push
-		//update DB
-		// $http.post("/editMusic", songDatashare.editData).then(function(resp) {
-		// 	console.log("edit song ok");
-		// 	//update local
-		// 	// $scope.songData[$scope.songIndices] = resp["data"];
-		// 	for (var i = 0; i < $scope.songData.length; i ++) {
-		// 		if ($scope.songData[i]["_id"] == resp["data"]["_id"]) {
-		// 			$scope.songData[i] = resp["data"];
-		// 		}
-		// 	}
-		// }, function(err) {
-		// 	console.log(err);
-		// });
 		songDatashare.editSong(function(insertedData) {
 			for (var i = 0; i < $scope.songData.length; i ++) {
-				if ($scope.songData[i]["_id"] == insertedData["_id"]) {
-					$scope.songData[i] = insertedData;
+				for (var j = 0; j < insertedData.length; j ++) {
+					if ($scope.songData[i]["_id"] == insertedData[j]["_id"]) {
+						$scope.songData[i] = insertedData[j];
+					}
 				}
 			}
 		});

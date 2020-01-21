@@ -97,15 +97,15 @@ class ApiGateway(object):
 
 		Expected input (no field present -> return all):
 			{
-				"url": (string),
-				"type": (string),
+				"url": [(string)],
+				"type": [(string)],
 				"song_names": [(string)],
 				"artist_names": [(string)],
 				"album_names": [(string)],
 				"genre_names": [(string)],
 				"start_date": (datetime),
 				"end_date": (datetime),
-				"_id": (string)
+				"_id": [(string)]
 			}
 		"""
 		# check that we actually have json
@@ -188,7 +188,7 @@ class ApiGateway(object):
 	@cherrypy.tools.json_out()
 	def editMusic(self):
 		"""
-		Edits a song
+		Edits a list of songs
 
 		Expected input:
 			{
@@ -201,7 +201,7 @@ class ApiGateway(object):
 				"vol": (int) (optional),
 				"start": (int) (optional),
 				"end": (int) (optional),
-				"_id": (string)
+				"_id": [(string)]
 			}
 		"""
 		# check that we actually have json
@@ -210,10 +210,14 @@ class ApiGateway(object):
 		else:
 			raise cherrypy.HTTPError(400, 'No data was given')
 
-		myID = m_utils.checkValidID(data)
-		if self.colMusic.count({"_id": myID}) == 0:
-		# if self.colMusic.count({"_id": m_utils.checkValidID(data)}) == 0:
-			raise cherrypy.HTTPError(400, "Song does not exist")
+		# myID = m_utils.checkValidID(data)
+		# if self.colMusic.count({"_id": myID}) == 0:
+		# # if self.colMusic.count({"_id": m_utils.checkValidID(data)}) == 0:
+		# 	raise cherrypy.HTTPError(400, "Song does not exist")
+		myIDList = [m_utils.checkValidID(i) for i in m_utils.checkValidData("_id", data, list)]
+		for i in myIDList:
+			if self.colMusic.count({"_id": i}) == 0:
+				raise cherrypy.HTTPError(400, "Song does not exist")
 
 		# sanitize the input
 		myQuery = {}
@@ -237,10 +241,11 @@ class ApiGateway(object):
 					myQuery[key] = m_utils.checkValidData(key, data, str)
 
 		myQuery["date"] = datetime.now()
-		inserted = self.colMusic.update_one({"_id": myID}, {"$set": myQuery})
+		inserted = self.colMusic.update_many({"_id": {"$in": myIDList}}, {"$set": myQuery})
 		#TODO: update artist, album, genre DBs
 		print("updated music:", inserted.raw_result)
-		return m_utils.cleanRet(self.colMusic.find_one({"_id": myID}))
+		# return m_utils.cleanRet(self.colMusic.find({"_id": {"$in": myIDList}}))
+		return m_utils.makeMusicQuery({"_id": myIDList}, self.colMusic)
 
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
