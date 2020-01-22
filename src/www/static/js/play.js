@@ -102,20 +102,27 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 				var reccHtml = data.contents.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "");
 				// console.log(reccHtml);
 				$("#recommended").html($("li.video-list-item.related-list-item.show-video-time.related-list-item-compact-video", reccHtml));
+				$("#recommended > li").wrap('<div class="recc-container"/>').contents().unwrap();
 				//modify links
 				$("#recommended").find("a, img").attr("href", function(i, attr) {
-					// console.log(attr);
 					if (typeof attr != "undefined") {
 						return "https://youtube.com" + attr;
 					}
 				});
 				//modify images
 				$("#recommended").find("img").attr("src", function(i, src) {
-					console.log(i);
-					console.log(src);
-					console.log(this);
 					return $(this).attr("data-thumb");
 				});
+				//remove duation span
+				$(".content-wrapper > a > span:contains(Duration)").remove();
+				//remove view count
+				$(".content-wrapper").find(".stat.view-count").remove();
+				// $("#recommended").find("span.video-time").css({
+				// 	"position": "absolute",
+				// 	"bottom": 0,
+				// 	"right": 0,
+				// 	"margin": "4px"
+				// });
 			}
 		});
 	});
@@ -316,5 +323,9 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 
 	$scope.downloadPlaylist = function() {
 		dispatcher.emit("loadDownload", {"name": $scope.playlistData.name, "songs": $scope.playlistData.contents})
-	}
+	};
+
+	$scope.updatePlayView = function() {
+		// if ()
+	};
 }]);

@@ -60,10 +60,10 @@
 			<div class="joinCollapseContainer sortableDataContainer playlistCollapse collapse show">
 				<div ui-sortable="sortablePlaylist" ng-model="playlistData" id="playlistSelect" class="list" style="width: 100%; min-height: 100%;">
 					<div ui-sortable-selectable ng-repeat="item in playlistData track by $index" class="item playlistItem">
-						<div ng-dblclick="triggerPlay()" style="width: 100%; display: table; table-layout: fixed;">
-							<div style="width: 100%; display: table-row;">
-								<div style="width: calc(100% - 80px); display: table-cell; overflow: hidden;">{{item.name}}</div>
-								<div style="width: 80px; display: table-cell;">{{item.dateStr}}</div>
+						<div ng-dblclick="triggerPlay()" class="playlist-selectable-container">
+							<div class="playlist-selectable-row">
+								<div class="playlist-selectable-title">{{item.name}}</div>
+								<div class="playlist-selectable-date">{{item.dateStr}}</div>
 							</div>
 						</div>
 					</div>
@@ -85,11 +85,11 @@
 					<div ui-sortable-selectable ng-repeat="song in songData | filter:songFilter track by $index" class="item songItem">
 						<!-- TODO: make this use infinite scroll -->
 						<div class="playRow">
-							<div class="item-contents" style="text-align: right; width: 30px;">{{$index + 1}}</div>
-							<div class="item-contents"><img ng-src="{{getThumbnail(song)}}" height="48px"/></div>
-							<div class="item-contents">
-								<div>{{song.name}}</div>
-								<div>{{song.artistStr}}</div>
+							<div class="item-contents number">{{$index + 1}}</div>
+							<div class="item-contents"><img ng-src="{{getThumbnail(song)}}" width="64px"/></div>
+							<div class="item-contents attr">
+								<div class="item-contents-attr">{{song.name}}</div>
+								<div class="item-contents-attr">{{song.artistStr}}</div>
 							</div>
 						</div>
 					</div>

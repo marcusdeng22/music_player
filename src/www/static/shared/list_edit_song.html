@@ -57,10 +57,10 @@
 					<div ui-sortable-selectable ng-repeat="song in songDatashare.songData track by $index" class="item songItem">
 						<!-- TODO: make this use infinite scroll -->
 						<div class="playRow">
-							<div class="item-contents"><img ng-src="{{getThumbnail(song)}}" height="48px"/></div>
+							<div class="item-contents"><img ng-src="{{getThumbnail(song)}}" width="64px"/></div>
 							<div class="item-contents">
-								<div>{{song.name}}</div>
-								<div>{{song.artistStr}}</div>
+								<div class="item-contents-attr">{{song.name}}</div>
+								<div class="item-contents-attr">{{song.artistStr}}</div>
 							</div>
 						</div>
 					</div>

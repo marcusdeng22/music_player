@@ -1,30 +1,31 @@
 <div id="playDiv" ng-controller="playCtrl as $ctrl" style="padding: 10px; width: 100%; height: 100%;">
 	<div class="playRow">
-		<div id="playerDiv" class="playCol" style="width: calc(100% - 400px);">
+		<div id="playerDiv" class="playCol" style="width: calc(100% - 350px);">
 			<div style="width: 100%;">
-				<div id="mainPlayer" style="width: 100%;" ng-show="focusMode==false || nowPlaying == null">
+				<div id="mainPlayer" style="width: 100%;" ng-show="focusMode == false || nowPlaying == null">
 					Select a playlist first!
 					<!-- player here -->
 				</div>
 			</div>
 			<div id="playerCtrlDiv" style="padding-top: 10px;">
-				<div id="nowPlaying" ng-show="focusMode==true && nowPlaying" ng-model="nowPlaying">Now playing: {{nowPlaying.name}} - {{nowPlaying.artistStr}}</div>
+				<div id="nowPlaying" ng-show="focusMode == true && nowPlaying" ng-model="nowPlaying">Now playing: {{nowPlaying.name}} - {{nowPlaying.artistStr}}</div>
 				<div id="playerCtrlBtns">
 					<button id="prevSong" class="btn" ng-click="previousSong()"><img class="icon-l icon-prev"></img></button>
 					<button id="playPause" ng-show="focusMode==true" class="btn" ng-click="playPause()"><img class="icon-l" ng-class="(currentState==1) ? 'icon-pause' : 'icon-play'"></img></button>
 					<button id="nextSong" class="btn" ng-click="nextSong()"><img class="icon-l icon-next"></img></button>
 					<div style="float: right;">
-						<input type="checkbox" id="focusSwitch" ng-model="focusMode" data-toggle="toggle" data-on="Focus Mode" data-off="Watch Mode" data-width="110">
+						<input type="checkbox" id="focusSwitch" ng-model="focusMode" ng-change="updatePlayView()" data-toggle="toggle" data-on="Focus Mode" data-off="Watch Mode" data-width="110">
+						<input type="checkbox" id="reccSwitch" ng-model="reccMode" ng-change="updatePlayView()" checked data-toggle="toggle" data-on="Show similar" data-off="Hide similar" data-width="110">
 					</div>
 				</div>
-				<div id="recommended">
+				<div id="recommended" ng-show="reccMode" style="overflow: auto;">
 					<!-- TODO: add recommended list here? -->
 				</div>
 			</div>
 		</div>
-		<div id="playerContentsDiv" class="playCol" style="width: 400px;">
+		<div id="playerContentsDiv" class="playCol" style="width: 350px;">
 			<div>
-				<input type=text ng-model="playlistData.name" ng-change="(playlistData.contents) ? playlistData.touched = true : playlistData" style="font-size: 22px;">
+				<input type=text ng-model="playlistData.name" ng-change="(playlistData.contents) ? playlistData.touched = true : playlistData" id="nowPlayingListTitle">
 				<button style="float: right;" class="btn" ng-click="toggleShuffle()"><img class="icon-l icon-shuffle" ng-class="shuffleOn ? 'icon-toggled' : ''"></img></button>
 				<button style="float: right;" class="btn" ng-click="toggleRepeat()"><img class="icon-l icon-repeat" ng-class="repeatOn ? 'icon-toggled' : ''"></img></button>
 			</div>
@@ -40,11 +41,11 @@
 							</div>
 							<div style="width: 100%; overflow: hidden;">{{item.artistStr}}</div> -->
 							<div class="playRow">
-								<div class="item-contents" style="text-align: right; width: 30px;">{{$index==nowPlayingIndex ? ">" : ''}}{{$index + 1}}</div>
-								<div class="item-contents"><img ng-src="{{getThumbnail(item)}}" height="48px"/></div>
-								<div class="item-contents">
-									<div>{{item.name}}</div>
-									<div>{{item.artistStr}}</div>
+								<div class="item-contents number">{{$index==nowPlayingIndex ? ">" : ''}}{{$index + 1}}</div>
+								<div class="item-contents"><img ng-src="{{getThumbnail(item)}}" width="64px"/></div>
+								<div class="item-contents attr">
+									<div class="item-contents-attr">{{item.name}}</div>
+									<div class="item-contents-attr">{{item.artistStr}}</div>
 								</div>
 							</div>
 						</div>
