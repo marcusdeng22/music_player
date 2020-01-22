@@ -91,6 +91,19 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 		$scope.nowPlayingIndex = data.index;
 		// userSet = false;
 		console.log(data);
+		//set the reccs here
+		console.log("TRACK CHANGED");
+		console.log($scope.nowPlaying);
+		//from: http://www.whateverorigin.org/
+		$.getJSON('http://www.whateverorigin.org/get?url=' + encodeURIComponent($scope.nowPlaying["url"]) + '&callback=?', function(data){
+			// alert(data.contents);
+			if (data && data != null && typeof data == "object" && data.contents && data.contents != null && typeof data.contents == "string") {
+				//from: https://stackoverflow.com/questions/6659351/removing-all-script-tags-from-html-with-js-regular-expression
+				var reccHtml = data.contents.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "");
+				console.log(reccHtml);
+				$("#recommendedHolder").html($("li.video-list-item.related-list-item.show-video-time.related-list-item-compact-video", reccHtml));
+			}
+		});
 	});
 
 
