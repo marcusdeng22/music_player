@@ -3,6 +3,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 	$scope.playlistData = {touched: false};
 	$scope.songIndices = [];
 	$scope.focusMode = false;
+	$scope.reccMode = true;
 	$scope.nowPlaying = null;
 	$scope.nowPlayingIndex = 0;
 	// var curIndex = 0;
@@ -17,6 +18,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 	// $scope.playem.play();
 
 	dispatcher.on("startPlay", function(data) {
+		$scope.updatePlayView();
 		console.log("starting to play");
 		console.log(data);
 		//add into queue
@@ -326,6 +328,15 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 	};
 
 	$scope.updatePlayView = function() {
-		// if ()
+		if (!$scope.focusMode && $scope.reccMode) {	//show both player and reccs
+			$("#mainPlayer").height("calc(100% - 300px)");
+			$("#recommended").height("300px");
+		}
+		else if ($scope.focusMode && $scope.reccMode) {	//show only reccs
+			$("#recommended").height("calc(100% - 20px)");
+		}
+		else if (!$scope.focusMode && !$scope.reccMode) {	//show only player
+			$("#mainPlayer").height("100%");
+		}
 	};
 }]);

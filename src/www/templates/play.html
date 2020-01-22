@@ -33,13 +33,6 @@
 				<div ui-sortable="sortablePlayingList" ng-model="playlistData.contents" id="playingSelect" class="list" style="width: 100%; min-height: 100%;">
 					<div ui-sortable-selectable ng-repeat="item in playlistData.contents track by $index" class="item songItem playItem">
 						<div ng-dblclick="selectIndex($index)" style="width: 100%">
-							<!-- <div style="width: 100%; display: table; table-layout: fixed;">
-								<div style="width: 100%; display: table-row;">
-									<div style="width: 20px; display: table-cell;">{{$index + 1}}</div>
-									<div style="width: calc(100% - 20px); display: table-cell; overflow: hidden;">{{item.name}}</div>
-								</div>
-							</div>
-							<div style="width: 100%; overflow: hidden;">{{item.artistStr}}</div> -->
 							<div class="playRow">
 								<div class="item-contents number">{{$index==nowPlayingIndex ? ">" : ''}}{{$index + 1}}</div>
 								<div class="item-contents"><img ng-src="{{getThumbnail(item)}}" width="64px"/></div>
