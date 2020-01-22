@@ -20,10 +20,19 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatc
 	};
 
 	$scope.editSong = function() {
-		//load the edit song file
-		songDatashare.loadEditTemplate("#songEditTemplate", $scope, songDatashare.songData[songDatashare.songIndices], undefined, function() {
-			dispatcher.emit("preview");
-		});
+		var toEdit = [];
+		for (var i = 0; i < songDatashare.songIndices.length; i ++) {
+			toEdit.push(songDatashare.songData[songDatashare.songIndices[i]]);
+		}
+		if (toEdit.length == 1) {
+			//load the edit song file
+			songDatashare.loadEditTemplate("#songEditTemplate", $scope, toEdit, undefined, function() {
+				dispatcher.emit("preview");
+			});
+		}
+		else {
+			songDatashare.loadEditTemplate("#songEditTemplate", $scope, toEdit);
+		}
 		//display modal
 		$("#songEditModal").css("display", "flex");
 		// songDatashare.editSong(null, true);

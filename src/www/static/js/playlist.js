@@ -251,8 +251,10 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 	dispatcher.on("songChanged", function(data) {
 		//update the currently selected songs
 		for (var i = 0; i < $scope.songData.length; i ++) {
-			if ($scope.songData[i]["_id"] == data["_id"]) {
-				$scope.songData[i] = data;
+			for (var j = 0; j < data.length; j ++) {
+				if ($scope.songData[i]["_id"] == data[j]["_id"]) {
+					$scope.songData[i] = data[j];
+				}
 			}
 		}
 		

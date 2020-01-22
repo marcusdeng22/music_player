@@ -4,7 +4,7 @@
 	<div id="songEditButtons" style="margin: 5px 10px;">
 		<div id="songDivListBtns" ng-show="songDatashare.tab == '#existingSongSearch'">
 			<button type="button" class="btn btn-success" ng-click="playSelected()" ng-disabled="songDatashare.songIndices.length == 0">Play Selected</button>
-			<button type="button" class="btn btn-primary" ng-click="editSong()" ng-disabled="songDatashare.songIndices.length != 1">Edit Song</button>
+			<button type="button" class="btn btn-primary" ng-click="editSong()" ng-disabled="songDatashare.songIndices.length == 0">Edit Song</button>
 			<button type="button" class="btn btn-danger" ng-click="removeSongs()" ng-disabled="songDatashare.songIndices.length == 0">Remove Selected</button>
 			<button type="button" class="btn btn-success" ng-click="downloadSongs()" ng-disabled="songDatashare.songIndices.length == 0">Download</button>
 		</div>

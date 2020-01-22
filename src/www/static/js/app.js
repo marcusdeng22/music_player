@@ -344,12 +344,32 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "
 			console.log("edit request ok");
 			//only modify local data if editing song from the list view
 			if (fromList) {
-				data.songData[data.songIndices] = resp["data"];
+				// data.songData[data.songIndices] = resp["data"];
+				// data.sortBy(data.orderVar, true);
+				// //now select it
+				// data.songIndices = [data.songData.findIndex(function(p) { return p["_id"] == resp["data"]["_id"]; })];
+				// $("#editSongSelect > .songItem").eq(data.songIndices).click();
+				// dispatcher.emit("songChanged", resp["data"]);
+				var idIndices= {};
+				for (var i = 0; i < resp.data.length; i ++) {
+					idIndices[resp.data[i]["_id"]] = i;
+				}
+				//update local data
+				for (var i = 0; i < data.songIndices.length; i ++) {
+					data.songData[data.songIndices[i]] = resp.data[idIndices[data.songData[data.songIndices[i]]["_id"]]];
+				}
+				//sort
 				data.sortBy(data.orderVar, true);
-				//now select it
-				data.songIndices = [data.songData.findIndex(function(p) { return p["_id"] == resp["data"]["_id"]; })];
-				$("#editSongSelect > .songItem").eq(data.songIndices).click();
-				dispatcher.emit("songChanged", resp["data"]);
+				//select the original indices
+				data.songIndices = [];
+				$("#editSongSelect > .songItem").removeClass("ui-sortable-selected");
+				for (var i = 0; i < resp.data.length; i ++) {
+					var newIndex = data.songData.findIndex(function(p) { return p["_id"] == resp.data[i]["_id"]; })
+					data.songIndices.push(newIndex);
+					$("#editSongSelect > .songItem").eq(newIndex).addClass("ui-sortable-selected");
+				}
+				$("#editSongSelect").trigger('ui-sortable-selectionschanged');
+				dispatcher.emit("songChanged", resp.data);
 			}
 			//now do callback
 			if (toCall != null) {
