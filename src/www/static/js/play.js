@@ -1,5 +1,6 @@
-app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSortableMultiSelectionMethods", "dispatcher", "youtubeFuncs",
-		function ($scope, $timeout, $location, $http, uiSortableMultiSelectionMethods, dispatcher, youtubeFuncs) {
+app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSortableMultiSelectionMethods", "dispatcher", "youtubeFuncs", "songDatashare",
+		function ($scope, $timeout, $location, $http, uiSortableMultiSelectionMethods, dispatcher, youtubeFuncs, songDatashare) {
+	$scope.songDatashare = songDatashare;
 	$scope.playlistData = {touched: false};
 	$scope.songIndices = [];
 	$scope.focusMode = false;
@@ -8,9 +9,11 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 	$scope.nowPlayingIndex = 0;
 	// var curIndex = 0;
 	var userSet = false;	//used to handle user playing a song; true if action is from user or simulates user, false if normal progression of tracks
+	var songsToAdd = [];	//keep track of songs added through link
 	$scope.playem = new Playem();
 	var config = {
-		playerContainer: document.getElementById("mainPlayer")
+		playerContainer: document.getElementById("mainPlayer"),
+		playerId: "mainPlayer"
 	};
 	//test
 	// $scope.playem.addPlayer(YoutubePlayer, config);
@@ -99,6 +102,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 		//from: http://www.whateverorigin.org/
 		$.getJSON('http://www.whateverorigin.org/get?url=' + encodeURIComponent($scope.nowPlaying["url"]) + '&callback=?', function(data){
 			// alert(data.contents);
+			console.log("RECEIVED recommended data!");
 			if (data && data != null && typeof data == "object" && data.contents && data.contents != null && typeof data.contents == "string") {
 				//from: https://stackoverflow.com/questions/6659351/removing-all-script-tags-from-html-with-js-regular-expression
 				var reccHtml = data.contents.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "");
@@ -106,11 +110,29 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 				$("#recommended").html($("li.video-list-item.related-list-item.show-video-time.related-list-item-compact-video", reccHtml));
 				$("#recommended > li").wrap('<div class="recc-container"/>').contents().unwrap();
 				//modify links
+				var duplicateLinks = [];
+				var addingLinks = new Set();
 				$("#recommended").find("a, img").attr("href", function(i, attr) {
 					if (typeof attr != "undefined") {
+						let key = $(this).parent().attr("class") + attr;
+						if (addingLinks.has(key)) {
+							duplicateLinks.push(i);
+						}
+						else {
+							addingLinks.add(key);
+						}
 						return "https://youtube.com" + attr;
 					}
 				});
+				//remove duplicate links
+				console.log("REMOVING DUPS");
+				console.log(duplicateLinks);
+				console.log(addingLinks);
+				duplicateLinks.sort(function(a, b) { return b - a; });
+				for (var i = 0; i < duplicateLinks.length; i ++) {
+					console.log("removing duplicate");
+					$("#recommended").find("a, img").eq(duplicateLinks[i]).parents(".recc-container").remove();
+				}
 				//modify images
 				$("#recommended").find("img").attr("src", function(i, src) {
 					return $(this).attr("data-thumb");
@@ -119,12 +141,65 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 				$(".content-wrapper > a > span:contains(Duration)").remove();
 				//remove view count
 				$(".content-wrapper").find(".stat.view-count").remove();
-				// $("#recommended").find("span.video-time").css({
-				// 	"position": "absolute",
-				// 	"bottom": 0,
-				// 	"right": 0,
-				// 	"margin": "4px"
-				// });
+				//attach a click event handler to the links
+				$("#recommended").find("a").on("click", function(e) {
+					console.log("clicked recc link");
+					console.log(this);
+					e.preventDefault();
+					//insert link data as the next song
+					var tempData = {};
+					var parentA;
+					var curParent = $(this).parent();
+					if (curParent.is(".thumb-wrapper")) {
+						console.log("thumb clicked");
+						parentA = $(this).parent().siblings(".content-wrapper").find("a");
+					}
+					else if (curParent.is(".content-wrapper")) {
+						console.log("span clicked");
+						parentA = $(this);
+					}
+					else {
+						return;
+					}
+					console.log("found parent A");
+					console.log(parentA);
+					tempData["type"] = "youtube";
+					tempData["url"] = parentA.attr("href");
+					//search for this url in song data; if it exists copy the info instead of adding
+					var matched = false;
+					for (var i = 0; i < songDatashare.songData.length; i ++) {
+						if (songDatashare.songData[i]["url"] == tempData["url"]) {
+							console.log("MATCHED URL");
+							tempData = songDatashare.songData[i];
+							matched = true;
+							break;
+						}
+					}
+					if (!matched) {
+						console.log("FAILED TO FIND URL: MUST BE NEW SONG");
+						tempData["name"] = parentA.children(".title").text().trim();
+						tempData["artistStr"] = parentA.children(".stat.attribution").text().trim();
+						tempData["artist"] = [tempData["artistStr"]];
+						tempData["album"] = "";
+						tempData["genre"] = "";
+						tempData["vol"] = 100;
+						tempData["start"] = 0;
+						tempData["end"] = 0;
+						console.log(tempData);
+						songsToAdd.push(tempData);
+					}
+					//add to contents and set origOrder and add to playem
+					var curOrigOrder = $scope.nowPlaying.origOrder;
+					for (var i = 0; i < $scope.playlistData.contents.length; i ++) {
+						if ($scope.playlistData.contents[i].origOrder > curOrigOrder) {
+							$scope.playlistData.contents[i].origOrder ++;
+						}
+					}
+					tempData["origOrder"] = curOrigOrder + 1;
+					$scope.playlistData.contents.splice($scope.nowPlayingIndex + 1, 0, tempData);
+					setQueue();
+					$scope.playlistData.touched = true;
+				});
 			}
 		});
 	});
@@ -169,6 +244,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 			$scope.playem.pause();
 		}
 		//TODO: check if touched, and if true, verify to discard or save
+		//TODO: check if added song, but didn't save yet
 	});
 
 	$scope.previousSong = function() {
@@ -294,6 +370,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 	};
 
 	$scope.savePlaylist = function() {
+		//TODO: check if need to write songs first
 		var submission = {};
 		submission["name"] = $scope.playlistData["name"];
 		submission["contents"] = [];
@@ -339,4 +416,90 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 			$("#mainPlayer").height("100%");
 		}
 	};
+
+	var edittingToAdd = [];
+	$scope.editSelected = function() {
+		//load the edit song file
+		var toEdit = [];
+		for (var i = 0; i < $scope.songIndices.length; i ++) {
+			for (var j = 0; j < songsToAdd.length; j ++ ) {
+				if (songsToAdd[j]["url"] == $scope.playlistData.contents[$scope.songIndices[i]]["url"]) {
+					edittingToAdd.push(songsToAdd[j]);
+					break;
+				}
+			}
+			toEdit.push($scope.playlistData.contents[$scope.songIndices[i]]);
+		};
+		songDatashare.loadEditTemplate("#nowPlayingEditTemplate", $scope, toEdit);
+		//display modal
+		$("#nowPlayingEditMusicModal").css("display", "flex");
+	};
+
+	$scope.submitEditSong = function() {
+		//write update to DB
+		//first check if safe to add
+		if (songDatashare.checkSongFields()) {
+			//true means not ok
+			return;
+		}
+		//first check if we need to add the song to the database:
+		if (edittingToAdd.length > 0) {
+			//add these songs!
+			songDatashare.addMultipleSongs(edittingToAdd, function(insertedData) {
+				//remove songs that were added via edit
+				for (var j = 0; j < insertedData.length; j ++) {
+					for (var i = songsToAdd.length - 1; i >= 0; i --) {
+						if (songsToAdd[i]["url"] == insertedData[j]["url"]) {
+							songsToAdd.splice(i, 1);
+							break;
+						}
+					}
+					//add info to current playlist
+					for (var i = 0; i < $scope.playlistData.contents.length; i ++) {
+						if ($scope.playlistData.contents[i]["url"] == insertedData[j]["url"]) {
+							//save the origOrder
+							var origOrder = $scope.playlistData.contents[i]["origOrder"];
+							$scope.playlistData.contents[i] = insertedData[j];
+							$scope.playlistData.contents[i]["origOrder"] = origOrder;
+						}
+					}
+				}
+				edittingToAdd = [];
+			});
+		}
+		//data is now coerced and ready to push
+		songDatashare.editSong(function(insertedData) {
+			dispatcher.emit("songChanged", insertedData);
+		});
+		$scope.closeEditSongModal();
+	};
+
+	dispatcher.on("songChanged", function(insertedData) {
+		for (var j = 0; j < insertedData.length; j ++) {
+			for (var i = 0; i < $scope.playlistData.contents.length; i ++) {
+				if ($scope.playlistData.contents[i]["_id"] == insertedData[j]["_id"]) {
+					//save the origOrder
+					var origOrder = $scope.playlistData.contents[i]["origOrder"];
+					$scope.playlistData.contents[i] = insertedData[j];
+					$scope.playlistData.contents[i]["origOrder"] = origOrder;
+				}
+			}
+		}
+	})
+
+	$scope.closeEditSongModal = function() {
+		songDatashare.stopPlayem();
+		$("#nowPlayingEditMusicModal").hide();
+	};
+
+	$("body").on("click", function(evt) {
+		if ($(".modal").toArray().includes(evt.target)) {
+			$scope.closeEditSongModal();
+		}
+	})
+	.keyup(function(evt) {
+		if (evt.keyCode == 27) {	//escape key
+			$scope.closeEditSongModal();
+		}
+	});
 }]);

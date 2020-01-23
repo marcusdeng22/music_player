@@ -61,11 +61,9 @@ class ApiGateway(object):
 
 		Returns::
 
-			{
-				"_id": (string),
-			}
+			Added MongoDB object
 
-		:return: a dict containing the MongoDB objectId
+		:return: the MongoDB object
 		"""
 		# check that we actually have json
 		if hasattr(cherrypy.request, 'json'):
@@ -86,6 +84,68 @@ class ApiGateway(object):
 				self.colArtist.insert_one({"name": artist})
 
 		myRequest["_id"] = str(inserted)
+		return m_utils.cleanRet(myRequest)
+
+	@cherrypy.expose
+	@cherrypy.tools.json_in()
+	@cherrypy.tools.json_out()
+	def addManyMusic(self):
+		"""
+		Add many songs to the database
+
+		Expected input:
+
+			[{
+				"url": (string),
+				"type": (string) ("youtube" or "mp3"),	//TODO: add other sources
+				"vol": (int) (0-100),
+				"name": (string),
+				"artist": [(string)],
+				"album": (string),
+				"genre": (string),
+				"start": (int) (in seconds),
+				"end": (int) (number of seconds from the end of video to stop)
+			},
+			...]
+
+		Returns::
+
+			[{<MongoDB object>}, ...]
+
+		:return: a list containing the inserted objects
+		"""
+		# check that we actually have json
+		if hasattr(cherrypy.request, 'json'):
+			data = cherrypy.request.json
+		else:
+			raise cherrypy.HTTPError(400, 'No data was given')
+
+		# sanitize the input
+		myRequest = [];
+		if not isinstance(data, list) or len(data) == 0:
+			raise cherrypy.HTTPError(400, "Invalid data given")
+		for song in data:
+			if not isinstance(song, dict):
+				raise cherrypy.HTTPError(400, "Invalid song data given")
+			reqSong = m_utils.createMusic(song, self.colMusic)
+			reqSong["date"] = datetime.now()
+
+			# insert the data into the database
+			# inserted = self.colMusic.insert(reqSong)
+			myRequest.append(reqSong)
+			print(reqSong)
+
+			#check if the artist exists; add if DNE
+			for artist in reqSong["artist"]:
+				if (len(list(self.colArtist.find({"name": artist}).limit(1))) == 0):
+					self.colArtist.insert_one({"name": artist})
+
+			# reqSong["_id"] = str(inserted)
+		# return m_utils.cleanRet(myRequest)
+		inserted = self.colMusic.insert_many(myRequest)	#this is ordered by default
+		for i, song in enumerate(myRequest):
+			myRequest[i]["_id"] = inserted.inserted_ids[i]
+		print(myRequest)
 		return m_utils.cleanRet(myRequest)
 
 	@cherrypy.expose
