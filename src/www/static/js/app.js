@@ -284,7 +284,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "
 			if (key == "artist") {
 				//force to array if str
 				if (typeof data.editData[key] === "string" || data.editData[key] instanceof String) {
-					data.editData[key] = data.editData[key].split(";").filter(function(el) {return el;});
+					data.editData[key] = data.editData[key].split(",").filter(function(el) {return el;});
 				}
 			}
 		}
