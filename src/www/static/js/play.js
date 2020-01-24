@@ -12,7 +12,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 	var songsToAdd = [];	//keep track of songs added through link
 	$scope.playem = new Playem();
 	var config = {
-		playerContainer: document.getElementById("mainPlayer"),
+		playerContainer: document.getElementById("mainPlayerContainer"),
 		playerId: "mainPlayer"
 	};
 	//test
@@ -28,7 +28,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 		$scope.playem.stop();
 		$scope.playem.clearQueue();
 		$scope.playem.clearPlayers();
-		$("#mainPlayer").empty();
+		$("#mainPlayerContainer").empty();
 		// var config = {playerContainer: document.getElementById("mainPlayer")}
 		// var config = {
 		// 	playerContainer: document.getElementById("mainPlayer")
@@ -238,13 +238,17 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 		});
 	};
 
-	$scope.$on("$locationChangeStart", function() {
+	$scope.$on("$locationChangeStart", function(event, next, current) {
+		if ($scope.playlistData.touched && confirm("Unsaved changes; do you want to save them?")) {
+			// //cancel the location change
+			// event.preventDefault();
+			//trigger save
+			$scope.savePlaylist();
+		}
 		if ($scope.playem != null && $scope.playem.getPlayers().length > 0 && $scope.playem.getCurrentTrack() != null) {
 			console.log($scope.playem.getPlayers());
 			$scope.playem.pause();
 		}
-		//TODO: check if touched, and if true, verify to discard or save
-		//TODO: check if added song, but didn't save yet
 	});
 
 	$scope.previousSong = function() {
@@ -360,7 +364,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 			if ($scope.playlistData.contents.length == 0) {
 				$scope.playem.clearQueue();
 				$scope.playem.stop();
-				$("#mainPlayer").empty().append("Select a playlist first!");
+				$("#mainPlayerContainer").empty().append("Select a playlist first!");
 				$scope.songIndices = [];
 			}
 			else {
@@ -383,6 +387,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 				console.log("editting playlist ok");
 				dispatcher.emit("songsRemoved");
 				$scope.playlistData.touched = false;
+				alert("Playlist saved!");
 			}, function(err) {
 				console.log(err);
 			});
@@ -446,14 +451,14 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 
 	$scope.updatePlayView = function() {
 		if (!$scope.focusMode && $scope.reccMode) {	//show both player and reccs
-			$("#mainPlayer").height("calc(100% - 300px)");
+			$("#mainPlayerContainer").height("calc(100% - 300px)");
 			$("#recommended").height("300px");
 		}
 		else if ($scope.focusMode && $scope.reccMode) {	//show only reccs
 			$("#recommended").height("calc(100% - 20px)");
 		}
 		else if (!$scope.focusMode && !$scope.reccMode) {	//show only player
-			$("#mainPlayer").height("100%");
+			$("#mainPlayerContainer").height("100%");
 		}
 	};
 
