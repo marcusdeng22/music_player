@@ -369,8 +369,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 		}
 	};
 
-	$scope.savePlaylist = function() {
-		//TODO: check if need to write songs first
+	function doSavePlaylist() {
 		var submission = {};
 		submission["name"] = $scope.playlistData["name"];
 		submission["contents"] = [];
@@ -397,6 +396,47 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 			}, function(err) {
 				console.log(err);
 			});
+		}
+	};
+
+	$scope.savePlaylist = function() {
+		//TODO: check if need to write songs first
+		if (songsToAdd.length > 0) {
+			if (confirm("There are new songs to add; continue?")) {
+				//add multiple with their default values
+				//then make save playlist
+				$http.post("/addManyMusic", songsToAdd).then(function(resp) {
+					console.log(resp);
+					//clear songsToAdd, and copy in new info
+					for (var j = 0; j < resp.data.length; j ++) {
+						for (var i = songsToAdd.length - 1; i >= 0; i --) {
+							if (songsToAdd[i]["url"] == resp.data[j]["url"]) {
+								songsToAdd.splice(i, 1);
+								break;
+							}
+						}
+						//add info to current playlist
+						for (var i = 0; i < $scope.playlistData.contents.length; i ++) {
+							if ($scope.playlistData.contents[i]["url"] == resp.data[j]["url"]) {
+								//save the origOrder
+								var origOrder = $scope.playlistData.contents[i]["origOrder"];
+								$scope.playlistData.contents[i] = resp.data[j];
+								$scope.playlistData.contents[i]["origOrder"] = origOrder;
+							}
+						}
+					}
+					//then make save
+					doSavePlaylist();
+				}, function(err) {
+					console.log(err);
+				});
+			}
+			else {
+				return;
+			}
+		}
+		else {
+			doSavePlaylist();
 		}
 	};
 
