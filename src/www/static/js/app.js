@@ -120,9 +120,6 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "
 	data.sortGlyph = function(type) {
 		return sortingFuncs.sortGlyph(data.reverse, data.orderVar, type);
 	};
-	// data.songSortable = uiSortableMultiSelectionMethods.extendOptions({
-	// 	refreshPositions: true
-	// });
 	data.clearSelected = function() {
 		console.log("datashare clearing");
 		$("#editSongSelect > .ui-sortable-selected").removeClass("ui-sortable-selected");
@@ -131,13 +128,12 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "
 	//edit data below
 	data.editTemplateId = "";
 	data.editData = {};	//store the edit song info here
-	data.editDataID = [];	//store the edit song IDs here
-	data.origEditData = [];	//TODO: replace this with only URL instead; no need to store an entire copy
+	data.editDataID = new Set();	//store the edit song IDs here
+	data.editDataURL = new Set();	//store the edit song URLs here
 	// data.playem = null;	//store the preview player info here
 	data.playem = new Playem();
 	data.loadEditTemplate = function(targetId, $scope, toAdd=null, force=false, callback=null) {
 		if ((data.editTemplateId != "" && data.editTemplateId != targetId) || force) {
-		// if (data.editTemplateId != "") {
 			$(data.editTemplateId).empty();
 		}
 		force = true;
@@ -201,28 +197,33 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "
 	};
 	data.resetEdit = function() {
 		data.editData = {"url": "", "type": "youtube", "name": "", "artist": [], "album": "", "genre": "", "vol": 100, "start": 0, "end": 0};
-		data.editDataID = [];
-		data.origEditData = [{"url": "", "type": "youtube", "name": "", "artist": [], "album": "", "genre": "", "vol": 100, "start": 0, "end": 0}];
+		data.editDataID.clear();
+		data.editDataURL.clear();
 	};
 	data.setEditData = function(dataToCopy) {
 		if (dataToCopy.length == 1) {
 			data.editData = angular.copy(dataToCopy[0]);
+			data.editDataID.clear();
+			data.editDataURL.clear();
 			if ("_id" in data.editData) {
-				data.editDataID = [data.editData["_id"]];
+				data.editDataID.add(data.editData["_id"]);
 			}
-			data.origEditData = [angular.copy(dataToCopy[0])];
+			if ("url" in dataToCopy[0]) {
+				data.editDataURL.add(dataToCopy[0]["url"]);
+			}
 		}
 		else {
-			data.editDataID = [];
-			data.origEditData = [];
-			// data.editData = {"url": "", "type": "youtube", "name": "", "artist": [], "album": "", "genre": "", "vol": 100, "start": 0, "end": 0};
+			data.editDataID.clear();
+			data.editDataURL.clear();
 			data.editData = {};
 			var keys = ["url", "type", "name", "artist", "album", "genre", "vol", "start", "end"];
 			for (var i = 0; i < dataToCopy.length; i++) {
 				if ("_id" in dataToCopy[i]) {
-					data.editDataID.push(dataToCopy[i]["_id"]);
+					data.editDataID.add(dataToCopy[i]["_id"]);
 				}
-				data.origEditData.push(angular.copy(dataToCopy[i]));
+				if ("url" in dataToCopy[i]) {
+					data.editDataURL.add(dataToCopy[i]["url"]);
+				}
 				for (var key in dataToCopy[i]) {
 					if (key in data.editData) {
 						if (data.editData[key] == VARIES) {
@@ -244,22 +245,12 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "
 								}
 							}
 						}
+						//else everything matches, so leave as is
 					}
 					else if (!(key in data.editData)) {
 						data.editData[key] = dataToCopy[i][key];
 					}
 				}
-				// for (var k in keys) {
-				// 	if (data.editData[key] == VARIES) {
-				// 		continue;
-				// 	}
-				// 	else if (data.editData[key] == "") {
-				// 		data.editData[key] = dataToCopy[i][key];
-				// 	}
-				// 	else if (data.editData[key] != dataToCopy[i][key]) {
-				// 		data.editData[key] = VARIES;
-				// 	}
-				// }
 			}
 		}
 	};
@@ -350,7 +341,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "
 		return false;
 	};
 	data.addSong = function(toCall=null) {
-		if (data.checkSongFields() || data.editDataID.length > 0) {
+		if (data.checkSongFields() || data.editDataID.size > 0) {
 			return;
 		}
 		$http.post("/addMusic", data.editData).then(function(resp) {
@@ -377,31 +368,21 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "
 		//if both false, then return (can't match)
 		//for all other fields, if VARIES then skip
 		//else apply
-		var toAddToOrigMapping = {};
-		if (toAddList.length == 1 && data.origEditData.length == 1) {
-			if (toAddList[0]["url"] != data.origEditData[0]["url"]) {
+		if (toAddList.length == 1 && data.editDataURL.size == 1) {
+			if (!data.editDataURL.has(toAddList[0]["url"])) {
 				return;
 			}
-			toAddToOrigMapping[0] = 0;
 		}
-		else if (toAddList.length > data.origEditData.length) {
-			return;	//impossible to occur
+		else if (toAddList.length > data.editDataURL.size) {
+			return;	//impossible to occur; must have duplicate urls and thus is invalid
 		}
 		else if (data.editData["url"] != VARIES) {
 			return;	//can't have duplicate urls
 		}
 		else {
 			//multiple urls; check if all toAddList urls are present
-			var matched = false;
 			for (var j = 0; j < toAddList.length; j ++) {
-				for (var i = 0; i < data.origEditData.length; i ++) {
-					if (data.origEditData[i]["url"] == toAddList[j]["url"]) {
-						toAddToOrigMapping[j] = i;
-						matched = true;
-						break;
-					}
-				}
-				if (!matched) {
+				if (!data.editDataURL.has(toAddList[j]["url"])) {
 					return;
 				}
 			}
@@ -437,7 +418,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "
 		});
 	};
 	data.editSong = function(toCall=null, fromList=false) {
-		if (data.checkSongFields() || data.editDataID.length == 0) {
+		if (data.checkSongFields() || data.editDataID.size == 0) {
 			return;
 		}
 		var editSubm = {}
@@ -447,19 +428,13 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "
 				editSubm[key] = data.editData[key];
 			}
 		}
-		editSubm["_id"] = data.editDataID;
+		editSubm["_id"] = [...data.editDataID];
 		console.log("EDIT SUBMISSION");
 		console.log(editSubm);
 		$http.post("/editMusic", editSubm).then(function(resp) {
 			console.log("edit request ok");
 			//only modify local data if editing song from the list view
 			if (fromList) {
-				// data.songData[data.songIndices] = resp["data"];
-				// data.sortBy(data.orderVar, true);
-				// //now select it
-				// data.songIndices = [data.songData.findIndex(function(p) { return p["_id"] == resp["data"]["_id"]; })];
-				// $("#editSongSelect > .songItem").eq(data.songIndices).click();
-				// dispatcher.emit("songChanged", resp["data"]);
 				var idIndices= {};
 				for (var i = 0; i < resp.data.length; i ++) {
 					idIndices[resp.data[i]["_id"]] = i;

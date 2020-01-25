@@ -9,7 +9,8 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 	$scope.nowPlayingIndex = 0;
 	// var curIndex = 0;
 	var userSet = false;	//used to handle user playing a song; true if action is from user or simulates user, false if normal progression of tracks
-	var songsToAdd = [];	//keep track of songs added through link
+	var songsToAdd = [];	//keep track of songs added through reccommended link
+	var edittingToAdd = [];	//keep track of songs that are editting
 	$scope.playem = new Playem();
 	var config = {
 		playerContainer: document.getElementById("mainPlayerContainer"),
@@ -24,6 +25,9 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 		$scope.updatePlayView();
 		console.log("starting to play");
 		console.log(data);
+		//clear edit
+		songsToAdd = [];
+		edittingToAdd = [];
 		//add into queue
 		$scope.playem.stop();
 		$scope.playem.clearQueue();
@@ -166,6 +170,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 					tempData["type"] = "youtube";
 					tempData["url"] = parentA.attr("href");
 					//search for this url in song data; if it exists copy the info instead of adding
+					//TODO: make this a query?
 					var matched = false;
 					for (var i = 0; i < songDatashare.songData.length; i ++) {
 						if (songDatashare.songData[i]["url"] == tempData["url"]) {
@@ -434,6 +439,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 					doSavePlaylist();
 				}, function(err) {
 					console.log(err);
+					alert("Error adding songs");
 				});
 			}
 			else {
@@ -462,7 +468,6 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 		}
 	};
 
-	var edittingToAdd = [];
 	$scope.editSelected = function() {
 		//load the edit song file
 		var toEdit = [];
@@ -475,6 +480,8 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 			}
 			toEdit.push($scope.playlistData.contents[$scope.songIndices[i]]);
 		};
+		console.log("EDIT TEMPLATE POPULATING WITH:");
+		console.log(toEdit);
 		songDatashare.loadEditTemplate("#nowPlayingEditTemplate", $scope, toEdit);
 		//display modal
 		$("#nowPlayingEditMusicModal").css("display", "flex");
@@ -533,6 +540,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 	})
 
 	$scope.closeEditSongModal = function() {
+		edittingToAdd = [];
 		songDatashare.stopPlayem();
 		$("#nowPlayingEditMusicModal").hide();
 	};
