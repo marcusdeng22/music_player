@@ -37,15 +37,6 @@ app.factory("youtubeFuncs", ["$http", function($http) {
 			return "https://img.youtube.com/vi/" + data.cleanUrl(item.url) + "/0.jpg";
 		}
 	}
-
-	// data.download = function(query) {
-	// 	console.log("DOWNLOAD");
-	// 	$http.post("/download", {"name": query.name, "songs": query.songs, "type": query.format}).then(function(resp) {
-	// 		console.log(resp);
-	// 	}, function(err) {
-	// 		console.log(err);
-	// 	});
-	// }
 	return data;
 }]);
 
@@ -356,6 +347,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "
 			data.resetEdit();
 		}, function(err) {
 			console.log(err);
+			alert("Failed to add music");
 		});
 	};
 	data.addMultipleSongs = function(toAddList, toCall=null) {
@@ -415,6 +407,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "
 			//don't reset data: will be reset on next load
 		}, function(err) {
 			console.log(err);
+			alert("Failed to add music");
 		});
 	};
 	data.editSong = function(toCall=null, fromList=false) {
@@ -463,6 +456,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "
 			}
 		}, function(err) {
 			console.log(err);
+			alert("Failed to edit music");
 		})
 	};
 	data.removeSongs = function() {
@@ -480,6 +474,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "
 			data.clearSelected();
 		}, function(err) {
 			console.log(err);
+			alert("Failed to remove music");
 		});
 	}
 	return data;

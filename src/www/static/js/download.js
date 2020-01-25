@@ -129,6 +129,8 @@ app.controller('downloadCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 			$scope.closeDownload();
 		}, function(err) {
 			console.log(err);
+			alert("Failed to download");
+			$loading.finish("downloadCtrl");
 		});
 	};
 }]);

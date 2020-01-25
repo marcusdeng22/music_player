@@ -58,6 +58,7 @@ app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$timeout', 
 			$scope.sortBy(sortVar, sortRev);
 		}, function(error) {
 			console.log(error);
+			alert("Failed to get song data");
 		});
 	};
 

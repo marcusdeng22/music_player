@@ -395,6 +395,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 				alert("Playlist saved!");
 			}, function(err) {
 				console.log(err);
+				alert("Failed to save playlist");
 			});
 		}
 		else {
@@ -405,12 +406,13 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 				$scope.playlistData.touched = false;
 			}, function(err) {
 				console.log(err);
+				alert("Failed to add playlist");
 			});
 		}
 	};
 
 	$scope.savePlaylist = function() {
-		//TODO: check if need to write songs first
+		//check if need to write songs first
 		if (songsToAdd.length > 0) {
 			if (confirm("There are new songs to add; continue?")) {
 				//add multiple with their default values
