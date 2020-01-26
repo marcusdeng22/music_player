@@ -35,8 +35,64 @@ class ApiGateway(object):
 		self.colArtist = db["artists"]
 		self.colMusic = db['music']
 		self.colPlaylists = db['playlists']
+		self.colUsers = db['users']
 
 	# API Functions go below. DO EXPOSE THESE
+
+	@cherrypy.expose
+	@cherrypy.tools.json_in()
+	def login(self):
+		"""
+		Logs the user into the system
+
+		Expected input:
+
+			{
+				"username": (string),
+				"password": (string)
+			}
+		"""
+		if hasattr(cherrypy.request, "json"):
+			data = cherrypy.request.json
+		else:
+			raise cherrypy.HTTPError(400, "No data was given")
+
+		for k in ["username", "password"]:
+			m_utils.checkValidData(k, data, str)
+		user = self.colUsers.find_one({"username": data["username"]})
+		if user is not None and m_utils.verifyUser(user, data["password"]):
+			return
+		else:
+			raise cherrypy.HTTPError(403, "Invalid login credentials")
+
+	@cherrypy.expose
+	@cherrypy.tools.json_in()
+	def changePassword(self):
+		"""
+		Changes the password for a user
+
+		Expected input:
+
+			{
+				"username": (string),
+				"old": (string),
+				"new": (string)
+			}
+		"""
+		if hasattr(cherrypy.request, "json"):
+			data = cherrypy.request.json
+		else:
+			raise cherrypy.HTTPError(400, "No data was given")
+
+		for k in ["username", "old", "new"]:
+			m_utils.checkValidData(k, data, str)
+		user = self.colUsers.find_one({"username": data["username"]})
+		if user is not None:
+			newHash, newSalt = m_utils.changePassword(user, data["old"], data["new"])
+			self.colUsers.update_one({"username": data["username"]}, {"$set": {"hash": newHash, "salt": newSalt}})
+			return
+		else:
+			raise cherrypy.HTTPError(403, "Invalid login credentials")
 
 	@cherrypy.expose
 	@cherrypy.tools.json_in()

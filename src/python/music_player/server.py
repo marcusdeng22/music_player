@@ -26,7 +26,8 @@ class Root(ApiGateway):
         :return:
         """
 
-        template = self.templateLookup.get_template("app.html")
+        # template = self.templateLookup.get_template("app.html")
+        template = self.templateLookup.get_template("login.html")
         ret = template.render()
         return ret
         '''

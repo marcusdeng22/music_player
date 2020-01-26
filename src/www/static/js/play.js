@@ -1,5 +1,5 @@
-app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSortableMultiSelectionMethods", "dispatcher", "youtubeFuncs", "songDatashare",
-		function ($scope, $timeout, $location, $http, uiSortableMultiSelectionMethods, dispatcher, youtubeFuncs, songDatashare) {
+app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http", "uiSortableMultiSelectionMethods", "dispatcher", "youtubeFuncs", "songDatashare",
+		function ($scope, $timeout, $location, $window, $http, uiSortableMultiSelectionMethods, dispatcher, youtubeFuncs, songDatashare) {
 	$scope.songDatashare = songDatashare;
 	$scope.playlistData = {touched: false};
 	$scope.songIndices = [];
@@ -244,6 +244,9 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$http", "uiSorta
 	};
 
 	$scope.$on("$locationChangeStart", function(event, next, current) {
+		console.log("CHANGING LOCATION");
+		console.log($window.location.href);
+		//TODO: make the following only trigger if we are navigating away from the play view
 		if ($scope.playlistData.touched && confirm("Unsaved changes; do you want to save them?")) {
 			// //cancel the location change
 			// event.preventDefault();

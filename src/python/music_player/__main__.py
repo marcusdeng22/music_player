@@ -17,12 +17,13 @@ def main():
         '..', '..', 'etc', 'server.conf'))
 
     #cherrypy.config.update({"engine.autoreload_on": True})
+    cherrypy.config.update(server_config)
     cherrypy.tree.mount(
         Root(show_debugger=True),
         '/',
         config=server_config)
 
-    cherrypy.server.socket_host = '0.0.0.0'
+    # cherrypy.server.socket_host = '0.0.0.0'
     cherrypy.engine.start()
     cherrypy.engine.block()
     '''

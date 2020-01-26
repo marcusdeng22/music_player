@@ -3,7 +3,7 @@
 import cherrypy
 import hashlib
 import os
-# import re
+import hashlib
 import math
 import functools
 import datetime
@@ -336,3 +336,18 @@ def cleanRet(dataList):
 		print("unknown clean")
 		print(dataList)
 		raise cherrypy.HTTPError(400, "could not clean return value")
+
+def generateHash(password, salt):
+	return hashlib.pbkdf2_hmac("sha256", password.encode(), salt, 100000)
+
+def verifyUser(userdata, password):
+	# hash the password using the salt
+	return userdata["hash"] == generateHash(password, userdata["salt"])
+
+def changePassword(userdata, password, newpassword):
+	#verify the hash
+	if userdata["hash"] == generateHash(password, userdata["salt"]):
+		#user authenticated, so now change the password
+		salt = os.urandom(32)
+		return (generateHash(newpassword, salt), salt)
+	raise cherrypy.HTTPError(403, "Invalid login credentials")

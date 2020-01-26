@@ -400,7 +400,7 @@ h2 {
 	position: fixed;
 	overflow: auto;
 	background-color: rgb(0,0,0,0.7);
-	background-image: url('/images/utd-pool.jpg');
+	/*background-image: url('/images/utd-pool.jpg');*/
 	background-size: 100% 100%;
 }
 
