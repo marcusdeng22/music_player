@@ -1,5 +1,5 @@
-app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatcher', 'uiSortableMultiSelectionMethods', 'sortingFuncs', 'songDatashare', 'youtubeFuncs',
-		function($scope, $http, $location, $timeout, dispatcher, uiSortableMultiSelectionMethods, sortingFuncs, songDatashare, youtubeFuncs) {
+app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$timeout', 'dispatcher', 'uiSortableMultiSelectionMethods', 'sortingFuncs', 'songDatashare', 'youtubeFuncs',
+		function($scope, $http, $location, $window, $timeout, dispatcher, uiSortableMultiSelectionMethods, sortingFuncs, songDatashare, youtubeFuncs) {
 	$scope.playlistData = [];
 	$scope.playlistIndices = [];
 	$scope.songData = [];
@@ -33,10 +33,16 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 			if (callback != null) {
 				callback();
 			}
-		}, function(error) {
+		}, function(err) {
 			console.log("failed to get playlist data");
-			console.log(error);
-			alert("Failed to get playlist data");
+			console.log(err);
+			if (err.status == 403) {
+				alert("Session timed out");
+				$window.location.href = "/";
+			}
+			else {
+				alert("Failed to get playlist data");
+			}
 		});
 	};
 
@@ -118,9 +124,15 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 			// console.log("success");
 			$scope.songData = resp.data;
 			console.log("playlist query songs returned: ", $scope.songData);
-		}, function(error) {
-			console.log(error);
-			alert("Failed to get song data");
+		}, function(err) {
+			console.log(err);
+			if (err.status == 403) {
+				alert("Session timed out");
+				$window.location.href = "/";
+			}
+			else {
+				alert("Failed to get song data");
+			}
 		});
 	};
 
@@ -201,9 +213,15 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 					console.log("successful update of song order");
 					$scope.playlistData[$scope.playlistIndices] = resp["data"];
 					updatePlaylistSortable();
-				}, function(error) {
-					console.log(error);
-					alert("Failed to update playlist data");
+				}, function(err) {
+					console.log(err);
+					if (err.status == 403) {
+						alert("Session timed out");
+						$window.location.href = "/";
+					}
+					else {
+						alert("Failed to update playlist data");
+					}
 				});
 			}
 		}
@@ -305,7 +323,13 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 						updatePlaylistSortable(targetID);
 					}, function(err) {
 						console.log(err);
-						alert("Failed to update playlist");
+						if (err.status == 403) {
+							alert("Session timed out");
+							$window.location.href = "/";
+						}
+						else {
+							alert("Failed to update playlist");
+						}
 					});
 				}
 				else if (ui["draggable"][0].className.split(/\s+/).includes("songItem")) {	//add songs to target
@@ -324,8 +348,14 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 						updatingPlaylist = false;
 					}, function(err) {
 						console.log(err);
-						updatingPlaylist = false;
-						alert("Failed to update playlist");
+						if (err.status == 403) {
+							alert("Session timed out");
+							$window.location.href = "/";
+						}
+						else {
+							updatingPlaylist = false;
+							alert("Failed to update playlist");
+						}
 					});
 				}
 			},
@@ -392,7 +422,13 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 			$location.hash("play");
 		}, function(err) {
 			console.log(err);
-			alert("Failed to load playlist data");
+			if (err.status == 403) {
+				alert("Session timed out");
+				$window.location.href = "/";
+			}
+			else {
+				alert("Failed to load playlist data");
+			}
 		});
 	}
 
@@ -428,10 +464,16 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 			$http.post("/editPlaylist", {"_id": $scope.playlistData[$scope.playlistIndices]["_id"], "name": $scope.newPlaylistName}).then(function(resp) {
 				$scope.playlistData[$scope.playlistIndices] = resp["data"];
 				updatePlaylistSortable();
-			}, function(error) {
+			}, function(err) {
 				console.log("failed to update playlist data");
-				console.log(error);
-				alert("Failed to update playlist data");
+				console.log(err);
+				if (err.status == 403) {
+					alert("Session timed out");
+					$window.location.href = "/";
+				}
+				else {
+					alert("Failed to update playlist data");
+				}
 			});
 		}
 		else {
@@ -442,9 +484,15 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 				// $scope.getPlaylistData(undefined, undefined, undefined, selectFirst=true);
 				$scope.playlistData.push(resp["data"]);
 				updatePlaylistSortable(resp["data"]["_id"]);
-			}, function(error) {
+			}, function(err) {
 				console.log("failed to add playlist");
-				alert("Failed to add playlist");
+				if (err.status == 403) {
+					alert("Session timed out");
+					$window.location.href = "/";
+				}
+				else {
+					alert("Failed to add playlist");
+				}
 			});
 		}
 		$scope.closePlaylistModal();
@@ -471,7 +519,13 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 				$scope.getPlaylistData();
 			}, function(err) {
 				console.log("error removing playlists");
-				alert("Failed to remove playlist");
+				if (err.status == 403) {
+					alert("Session timed out");
+					$window.location.href = "/";
+				}
+				else {
+					alert("Failed to remove playlist");
+				}
 			});
 		}
 	}
@@ -498,7 +552,13 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 			dispatcher.emit("loadDownload", downloadData);
 		}, function(err) {
 			console.log(err);
-			alert("Failed to download playlist");
+			if (err.status == 403) {
+				alert("Session timed out");
+				$window.location.href = "/";
+			}
+			else {
+				alert("Failed to download playlist");
+			}
 		});
 	}
 
@@ -529,7 +589,13 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 				updatePlaylistSortable();
 			}, function(err) {
 				console.log(err);
-				alert("Failed to add songs to playlist");
+				if (err.status == 403) {
+					alert("Session timed out");
+					$window.location.href = "/";
+				}
+				else {
+					alert("Failed to add songs to playlist");
+				}
 			});
 		}
 		//add a new song
@@ -546,7 +612,13 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 					updatePlaylistSortable();
 				}, function(err) {
 					console.log(err);
-					alert("Failed to add songs to playlist");
+					if (err.status == 403) {
+						alert("Session timed out");
+						$window.location.href = "/";
+					}
+					else {
+						alert("Failed to add songs to playlist");
+					}
 				});
 			});
 		}
@@ -620,7 +692,13 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 				updatePlaylistSortable();
 			}, function(err) {
 				console.log(err);
-				alert("Failed to delete songs");
+				if (err.status == 403) {
+					alert("Session timed out");
+					$window.location.href = "/";
+				}
+				else {
+					alert("Failed to delete songs");
+				}
 			});
 		}
 	}

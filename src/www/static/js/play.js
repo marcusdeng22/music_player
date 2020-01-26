@@ -398,7 +398,13 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 				alert("Playlist saved!");
 			}, function(err) {
 				console.log(err);
-				alert("Failed to save playlist");
+				if (err.status == 403) {
+					alert("Session timed out");
+					$window.location.href = "/";
+				}
+				else {
+					alert("Failed to save playlist");
+				}
 			});
 		}
 		else {
@@ -409,7 +415,13 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 				$scope.playlistData.touched = false;
 			}, function(err) {
 				console.log(err);
-				alert("Failed to add playlist");
+				if (err.status == 403) {
+					alert("Session timed out");
+					$window.location.href = "/";
+				}
+				else {
+					alert("Failed to add playlist");
+				}
 			});
 		}
 	};
@@ -444,7 +456,13 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 					doSavePlaylist();
 				}, function(err) {
 					console.log(err);
-					alert("Error adding songs");
+					if (err.status == 403) {
+						alert("Session timed out");
+						$window.location.href = "/";
+					}
+					else {
+						alert("Error adding songs");
+					}
 				});
 			}
 			else {

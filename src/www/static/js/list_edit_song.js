@@ -1,5 +1,5 @@
-app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatcher', 'uiSortableMultiSelectionMethods', 'sortingFuncs', 'songDatashare', 'youtubeFuncs',
-		function($scope, $http, $location, $timeout, dispatcher, uiSortableMultiSelectionMethods, sortingFuncs, songDatashare, youtubeFuncs) {
+app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$window', '$timeout', 'dispatcher', 'uiSortableMultiSelectionMethods', 'sortingFuncs', 'songDatashare', 'youtubeFuncs',
+		function($scope, $http, $location, $window, $timeout, dispatcher, uiSortableMultiSelectionMethods, sortingFuncs, songDatashare, youtubeFuncs) {
 	//data model
 	$scope.songDatashare = songDatashare;
 
@@ -56,9 +56,15 @@ app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$timeout', 
 			console.log("songs returned: ", $scope.songDatashare.songData);
 			//sort data
 			$scope.sortBy(sortVar, sortRev);
-		}, function(error) {
-			console.log(error);
-			alert("Failed to get song data");
+		}, function(err) {
+			console.log(err);
+			if (err.status == 403) {
+				alert("Session timed out");
+				$window.location.href = "/";
+			}
+			else {
+				alert("Failed to get song data");
+			}
 		});
 	};
 

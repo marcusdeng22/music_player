@@ -47,7 +47,10 @@ app.controller('NavCtrl', ['$scope', 'dispatcher', '$timeout', '$location', '$wi
 		} else {
 			//default screen here
 			console.log("default screen reroute");
-			unload = false;
+			// unload = false;
+			//route to playlist
+			$scope.activeTab = "playlist";
+			$scope.activeId = "#playlistDiv";
 		}
 
 		$scope.tabIds.forEach(function(tabId) {

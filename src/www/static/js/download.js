@@ -1,5 +1,5 @@
-app.controller('downloadCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatcher', 'sortingFuncs', 'songDatashare', 'youtubeFuncs', '$loading',
-		function($scope, $http, $location, $timeout, dispatcher, sortingFuncs, songDatashare, youtubeFuncs, $loading) {
+app.controller('downloadCtrl', ['$scope', '$http', '$location', '$window', '$timeout', 'dispatcher', 'sortingFuncs', 'songDatashare', 'youtubeFuncs', '$loading',
+		function($scope, $http, $location, $window, $timeout, dispatcher, sortingFuncs, songDatashare, youtubeFuncs, $loading) {
 	//scope vars
 	$scope.downloadName = "";
 	$scope.artistOptions = "All";
@@ -131,6 +131,10 @@ app.controller('downloadCtrl', ['$scope', '$http', '$location', '$timeout', 'dis
 			console.log(err);
 			alert("Failed to download");
 			$loading.finish("downloadCtrl");
+			if (err.status == 403) {
+				alert("Session timed out");
+				$window.location.href = "/";
+			}
 		});
 	};
 }]);

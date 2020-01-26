@@ -8,7 +8,7 @@ app.controller('LoginCtrl', ['$scope', '$http', '$window', function($scope, $htt
 	$scope.verifyPassword = "";
 
 	$scope.doLogin = function() {
-		$http.post('/login', {"username": $scope.username, "password": $scope.password}).then(function(resp) {
+		$http.post('/doLogin', {"username": $scope.username, "password": $scope.password}).then(function(resp) {
 			$window.location.href = '/';
 		}, function(err) {
 			$scope.username = "";

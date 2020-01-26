@@ -9,6 +9,7 @@ import glob
 import zipfile
 import shutil
 import pymongo as pm
+import functools
 
 from bson.objectid import ObjectId
 from io import BytesIO
@@ -27,6 +28,25 @@ musicFields = ["_id", "url", "type", "vol", "name", "artist", "start", "end"]
 
 DOWNLOAD_FOLDER = "download"
 
+def authUser(func):
+	'''
+	Verify user is logged in; redirect if not
+	'''
+	@functools.wraps(func)
+	def decorated_function(*args, **kwargs):
+		user = cherrypy.session.get('name', None)
+
+		# no user means force a login
+		if user is None:
+			# raise cherrypy.HTTPRedirect('/login')
+			# raise cherrypy.HTTPRedirect('/')
+			raise cherrypy.HTTPError(403, "Not logged in")
+		return func(*args, **kwargs)
+
+	return decorated_function
+
+	# return decorator
+
 class ApiGateway(object):
 
 	def __init__(self):
@@ -41,7 +61,7 @@ class ApiGateway(object):
 
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
-	def login(self):
+	def doLogin(self):
 		"""
 		Logs the user into the system
 
@@ -61,6 +81,8 @@ class ApiGateway(object):
 			m_utils.checkValidData(k, data, str)
 		user = self.colUsers.find_one({"username": data["username"]})
 		if user is not None and m_utils.verifyUser(user, data["password"]):
+			#set the session name
+			cherrypy.session["name"] = data["username"]
 			return
 		else:
 			raise cherrypy.HTTPError(403, "Invalid login credentials")
@@ -97,6 +119,7 @@ class ApiGateway(object):
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
 	@cherrypy.tools.json_out()
+	@authUser
 	def addMusic(self):
 		"""
 		Add a song to the database
@@ -145,6 +168,7 @@ class ApiGateway(object):
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
 	@cherrypy.tools.json_out()
+	@authUser
 	def addManyMusic(self):
 		"""
 		Add many songs to the database
@@ -207,6 +231,7 @@ class ApiGateway(object):
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
 	@cherrypy.tools.json_out()
+	@authUser
 	def findMusic(self):
 		"""
 		Returns a list of songs matching the query presented
@@ -239,6 +264,7 @@ class ApiGateway(object):
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
 	@cherrypy.tools.json_out()
+	@authUser
 	def findMusicList(self):
 		"""
 		Returns a list of songs matching the ids specified in a list. To be used in conjunction with playlist contents
@@ -302,6 +328,7 @@ class ApiGateway(object):
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
 	@cherrypy.tools.json_out()
+	@authUser
 	def editMusic(self):
 		"""
 		Edits a list of songs
@@ -365,6 +392,7 @@ class ApiGateway(object):
 
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
+	@authUser
 	def removeMusic(self):
 		"""
 		Removes a list of songs from the database
@@ -394,6 +422,7 @@ class ApiGateway(object):
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
 	@cherrypy.tools.json_out()
+	@authUser
 	def addPlaylist(self):
 		"""
 		Add a playlist to the database
@@ -443,6 +472,7 @@ class ApiGateway(object):
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
 	@cherrypy.tools.json_out()
+	@authUser
 	def findPlaylist(self):
 		"""
 		Returns a list of playlists matching the query
@@ -473,6 +503,7 @@ class ApiGateway(object):
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
 	@cherrypy.tools.json_out()
+	@authUser
 	def editPlaylist(self):
 		"""
 		Edits the name or contents of a playlist
@@ -516,6 +547,7 @@ class ApiGateway(object):
 
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
+	@authUser
 	def removePlaylists(self):
 		"""
 		Removes a list of playlists
@@ -566,6 +598,7 @@ class ApiGateway(object):
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
 	@cherrypy.tools.json_out()
+	@authUser
 	def generate(self):
 		"""
 		Downloads a lists of songs from youtube and prepares them for client side download
@@ -641,6 +674,7 @@ class ApiGateway(object):
 			raise cherrypy.HTTPError(400, "Missing download data")
 
 	@cherrypy.expose
+	@authUser
 	def download(self, *argv):
 		print("DOWNLOADING", argv)
 		targetPath = os.path.join(*argv)

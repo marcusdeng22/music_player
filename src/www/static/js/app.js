@@ -75,7 +75,7 @@ app.factory("sortingFuncs", ["orderByFilter", function(orderBy) {
 	return sortingFuncs;
 }]);
 
-app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "dispatcher", function($compile, $timeout, $http, sortingFuncs, dispatcher) {
+app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sortingFuncs", "dispatcher", function($compile, $timeout, $http, $window, sortingFuncs, dispatcher) {
 	var VARIES = "<varies>";
 	var data = {};
 	//tab info
@@ -347,7 +347,13 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "
 			data.resetEdit();
 		}, function(err) {
 			console.log(err);
-			alert("Failed to add music");
+			if (err.status == 403) {
+				alert("Session timed out");
+				$window.location.href = "/";
+			}
+			else {
+				alert("Failed to add music");
+			}
 		});
 	};
 	data.addMultipleSongs = function(toAddList, toCall=null) {
@@ -407,7 +413,13 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "
 			//don't reset data: will be reset on next load
 		}, function(err) {
 			console.log(err);
-			alert("Failed to add music");
+			if (err.status == 403) {
+				alert("Session timed out");
+				$window.location.href = "/";
+			}
+			else {
+				alert("Failed to add music");
+			}
 		});
 	};
 	data.editSong = function(toCall=null, fromList=false) {
@@ -456,7 +468,13 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "
 			}
 		}, function(err) {
 			console.log(err);
-			alert("Failed to edit music");
+			if (err.status == 403) {
+				alert("Session timed out");
+				$window.location.href = "/";
+			}
+			else {
+				alert("Failed to edit music");
+			}
 		})
 	};
 	data.removeSongs = function() {
@@ -474,7 +492,13 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "sortingFuncs", "
 			data.clearSelected();
 		}, function(err) {
 			console.log(err);
-			alert("Failed to remove music");
+			if (err.status == 403) {
+				alert("Session timed out");
+				$window.location.href = "/";
+			}
+			else {
+				alert("Failed to remove music");
+			}
 		});
 	}
 	return data;

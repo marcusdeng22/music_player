@@ -27,9 +27,44 @@ class Root(ApiGateway):
         """
 
         # template = self.templateLookup.get_template("app.html")
+        # template = self.templateLookup.get_template("login.html")
+        # ret = template.render()
+        # return ret
+        user = cherrypy.session.get("name", None)
+        if user is None:
+            print("no user, redirecting")
+            # template = self.templateLookup.get_template("login.html")
+            raise cherrypy.HTTPRedirect("/login")
+        else:
+            print("user present, redirecting")
+            raise cherrypy.HTTPRedirect("/app")
+            # template = self.templateLookup.get_template("app.html")
+        # return template.render()
+
+    @cherrypy.expose
+    def login(self):
+        """
+        Return the login page
+        """
+        user = cherrypy.session.get("name", None)
+        if user is not None:
+            print("login redirect to app")
+            raise cherrypy.HTTPRedirect("/")
+        print("render login")
         template = self.templateLookup.get_template("login.html")
-        ret = template.render()
-        return ret
+        return template.render()
+
+    @cherrypy.expose
+    def app(self):
+        """
+        Return the application page
+        """
+        # user = cherrypy.session.get("name", None)
+        # if user is not None:
+        #     print("app redirect")
+        #     raise cherrypy.HTTPRedirect("/")
+        print("render app")
+        return self.templateLookup.get_template("app.html").render()
         '''
         role = cherrypy.session.get('role', None)
         if role is None:
