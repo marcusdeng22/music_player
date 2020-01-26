@@ -1,6 +1,8 @@
 <div id="editSongDiv" ng-controller="editSongCtrl as $ctrl" style="height: 100%; width: 100%">
+	<div id="addSongNotifCompl" class="toast alert-success" role="alert" data-delay="3000" style="position: absolute; right: 50px;">
+		<div class="toast-body" style="font-size: large;">Successfully added!</div>
+	</div>
 	<table class="table ng-cloak" style="width: 100%; display: table; margin-bottom: 5px;">
-		<!-- <tr ng-repeat = "(key, val) in songDatashare.editData track by $index" ng-if="['_id', 'order', 'date', 'relev', 'dateStr', 'artistStr'].indexOf(key) == -1"> -->
 		<tr ng-repeat="key in songFields">
 			<td>{{key}}</td>
 			<td ng-if="key!='url'">

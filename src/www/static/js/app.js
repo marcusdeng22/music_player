@@ -340,6 +340,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 			console.log(resp);
 			data.songData.push(resp["data"]);
 			data.sortBy(data.orderVar, true);
+			data.clearSelected();
 
 			if (toCall != null) {
 				toCall(resp["data"]);

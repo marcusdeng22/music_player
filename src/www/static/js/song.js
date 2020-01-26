@@ -67,7 +67,9 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatc
 	};
 
 	$scope.addSong = function() {
-		songDatashare.addSong();
+		songDatashare.addSong(function() {
+			$("#addSongNotifCompl").toast("show");
+		});
 	};
 
 	$scope.cancelAdd = function() {
@@ -90,7 +92,7 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatc
 		}
 		console.log("add + download");
 		console.log(songDatashare.editData);
-		dispatcher.emit("loadDownload", {"songs": [songDatashare.editData]}, songDatashare.addSong);
+		dispatcher.emit("loadDownload", {"songs": [songDatashare.editData]}, $scope.addSong);
 		// songDatashare.addSong();	//this resets the input
 	}
 }]);
