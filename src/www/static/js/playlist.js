@@ -299,8 +299,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 		// updatePlaylistSortable();
 	});
 
-	$(function() {
-		// $(".playlistItem").not(".ui-sortable-placeholder").droppable({
+	function initiatilizeDrop() {
 		$(".playlistItem").droppable({
 			drop: function(event, ui) {	//this occurs before the sortable.beforeStop
 				$(this).removeClass("over");
@@ -372,6 +371,11 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 				$(this).removeClass("over");
 			}
 		});
+	}
+
+	$(window).on("load", function() {
+		// $(".playlistItem").not(".ui-sortable-placeholder").droppable({
+		initiatilizeDrop();
 
 		//prepare escaping functions
 		$("body").on("click", function(evt) {
@@ -490,6 +494,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 				// $scope.getPlaylistData(undefined, undefined, undefined, selectFirst=true);
 				$scope.playlistData.push(resp["data"]);
 				updatePlaylistSortable(resp["data"]["_id"]);
+				$timeout(initiatilizeDrop);
 			}, function(err) {
 				console.log("failed to add playlist");
 				if (err.status == 403) {
