@@ -131,8 +131,8 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 		if (data.editTemplateId != targetId || force) {
 			console.log("loading edit template");
 			data.editTemplateId = targetId;
-			//unload playem
-			data.stopPlayem();
+			// //unload playem
+			// data.stopPlayem();
 			//set new data
 			if (toAdd != null) {
 				data.setEditData(toAdd);
@@ -142,11 +142,12 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 			}
 			//load and compile
 			$(targetId).load("/shared/editSong.html", function() {
-				//load playem
-				var config = {
-					playerContainer: document.getElementById("previewDisplay")
-				};
-				data.playem.addPlayer(YoutubePlayer, config);	//TODO: ADD MORE PLAYERS HERE
+				// //load playem
+				// var config = {
+				// 	playerContainer: document.getElementById("previewDisplay")
+				// };
+				// data.playem.addPlayer(YoutubePlayer, config);	//TODO: ADD MORE PLAYERS HERE
+				data.reloadPlayem();
 				// data.playem = new Playem();
 				// data.playem.addPlayer(YoutubePlayer, {playerContainer: document.getElementById("previewDisplay")});
 				$timeout(function() {
@@ -158,11 +159,12 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 			});
 		}
 		else {
-			data.stopPlayem();
-			var config = {
-				playerContainer: document.getElementById("previewDisplay")
-			};
-			data.playem.addPlayer(YoutubePlayer, config);
+			// data.stopPlayem();
+			// var config = {
+			// 	playerContainer: document.getElementById("previewDisplay")
+			// };
+			// data.playem.addPlayer(YoutubePlayer, config);
+			data.reloadPlayem();
 			//set new data
 			if (toAdd != null) {
 				data.setEditData(toAdd);
@@ -186,6 +188,13 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 			// delete data.playem;
 		}
 		$("#previewDisplay").empty();	//stops loading of video if stopping early
+	};
+	data.reloadPlayem = function() {
+		data.stopPlayem();
+		var config = {
+			playerContainer: document.getElementById("previewDisplay")
+		};
+		data.playem.addPlayer(YoutubePlayer, config);
 	};
 	data.resetEdit = function() {
 		data.editData = {"url": "", "type": "youtube", "name": "", "artist": [], "album": "", "genre": "", "vol": 100, "start": 0, "end": 0};

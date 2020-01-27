@@ -116,7 +116,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 		return sortingFuncs.sortGlyph($scope.reverse, $scope.orderVar, type);
 	}
 
-	$scope.getSongData = function(songDict) {	//SKIP: change this to query the db for playlist id and return the order stored on db
+	$scope.getSongData = function(songDict, selectedSongs=null) {	//SKIP: change this to query the db for playlist id and return the order stored on db
 		query = {"content": songDict};
 		// console.log("playlist query songDict:", $scope.playlistData[$scope.playlistIndices]);
 		// console.log("playlist query: ", query);
@@ -124,6 +124,13 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 			// console.log("success");
 			$scope.songData = resp.data;
 			console.log("playlist query songs returned: ", $scope.songData);
+			if (selectedSongs != null) {
+				$timeout(function() {
+					for (var i = 0; i < selectedSongs.length; i ++) {
+						$("#songSelect > .songItem").eq(selectedSongs[i]).addClass("ui-sortable-selected");
+					}
+				});
+			}
 		}, function(err) {
 			console.log(err);
 			if (err.status == 403) {
@@ -158,7 +165,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 		refreshPositions: true
 	});
 
-	$("#playlistSelect").on('ui-sortable-selectionschanged', function (e, args) {
+	$("#playlistSelect").on('ui-sortable-selectionschanged', function (e, selectedSongs=null) {
 		// console.log("playlist select changed");
 		// console.log($(this).find('.ui-sortable-selected').map(function(i, element){
 		// 	return $(this).index();
@@ -174,7 +181,9 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 			$scope.$apply();    //forces update
 		}
 		else if ($scope.playlistIndices.length == 1) {
-			$scope.getSongData($scope.playlistData[$scope.playlistIndices[0]]["contents"]);
+			console.log("ARGS");
+			console.log(selectedSongs);
+			$scope.getSongData($scope.playlistData[$scope.playlistIndices[0]]["contents"], selectedSongs);
 		}
 	});
 
@@ -243,6 +252,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 	//sorts the playlist data and selects the updated playlist
 	function updatePlaylistSortable(modifiedID=null, selectSongs=false) {
 		console.log("updating positions and selecting");
+		var oldSongIndices = $scope.songIndices;
 		var oldID = $scope.playlistIndices.length == 1 ? $scope.playlistData[$scope.playlistIndices]["_id"] : null;
 		var oldIndex = $scope.playlistIndices;
 		$scope.sortBy($scope.orderVar, true);
@@ -266,12 +276,29 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 			// $(".playlistItem").eq($scope.playlistIndices).click();
 
 			console.log("clicking new playlist");
-			console.log(selectSongs);
-			console.log($scope.songIndices);
-			if (!selectSongs) {
-				clearSongSelected();
+			$(".playlistItem").eq($scope.playlistIndices).addClass("ui-sortable-selected");
+			if (selectSongs) {
+				$("#playlistSelect").trigger('ui-sortable-selectionschanged', [oldSongIndices]);
 			}
-			$(".playlistItem").eq($scope.playlistIndices).click();
+			else {
+				$("#playlistSelect").trigger('ui-sortable-selectionschanged');
+			}
+			// $(".playlistItem").eq($scope.playlistIndices).click();
+			// // $(".playlistItem").eq($scope.playlistIndices).addClass("ui-sortable-selected");
+			// // $("#playlistSelect").trigger('ui-sortable-selectionschanged');
+			// console.log(selectSongs);
+			// console.log(oldSongIndices);
+			// if (selectSongs) {
+			// 	// clearSongSelected();
+			// 	// $timeout(function() {
+			// 		console.log($("#songSelect").children());
+			// 		for (var i = 0; i < oldSongIndices.length; i ++) {
+			// 			// $("#songSelect > .songItem").eq(oldSongIndices[i]).addClass("ui-sortable-selected");
+			// 			$("#songSelect").children().eq(oldSongIndices[i]).addClass("ui-sortable-selected");
+			// 		}
+			// 		// $("#songSelect").trigger("ui-sortable-selectionschanged");
+			// 	// });
+			// }
 		});
 	}
 
@@ -584,6 +611,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 	//add a song
 	$scope.addSongs = function() {
 		console.log("adding song");
+		songDatashare.loadEditTemplate("#addNewSong", $scope);
 		$("#addMusicListModal").css("display", "flex");
 	}
 
@@ -613,15 +641,11 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 		else if (songDatashare.tab == "#addNewSong") {
 			songDatashare.addSong(function(insertedData) {
 				//now append to local song data and push to DB
-				// var localSongCopy = angular.copy(insertedData);
-				// songDatashare.songData.push(localSongCopy);
-				// localSongCopy["_id"] = insertedId;
 				$scope.songData.push(insertedData);
 				$http.post("/editPlaylist", {"_id": $scope.playlistData[$scope.playlistIndices]["_id"], "contents": getSongIDList()}).then(function(resp) {
 					console.log("adding new song to playlist ok");
 					$scope.playlistData[$scope.playlistIndices] = resp["data"];
 					updatePlaylistSortable();
-					songDatashare.stopPlayem();
 				}, function(err) {
 					console.log(err);
 					if (err.status == 403) {
