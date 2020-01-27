@@ -45,7 +45,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 			$scope.playem.addTrackByUrl(data["contents"][i]["url"]);
 		}
 		console.log($scope.playem);
-		$scope.selectIndex(0);	//triggers play
+		$scope.selectIndex(data["startIndex"] || 0);	//triggers play
 	});
 
 	function setQueue(nextIndex=0) {

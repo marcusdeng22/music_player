@@ -433,7 +433,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 
 	//PLAYLIST BUTTONS##############################################################################################################################
 	//play the playlist
-	$scope.triggerPlay = function() {	//TODO: allow double click on song to start from an index
+	$scope.triggerPlay = function(index=0) {	//allow double click on song to start from an index
 		//switch tabs to "Play" and pass the playlist data
 		var passedList = {
 			"name": "Unnamed playlist",
@@ -455,6 +455,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 		//resolve the contents to the actual data
 		$http.post("/findMusicList", {"content": passedList["contents"]}).then(function(resp) {
 			passedList["contents"] = resp["data"];
+			passedList["startIndex"] = index;
 			dispatcher.emit("startPlay", passedList);
 			$location.hash("play");
 		}, function(err) {

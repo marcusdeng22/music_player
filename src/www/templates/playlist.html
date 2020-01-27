@@ -84,7 +84,7 @@
 				<div ui-sortable="sortableSongs" ng-model="songData" id="songSelect" class="list" style="width: 100%; min-height: 100%;">
 					<div ui-sortable-selectable ng-repeat="song in songData | filter:songFilter track by $index" class="item songItem">
 						<!-- TODO: make this use infinite scroll -->
-						<div class="playRow">
+						<div ng-dblclick="triggerPlay($index)" class="playRow">
 							<div class="item-contents number">{{$index + 1}}</div>
 							<div class="item-contents"><img ng-src="{{getThumbnail(song)}}" width="64px"/></div>
 							<div class="item-contents attr">
