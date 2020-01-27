@@ -100,6 +100,19 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		// $scope.selectIndex(curIndex, false);
 		$scope.nowPlaying = $scope.playlistData.contents[data.index];
 		$scope.nowPlayingIndex = data.index;
+		//set media navigator; TODO: does not work
+		if ("mediaSession" in navigator) {
+			console.log("SETTING NAVIGATOR");
+			navigator.mediaSession.setActionHandler("previoustrack", function() {
+				console.log("PREV PRESS");
+				$scope.previousSong();
+			});
+			navigator.mediaSession.setActionHandler("nexttrack", function() {
+				console.log("NEXT PRESS");
+				$scope.nextSong();
+			})
+			console.log(navigator);
+		}
 		// userSet = false;
 		console.log(data);
 		//set the reccs here
