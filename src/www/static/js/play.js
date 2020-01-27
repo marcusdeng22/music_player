@@ -48,7 +48,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		$scope.selectIndex(data["startIndex"] || 0);	//triggers play
 	});
 
-	function setQueue(nextIndex=0) {
+	function setQueue(nextIndex=0, select=false) {
 		//update playem queue here
 		$scope.playem.clearQueue();
 		console.log($scope.playlistData.contents);
@@ -65,11 +65,13 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		else {
 			// curIndex = $scope.playlistData.contents.findIndex(function(song) { return song["origOrder"] == $scope.nowPlaying["origOrder"]; });
 			// $scope.selectIndex(curIndex, false);
-			// $scope.selectIndex($scope.nowPlayingIndex, false);	//uncomment to select playing
+			if (select) {
+				$scope.selectIndex($scope.nowPlayingIndex, false);	//select the now playing song, but don't trigger play
+			}
 			// userSet = false;
 			//set the current playing
 			// $scope.nowPlayingIndex = $scope.playem.setCurrentTrack(curIndex).index;
-			$scope.playem.setCurrentTrack($scope.nowPlayingIndex).index;
+			$scope.playem.setCurrentTrack($scope.nowPlayingIndex);
 		}
 	};
 
@@ -94,7 +96,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 			// curIndex = $scope.playem.getCurrentTrack().index;
 			$scope.nowPlayingIndex = $scope.playem.getCurrentTrack().index;
 		}
-		$scope.selectIndex($scope.nowPlayingIndex, false);
+		// $scope.selectIndex($scope.nowPlayingIndex, false);
 		// $scope.selectIndex(curIndex, false);
 		$scope.nowPlaying = $scope.playlistData.contents[data.index];
 		$scope.nowPlayingIndex = data.index;
@@ -379,7 +381,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 				$scope.songIndices = [];
 			}
 			else {
-				setQueue(Math.min(lastSelectedIndex, $scope.playlistData.contents.length - 1));
+				setQueue(Math.min(lastSelectedIndex, $scope.playlistData.contents.length - 1), true);
 			}
 		}
 	};
