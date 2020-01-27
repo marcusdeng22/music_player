@@ -212,7 +212,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 				$http.post("/editPlaylist", {"_id": $scope.playlistData[$scope.playlistIndices]["_id"], "contents": songOrder}).then(function(resp) {
 					console.log("successful update of song order");
 					$scope.playlistData[$scope.playlistIndices] = resp["data"];
-					updatePlaylistSortable();
+					updatePlaylistSortable(null, true);
 				}, function(err) {
 					console.log(err);
 					if (err.status == 403) {
@@ -241,7 +241,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 	});
 
 	//sorts the playlist data and selects the updated playlist
-	function updatePlaylistSortable(modifiedID=null) {
+	function updatePlaylistSortable(modifiedID=null, selectSongs=false) {
 		console.log("updating positions and selecting");
 		var oldID = $scope.playlistIndices.length == 1 ? $scope.playlistData[$scope.playlistIndices]["_id"] : null;
 		var oldIndex = $scope.playlistIndices;
@@ -258,15 +258,21 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 			}
 			$scope.playlistIndices = [$scope.playlistData.findIndex(function(p) { return p["_id"] == oldID; })];
 		}
-		// if (!sameArrays(oldIndex, $scope.playlistIndices)) {
-			angular.element(document).ready(function() {
-				// $scope.songIndices = [];
+		angular.element(document).ready(function() {
+			// // $scope.songIndices = [];
+			// clearSongSelected();
+			// // $scope.$apply();
+			// console.log("clicking: " + $scope.playlistIndices);
+			// $(".playlistItem").eq($scope.playlistIndices).click();
+
+			console.log("clicking new playlist");
+			console.log(selectSongs);
+			console.log($scope.songIndices);
+			if (!selectSongs) {
 				clearSongSelected();
-				// $scope.$apply();
-				console.log("clicking: " + $scope.playlistIndices);
-				$(".playlistItem").eq($scope.playlistIndices).click();
-			});
-		// }
+			}
+			$(".playlistItem").eq($scope.playlistIndices).click();
+		});
 	}
 
 	dispatcher.on("songChanged", function(data) {
@@ -610,6 +616,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 					console.log("adding new song to playlist ok");
 					$scope.playlistData[$scope.playlistIndices] = resp["data"];
 					updatePlaylistSortable();
+					songDatashare.stopPlayem();
 				}, function(err) {
 					console.log(err);
 					if (err.status == 403) {

@@ -14,6 +14,7 @@ app.controller('LoginCtrl', ['$scope', '$http', '$window', function($scope, $htt
 			$scope.username = "";
 			$scope.password = "";
 			alert("Login failure");
+			$("#usernameInput").focus();
 		});
 	};
 
