@@ -65,7 +65,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		else {
 			// curIndex = $scope.playlistData.contents.findIndex(function(song) { return song["origOrder"] == $scope.nowPlaying["origOrder"]; });
 			// $scope.selectIndex(curIndex, false);
-			$scope.selectIndex($scope.nowPlayingIndex, false);
+			// $scope.selectIndex($scope.nowPlayingIndex, false);	//uncomment to select playing
 			// userSet = false;
 			//set the current playing
 			// $scope.nowPlayingIndex = $scope.playem.setCurrentTrack(curIndex).index;
@@ -202,6 +202,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 					}
 					tempData["origOrder"] = curOrigOrder + 1;
 					$scope.playlistData.contents.splice($scope.nowPlayingIndex + 1, 0, tempData);
+					$scope.$apply();
 					setQueue();
 					$scope.playlistData.touched = true;
 				});
@@ -432,6 +433,13 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 			if (confirm("There are new songs to add; continue?")) {
 				//add multiple with their default values
 				//then make save playlist
+				var songsToAddMap = {};
+				for (var i = 0; i < songsToAdd.length; i ++) {
+					songsToAddMap[songsToAdd[i]["url"]] = songsToAdd[i];
+				}
+				songsToAdd = Object.values(songsToAddMap);
+				console.log(songsToAdd);
+
 				$http.post("/addManyMusic", songsToAdd).then(function(resp) {
 					console.log(resp);
 					//clear songsToAdd, and copy in new info
@@ -526,7 +534,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 					for (var i = songsToAdd.length - 1; i >= 0; i --) {
 						if (songsToAdd[i]["url"] == insertedData[j]["url"]) {
 							songsToAdd.splice(i, 1);
-							break;
+							// break;
 						}
 					}
 					//add info to current playlist
