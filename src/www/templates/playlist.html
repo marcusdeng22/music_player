@@ -78,7 +78,7 @@
 		</div>
 		<div id="playlistContentsDiv" class="playlistCol">
 			<p>Songs</p>
-			<!--- TODO: add a search filter here; disable ordering when searching?-->
+			<!--- search filter here; disable ordering when searching?-->
 			<input type="text" ng-model="songFilter" style="width: 100%;" placeholder="Search for song name, artist, album, genre, ...">
 			<div id="songContainer" class="sortableDataContainer" style="height: calc(100% - 69px);">
 				<div ui-sortable="sortableSongs" ng-model="songData" id="songSelect" class="list" style="width: 100%; min-height: 100%;">

@@ -58,10 +58,11 @@
 						<!-- TODO: make this use infinite scroll -->
 						<div class="playRow">
 							<div class="item-contents"><img ng-src="{{getThumbnail(song)}}" width="64px"/></div>
-							<div class="item-contents">
+							<div class="item-contents song-attr">
 								<div class="item-contents-attr">{{song.name}}</div>
 								<div class="item-contents-attr">{{song.artistStr}}</div>
 							</div>
+							<div class="item-contents song-date">{{song.dateStr}}</div>
 						</div>
 					</div>
 				</div>

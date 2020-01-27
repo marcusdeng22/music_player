@@ -80,6 +80,15 @@
 	width: calc(100% - 30px - 74px);
 }
 
+.item-contents.song-attr {
+	width: calc(100% - 74px - 85px);
+}
+
+.item-contents.song-date {
+	width: 85px;
+	text-align: right;
+}
+
 .item-contents-attr {
 	overflow: hidden;
 	white-space: nowrap;
