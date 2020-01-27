@@ -246,17 +246,19 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 
 	$scope.$on("$locationChangeStart", function(event, next, current) {
 		console.log("CHANGING LOCATION");
-		console.log($window.location.href);
-		//TODO: make the following only trigger if we are navigating away from the play view
-		if ($scope.playlistData.touched && confirm("Unsaved changes; do you want to save them?")) {
-			// //cancel the location change
-			// event.preventDefault();
-			//trigger save
-			$scope.savePlaylist();
-		}
-		if ($scope.playem != null && $scope.playem.getPlayers().length > 0 && $scope.playem.getCurrentTrack() != null) {
-			console.log($scope.playem.getPlayers());
-			$scope.playem.pause();
+		//make the following only trigger if we are navigating away from the play view
+		//https://github.com/angular/angular.js/issues/13812
+		if ($window.location.hash == "#!#play") {	//$window.location.hash contains the current hash
+			if ($scope.playlistData.touched && confirm("Unsaved changes; do you want to save them?")) {
+				// //cancel the location change
+				// event.preventDefault();
+				//trigger save
+				$scope.savePlaylist();
+			}
+			if ($scope.playem != null && $scope.playem.getPlayers().length > 0 && $scope.playem.getCurrentTrack() != null) {
+				console.log($scope.playem.getPlayers());
+				$scope.playem.pause();
+			}
 		}
 	});
 
