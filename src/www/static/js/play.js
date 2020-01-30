@@ -1,5 +1,5 @@
-app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http", "uiSortableMultiSelectionMethods", "dispatcher", "youtubeFuncs", "songDatashare",
-		function ($scope, $timeout, $location, $window, $http, uiSortableMultiSelectionMethods, dispatcher, youtubeFuncs, songDatashare) {
+app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http", "uiSortableMultiSelectionMethods", "$rootScope", "youtubeFuncs", "songDatashare",
+		function ($scope, $timeout, $location, $window, $http, uiSortableMultiSelectionMethods, $rootScope, youtubeFuncs, songDatashare) {
 	$scope.songDatashare = songDatashare;
 	$scope.playlistData = {touched: false};
 	$scope.songIndices = [];
@@ -21,7 +21,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 	// $scope.playem.addTrackByUrl("https://www.youtube.com/watch?v=L16vTRw9mDQ");
 	// $scope.playem.play();
 
-	dispatcher.on("startPlay", function(data) {
+	$rootScope.$on("startPlay", function(e, data) {
 		$scope.updatePlayView();
 		console.log("starting to play");
 		console.log(data);
@@ -411,7 +411,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 			submission["_id"] = $scope.playlistData["_id"];
 			$http.post("/editPlaylist", submission).then(function(resp) {
 				console.log("editting playlist ok");
-				dispatcher.emit("songsRemoved");
+				$rootScope.$emit("songsRemoved");
 				$scope.playlistData.touched = false;
 				alert("Playlist saved!");
 			}, function(err) {
@@ -429,7 +429,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 			console.log("adding playlist");
 			$http.post("/addPlaylist", submission).then(function(resp) {
 				console.log("adding playlist ok");
-				dispatcher.emit("songsRemoved");
+				$rootScope.$emit("songsRemoved");
 				$scope.playlistData.touched = false;
 			}, function(err) {
 				console.log(err);
@@ -500,7 +500,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 	};
 
 	$scope.downloadPlaylist = function() {
-		dispatcher.emit("loadDownload", {"name": $scope.playlistData.name, "songs": $scope.playlistData.contents})
+		$rootScope.$emit("loadDownload", {"name": $scope.playlistData.name, "songs": $scope.playlistData.contents})
 	};
 
 	$scope.updatePlayView = function() {
@@ -569,12 +569,12 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		}
 		//data is now coerced and ready to push
 		songDatashare.editSong(function(insertedData) {
-			dispatcher.emit("songChanged", insertedData);
+			$rootScope.$emit("songChanged", insertedData);
 		});
 		$scope.closeEditSongModal();
 	};
 
-	dispatcher.on("songChanged", function(insertedData) {
+	$rootScope.$on("songChanged", function(e, insertedData) {
 		for (var j = 0; j < insertedData.length; j ++) {
 			for (var i = 0; i < $scope.playlistData.contents.length; i ++) {
 				if ($scope.playlistData.contents[i]["_id"] == insertedData[j]["_id"]) {

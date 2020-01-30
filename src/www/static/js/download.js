@@ -1,5 +1,5 @@
-app.controller('downloadCtrl', ['$scope', '$http', '$location', '$window', '$timeout', 'dispatcher', 'sortingFuncs', 'songDatashare', 'youtubeFuncs', '$loading',
-		function($scope, $http, $location, $window, $timeout, dispatcher, sortingFuncs, songDatashare, youtubeFuncs, $loading) {
+app.controller('downloadCtrl', ['$scope', '$http', '$location', '$window', '$timeout', '$rootScope', 'sortingFuncs', 'songDatashare', 'youtubeFuncs', '$loading',
+		function($scope, $http, $location, $window, $timeout, $rootScope, sortingFuncs, songDatashare, youtubeFuncs, $loading) {
 	//scope vars
 	$scope.downloadName = "";
 	$scope.artistOptions = "All";
@@ -28,7 +28,7 @@ app.controller('downloadCtrl', ['$scope', '$http', '$location', '$window', '$tim
 		}
 	});
 
-	dispatcher.on("loadDownload", function(data, callback) {
+	$rootScope.$on("loadDownload", function(e, data, callback) {
 		$("#downloadPlaylistModal").css("display", "flex");
 		//clean data and prepare to download
 		$scope.data = data;

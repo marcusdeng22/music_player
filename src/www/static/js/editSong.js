@@ -1,5 +1,5 @@
-app.controller('editSongCtrl', ['$scope', '$rootScope', '$http', '$location', '$timeout', 'dispatcher', 'uiSortableMultiSelectionMethods', 'songDatashare',
-		function($scope, $rootScope, $http, $location, $timeout, dispatcher, uiSortableMultiSelectionMethods, songDatashare) {
+app.controller('editSongCtrl', ['$scope', '$rootScope', '$http', '$location', '$timeout', 'uiSortableMultiSelectionMethods', 'songDatashare',
+		function($scope, $rootScope, $http, $location, $timeout, uiSortableMultiSelectionMethods, songDatashare) {
 
 	$scope.songDatashare = songDatashare;
 	$scope.$parent["childScope"] = $scope;
@@ -22,7 +22,6 @@ app.controller('editSongCtrl', ['$scope', '$rootScope', '$http', '$location', '$
 		});
 	}
 
-	// dispatcher.on("preview", $scope.previewSong);
 	var previewEvent = $rootScope.$on("preview", function() {
 		console.log("preview event recv");
 		$scope.previewSong();

@@ -1,9 +1,9 @@
-app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', '$rootScope', 'dispatcher', 'uiSortableMultiSelectionMethods', 'sortingFuncs', 'songDatashare', 'youtubeFuncs',
-		function($scope, $http, $location, $timeout, $rootScope, dispatcher, uiSortableMultiSelectionMethods, sortingFuncs, songDatashare, youtubeFuncs) {
+app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', '$rootScope', 'uiSortableMultiSelectionMethods', 'sortingFuncs', 'songDatashare', 'youtubeFuncs',
+		function($scope, $http, $location, $timeout, $rootScope, uiSortableMultiSelectionMethods, sortingFuncs, songDatashare, youtubeFuncs) {
 	//data model
 	$scope.songDatashare = songDatashare;
 
-	dispatcher.on("songLoadListTemplate", function() {
+	$rootScope.$on("songLoadListTemplate", function() {
 		songDatashare.loadListTemplate("#songEditDiv", $scope);
 	});
 
@@ -19,7 +19,7 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', '$rootSc
 		for (var i = 0; i < songDatashare.songIndices.length; i ++) {
 			passedList["contents"].push(songDatashare.songData[songDatashare.songIndices[i]]);
 		}
-		dispatcher.emit("startPlay", passedList);
+		$rootScope.$emit("startPlay", passedList);
 		$location.hash("play");
 	};
 
@@ -32,7 +32,6 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', '$rootSc
 			//load the edit song file
 			songDatashare.loadEditTemplate("#songEditTemplate", $scope, toEdit, undefined, function() {
 				console.log("dispatching preview");
-				// dispatcher.emit("preview");
 				$rootScope.$emit("preview");
 			});
 		}
@@ -79,7 +78,7 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', '$rootSc
 			songList.push(songDatashare.songData[songDatashare.songIndices[i]]);
 		}
 
-		dispatcher.emit("loadDownload", {"songs": songList});
+		$rootScope.$emit("loadDownload", {"songs": songList});
 	};
 
 	$scope.addAndDownload = function() {
@@ -88,7 +87,7 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', '$rootSc
 		}
 		console.log("add + download");
 		console.log(songDatashare.editData);
-		dispatcher.emit("loadDownload", {"songs": [songDatashare.editData]}, $scope.addSong);
+		$rootScope.$emit("loadDownload", {"songs": [songDatashare.editData]}, $scope.addSong);
 		// songDatashare.addSong();	//this resets the input
 	}
 }]);

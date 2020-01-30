@@ -2,27 +2,6 @@
 
 var app = angular.module('MusicApp', ['ui.sortable', 'ui.sortable.multiselection', 'infinite-scroll', 'darthwade.loading']);
 
-app.value('dispatcher', {
-
-	callbacks: {},
-	emit: function(event, data, f=null) {
-		if (this.callbacks[event]) {
-			this.callbacks[event].forEach(function (callback) {
-				callback(data, f);
-			})
-		}
-	},
-
-	on: function(event, callback) {
-		if (!this.callbacks[event]) {
-			this.callbacks[event] = [];
-		}
-
-		this.callbacks[event].push(callback);
-	}
-
-});
-
 app.directive("ngEnter", function() {
 	return {
 		restrict: "A",
@@ -51,7 +30,7 @@ app.directive("ngOffClose", function() {
 		restrict: "A",
 		link: function(scope, element, attrs) {
 			var f = function(e) {
-				if (!$(e.target).closest(element).length && element.is(":visible")) {
+				if ((e.which === 27 || e.which === 1) && !$(e.target).closest(element).length && element.is(":visible")) {
 					scope.$apply(function() {
 						scope.$eval(attrs.ngOffClose);
 					});
@@ -119,7 +98,7 @@ app.factory("sortingFuncs", ["orderByFilter", function(orderBy) {
 	return sortingFuncs;
 }]);
 
-app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sortingFuncs", "dispatcher", function($compile, $timeout, $http, $window, sortingFuncs, dispatcher) {
+app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sortingFuncs", "$rootScope", function($compile, $timeout, $http, $window, sortingFuncs, $rootScope) {
 	var VARIES = "<varies>";
 	var data = {};
 	//tab info
@@ -538,7 +517,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 					$("#editSongSelect > .songItem").eq(newIndex).addClass("ui-sortable-selected");
 				}
 				$("#editSongSelect").trigger('ui-sortable-selectionschanged');
-				dispatcher.emit("songChanged", resp.data);
+				$rootScope.$emit("songChanged", resp.data);
 			}
 			//now do callback
 			if (toCall != null) {
@@ -564,7 +543,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 			idList.push(data.songData[data.songIndices[i]]["_id"]);
 		}
 		$http.post("/removeMusic", {"music": idList}).then(function(resp) {
-			dispatcher.emit("songsRemoved", idList);
+			$rootScope.$emit("songsRemoved", idList);
 			for (var i = data.songIndices.length - 1; i >= 0; i--) {
 				data.songData.splice(data.songIndices[i], 1);
 			}

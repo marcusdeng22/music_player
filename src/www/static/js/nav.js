@@ -1,5 +1,5 @@
-app.controller('NavCtrl', ['$scope', 'dispatcher', '$timeout', '$location', '$window', '$http', '$compile', 'songDatashare',
-	function($scope, dispatcher, $timeout, $location, $window, $http, $compile, songDatashare) {
+app.controller('NavCtrl', ['$scope', '$rootScope', '$timeout', '$location', '$window', '$http', '$compile', 'songDatashare',
+	function($scope, $rootScope, $timeout, $location, $window, $http, $compile, songDatashare) {
 
 	$scope.activeTab = "";
 	$scope.activeId = "";
@@ -8,23 +8,7 @@ app.controller('NavCtrl', ['$scope', 'dispatcher', '$timeout', '$location', '$wi
 		"#playDiv",
 		"#songDiv"
 	];
-/**
-	dispatcher.on('bulkUserRefresh', function() {
-		$timeout(function() {$scope.showBulkUserAdd = true;}, 0);
-	});
 
-	dispatcher.on('bulkUserEnd', function() {
-		$timeout(function() {$scope.showBulkUserAdd = false;}, 0);
-	});
-
-	dispatcher.on('bulkProjectRefresh', function() {
-		$timeout(function() {$scope.showBulkProjectAdd = true;}, 0);
-	});
-
-	dispatcher.on('bulkProjectEnd', function() {
-		$timeout(function() {$scope.showBulkProjectAdd = false;}, 0);
-	});
-**/
 	//add a listener for the nav bar
 	$scope.$on('$locationChangeSuccess', function() {
 		// TODO What you want on the event.
@@ -62,12 +46,12 @@ app.controller('NavCtrl', ['$scope', 'dispatcher', '$timeout', '$location', '$wi
 						//unload from #songDiv and load to #playlistSongEditDiv
 						console.log("unloading song div");
 						// songDatashare.loadListTemplate("#playlistSongEditDiv", $scope);
-						dispatcher.emit("playlistLoadListTemplate");
+						$rootScope.$emit("playlistLoadListTemplate");
 					}
 					else if ($scope.activeId == "#songDiv") {
 						console.log("unloading playlist div");
 						// songDatashare.loadListTemplate("#songEditDiv", $scope);\
-						dispatcher.emit("songLoadListTemplate");
+						$rootScope.$emit("songLoadListTemplate");
 					}
 				}
 				$(tabId).show();

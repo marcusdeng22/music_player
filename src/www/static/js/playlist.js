@@ -1,5 +1,5 @@
-app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$timeout', 'dispatcher', 'uiSortableMultiSelectionMethods', 'sortingFuncs', 'songDatashare', 'youtubeFuncs',
-		function($scope, $http, $location, $window, $timeout, dispatcher, uiSortableMultiSelectionMethods, sortingFuncs, songDatashare, youtubeFuncs) {
+app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$timeout', '$rootScope', 'uiSortableMultiSelectionMethods', 'sortingFuncs', 'songDatashare', 'youtubeFuncs',
+		function($scope, $http, $location, $window, $timeout, $rootScope, uiSortableMultiSelectionMethods, sortingFuncs, songDatashare, youtubeFuncs) {
 	$scope.playlistData = [];
 	$scope.playlistIndices = [];
 	$scope.songData = [];
@@ -302,11 +302,11 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 		});
 	}
 
-	dispatcher.on("playlistLoadListTemplate", function() {
+	$rootScope.$on("playlistLoadListTemplate", function() {
 		songDatashare.loadListTemplate("#playlistSongEditDiv", $scope);
 	});
 
-	dispatcher.on("songChanged", function(data) {
+	$rootScope.$on("songChanged", function(e, data) {
 		//update the currently selected songs
 		for (var i = 0; i < $scope.songData.length; i ++) {
 			for (var j = 0; j < data.length; j ++) {
@@ -318,7 +318,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 		
 	});
 
-	dispatcher.on("songsRemoved", function() {
+	$rootScope.$on("songsRemoved", function() {
 		//get the new playlist info
 		// $scope.clearSearch();
 		// $scope.getPlaylistData();
@@ -444,7 +444,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 		$http.post("/findMusicList", {"content": passedList["contents"]}).then(function(resp) {
 			passedList["contents"] = resp["data"];
 			passedList["startIndex"] = index;
-			dispatcher.emit("startPlay", passedList);
+			$rootScope.$emit("startPlay", passedList);
 			$location.hash("play");
 		}, function(err) {
 			console.log(err);
@@ -576,7 +576,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 		//resolve the contents to the actual data
 		$http.post("/findMusicList", {"content": downloadData["songs"]}).then(function(resp) {
 			downloadData["songs"] = resp["data"];
-			dispatcher.emit("loadDownload", downloadData);
+			$rootScope.$emit("loadDownload", downloadData);
 		}, function(err) {
 			console.log(err);
 			if (err.status == 403) {
@@ -663,7 +663,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 		}
 		if (toEdit.length == 1) {
 			songDatashare.loadEditTemplate("#playlistEditTemplate", $scope, toEdit, undefined, function() {
-				dispatcher.emit("preview");
+				$rootScope.$emit("preview");
 			});
 		}
 		else {
