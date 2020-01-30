@@ -102,7 +102,7 @@
 	</div>
 
 	<div id="addPlaylistModal" class="modal" style="display: none;">
-		<div class="modal-content" style="width:75%;">
+		<div class="modal-content" ng-off-close="closePlaylistModal()" style="width:75%;">
 			<div id="playlistMode"></div>
 			<input type="text" id="newPlaylistName" ng-model="newPlaylistName" placeholder="Playlist Name">
 			<div>
@@ -113,7 +113,7 @@
 	</div>
 
 	<div id="addMusicListModal" class="modal" style="display: none;">
-		<div class="modal-content" style="width:75%;">
+		<div class="modal-content" ng-off-close="closeAddSongsModal()" style="width:75%;">
 			<div id="playlistSongEditDiv" style="height: 700px;">
 				<!-- put file here -->
 			</div>
@@ -125,7 +125,7 @@
 	</div>
 
 	<div id="editMusicModal" class="modal" style="display: none;">
-		<div class="modal-content" style="width:75%;">
+		<div class="modal-content" ng-off-close="closeEditSongModal()" style="width:75%;">
 			<div id="playlistEditTemplate">
 				<!-- put file here -->
 			</div>

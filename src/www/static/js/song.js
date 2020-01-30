@@ -1,7 +1,11 @@
-app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatcher', 'uiSortableMultiSelectionMethods', 'sortingFuncs', 'songDatashare', 'youtubeFuncs',
-		function($scope, $http, $location, $timeout, dispatcher, uiSortableMultiSelectionMethods, sortingFuncs, songDatashare, youtubeFuncs) {
+app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', '$rootScope', 'dispatcher', 'uiSortableMultiSelectionMethods', 'sortingFuncs', 'songDatashare', 'youtubeFuncs',
+		function($scope, $http, $location, $timeout, $rootScope, dispatcher, uiSortableMultiSelectionMethods, sortingFuncs, songDatashare, youtubeFuncs) {
 	//data model
 	$scope.songDatashare = songDatashare;
+
+	dispatcher.on("songLoadListTemplate", function() {
+		songDatashare.loadListTemplate("#songEditDiv", $scope);
+	});
 
 	$scope.playSelected = function() {
 		//switch tabs to "Play" and pass the playlist data
@@ -27,7 +31,9 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatc
 		if (toEdit.length == 1) {
 			//load the edit song file
 			songDatashare.loadEditTemplate("#songEditTemplate", $scope, toEdit, undefined, function() {
-				dispatcher.emit("preview");
+				console.log("dispatching preview");
+				// dispatcher.emit("preview");
+				$rootScope.$emit("preview");
 			});
 		}
 		else {
@@ -45,20 +51,10 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatc
 	}
 
 	$scope.closeEdit = function() {
+		console.log("song closing edit");
 		songDatashare.stopPlayem();
 		$("#songEditModal").hide();
 	}
-
-	$("body").on("click", function(evt) {
-		if ($(".modal").toArray().includes(evt.target)) {
-			$scope.closeEdit();
-		}
-	})
-	.keyup(function(evt) {
-		if (evt.keyCode == 27) {	//escape key
-			$scope.closeEdit();
-		}
-	});
 
 	$scope.removeSongs = function() {
 		if (confirm("Remove selected song(s)?")) {

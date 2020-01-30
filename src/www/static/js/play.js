@@ -111,7 +111,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 				console.log("NEXT PRESS");
 				$scope.nextSong();
 			})
-			console.log(navigator);
+			// console.log(navigator);
 		}
 		// userSet = false;
 		console.log(data);
@@ -592,15 +592,4 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		songDatashare.stopPlayem();
 		$("#nowPlayingEditMusicModal").hide();
 	};
-
-	$("body").on("click", function(evt) {
-		if ($(".modal").toArray().includes(evt.target)) {
-			$scope.closeEditSongModal();
-		}
-	})
-	.keyup(function(evt) {
-		if (evt.keyCode == 27) {	//escape key
-			$scope.closeEditSongModal();
-		}
-	});
 }]);

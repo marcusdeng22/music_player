@@ -23,6 +23,50 @@ app.value('dispatcher', {
 
 });
 
+app.directive("ngEnter", function() {
+	return {
+		restrict: "A",
+		link: function(scope, element, attrs) {
+			var f = function(e) {
+				if (e.which === 13) {
+					scope.$apply(function() {
+						scope.$eval(attrs.ngEnter);
+					});
+					e.preventDefault();
+				}
+			}
+
+			element.on("keyup", f);
+
+			scope.$on("$destroy", function() {
+				element.off("keyup", f);
+			});
+		}
+	}
+});
+
+//https://stackoverflow.com/questions/152975/how-do-i-detect-a-click-outside-an-element
+app.directive("ngOffClose", function() {
+	return {
+		restrict: "A",
+		link: function(scope, element, attrs) {
+			var f = function(e) {
+				if (!$(e.target).closest(element).length && element.is(":visible")) {
+					scope.$apply(function() {
+						scope.$eval(attrs.ngOffClose);
+					});
+				}
+			};
+
+			$("body").on("mousedown", f).on("keyup", f);
+
+			scope.$on("$destroy", function() {
+				$("body").off("mousedown", f).off("keyup", f);
+			});
+		}
+	}
+});
+
 app.factory("youtubeFuncs", ["$http", function($http) {
 	var data = {};
 	data.cleanUrl = function(id){
@@ -82,6 +126,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 	data.tab = "#existingSongSearch";	//#existingSongSearch or #addNewSong
 	data.listTemplateId = "";
 	data.loadListTemplate = function(targetId, $scope) {
+		$scope["loadTemplateDiv"] = targetId;
 		if (data.listTemplateId != "" && data.listTemplateId != targetId){
 		// if (data.listTemplateId != "") {
 			$(data.listTemplateId).empty();
@@ -123,10 +168,25 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 	data.editDataURL = new Set();	//store the edit song URLs here
 	// data.playem = null;	//store the preview player info here
 	data.playem = new Playem();
+	var oldEditTemplate = null;
 	data.loadEditTemplate = function(targetId, $scope, toAdd=null, force=false, callback=null) {
-		if ((data.editTemplateId != "" && data.editTemplateId != targetId) || force) {
-			$(data.editTemplateId).empty();
+		// if (oldEditTemplate != null) {
+		// 	console.log("destroying old edit template");
+		// 	console.log(oldEditTemplate["childScope"]);
+		// 	oldEditTemplate["childScope"].$destroy();
+		// 	// delete oldEditTemplate["childScope"];
+		// }
+		// oldEditTemplate = $scope;
+		if (oldEditTemplate != null) {
+			oldEditTemplate.$destroy();
+			delete oldEditTemplate;
 		}
+		$scope["editTemplateDiv"] = targetId;
+		console.log("SETTING SCOPE");
+		console.log($scope);
+		// if ((data.editTemplateId != "" && data.editTemplateId != targetId) || force) {
+			$(data.editTemplateId).empty();
+		// }
 		force = true;
 		if (data.editTemplateId != targetId || force) {
 			console.log("loading edit template");
@@ -150,8 +210,16 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 				data.reloadPlayem();
 				// data.playem = new Playem();
 				// data.playem.addPlayer(YoutubePlayer, {playerContainer: document.getElementById("previewDisplay")});
+				var x = 0;
 				$timeout(function() {
-					$compile($(targetId).contents())($scope);
+					// $compile($(targetId).contents())($scope);
+					// if (callback != null) {
+					// 	console.log("compiling " + x++);
+					// 	callback();
+					// }
+					oldEditTemplate = $scope.$new(true);
+					oldEditTemplate["editTemplateDiv"] = targetId;
+					$compile($(targetId).contents())(oldEditTemplate);
 					if (callback != null) {
 						callback();
 					}

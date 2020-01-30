@@ -61,11 +61,13 @@ app.controller('NavCtrl', ['$scope', 'dispatcher', '$timeout', '$location', '$wi
 					if ($scope.activeId == "#playlistDiv") {
 						//unload from #songDiv and load to #playlistSongEditDiv
 						console.log("unloading song div");
-						songDatashare.loadListTemplate("#playlistSongEditDiv", $scope);
+						// songDatashare.loadListTemplate("#playlistSongEditDiv", $scope);
+						dispatcher.emit("playlistLoadListTemplate");
 					}
 					else if ($scope.activeId == "#songDiv") {
 						console.log("unloading playlist div");
-						songDatashare.loadListTemplate("#songEditDiv", $scope);
+						// songDatashare.loadListTemplate("#songEditDiv", $scope);\
+						dispatcher.emit("songLoadListTemplate");
 					}
 				}
 				$(tabId).show();

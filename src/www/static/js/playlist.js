@@ -302,6 +302,10 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 		});
 	}
 
+	dispatcher.on("playlistLoadListTemplate", function() {
+		songDatashare.loadListTemplate("#playlistSongEditDiv", $scope);
+	});
+
 	dispatcher.on("songChanged", function(data) {
 		//update the currently selected songs
 		for (var i = 0; i < $scope.songData.length; i ++) {
@@ -401,22 +405,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 	}
 
 	$(window).on("load", function() {
-		// $(".playlistItem").not(".ui-sortable-placeholder").droppable({
 		initiatilizeDrop();
-
-		//prepare escaping functions
-		$("body").on("click", function(evt) {
-			// if (evt.target == $("#addPlaylistModal")[0]) {
-			// if ([$("#addPlaylistModal")[0], $("#addMusicListModal")[0], $("#editMusicModal")[0]].includes(evt.target)) {
-			if ($(".modal").toArray().includes(evt.target)) {
-				closeAllModals();
-			}
-		})
-		.keyup(function(evt) {
-			if (evt.keyCode == 27) {	//escape key
-				closeAllModals();
-			}
-		});
 
 		//prepare datepicker
 		$('#playlistStartDate, #playlistEndDate').datepicker({
@@ -426,7 +415,6 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 			todayHighlight: true
 		});
 		$('#playlistStartDate, #playlistEndDate').datepicker("clearDates");
-		// $('#playlistStartDate, #playlistEndDate').datepicker("setDate", new Date());
 	});
 
 	$scope.getThumbnail = youtubeFuncs.getThumbnail;
@@ -738,11 +726,5 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 				}
 			});
 		}
-	}
-
-	function closeAllModals() {
-		$scope.closePlaylistModal();
-		$scope.closeEditSongModal();
-		$scope.closeAddSongsModal();
 	}
 }]);

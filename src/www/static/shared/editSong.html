@@ -9,7 +9,7 @@
 				<div ng-if="key=='artist'" data-tip="Use commas to separate entries">
 					<input type="text" ng-model="songDatashare.editData[key]" ng-model-options='{debounce: 500}' style="width: 100%;">
 				</div>
-				<input ng-if="key!='artist'" type="text" ng-model="songDatashare.editData[key]" ng-model-options='{debounce: 500}' style="width: 100%;">
+				<input ng-if="key!='artist'" type="text" ng-model="songDatashare.editData[key]" ng-model-options='{debounce: 500}' ng-enter="testEnter()" style="width: 100%;">
 			</td>
 			<td ng-if="key=='url'">
 				<input id="newSongUrlInput" type="text" ng-model="songDatashare.editData[key]" ng-paste="previewSong()" style="width: calc(100% - 45px); vertical-align: bottom;">
