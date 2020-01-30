@@ -545,6 +545,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		//first check if we need to add the song to the database:
 		if (edittingToAdd.length > 0) {
 			//add these songs!
+			console.log("adding mult songs");
 			songDatashare.addMultipleSongs(edittingToAdd, function(insertedData) {
 				//remove songs that were added via edit
 				for (var j = 0; j < insertedData.length; j ++) {
@@ -565,16 +566,29 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 					}
 				}
 				edittingToAdd = [];
+				//data is now coerced and ready to push
+				songDatashare.editSong(function(insertedData) {
+					// $rootScope.$emit("songChanged", insertedData);
+					$scope.closeEditSongModal();
+				});
 			});
 		}
-		//data is now coerced and ready to push
-		songDatashare.editSong(function(insertedData) {
-			$rootScope.$emit("songChanged", insertedData);
-		});
-		$scope.closeEditSongModal();
+		else {
+			songDatashare.editSong(function(insertedData) {
+				// $rootScope.$emit("songChanged", insertedData);
+				$scope.closeEditSongModal();
+			});
+		}
 	};
 
+	$rootScope.$on("playEditSubmit", function() {
+		$scope.submitEditSong();
+	});
+
 	$rootScope.$on("songChanged", function(e, insertedData) {
+		if (!$scope.playlistData.contents) {
+			return;
+		}
 		for (var j = 0; j < insertedData.length; j ++) {
 			for (var i = 0; i < $scope.playlistData.contents.length; i ++) {
 				if ($scope.playlistData.contents[i]["_id"] == insertedData[j]["_id"]) {

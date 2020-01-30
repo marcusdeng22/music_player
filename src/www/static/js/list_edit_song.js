@@ -3,6 +3,8 @@ app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$window', '
 	//data model
 	$scope.songDatashare = songDatashare;
 
+	$scope.$parent["childScope"] = $scope;
+
 	//order vars
 	$scope.orderVar = "date";
 	$scope.reverse = true;
@@ -36,7 +38,7 @@ app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$window', '
 	// console.log("sortablesongs:");
 	// console.log($scope.sortableSongs);
 
-	$("#editSongSelect").on('ui-sortable-selectionschanged', function (e, args) {
+	var updateSortable = function (e, args) {
 		console.log("song select changed");
 		console.log(e);
 		console.log(args);
@@ -47,7 +49,9 @@ app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$window', '
 		if (!$scope.$$phase) {
 			$scope.$apply();
 		}
-	});
+	};
+
+	$("#editSongSelect").on('ui-sortable-selectionschanged', updateSortable);
 
 	$scope.getSongData = function(query={}, sortVar="date", sortRev=true) {
 		$http.post("/findMusic", query).then(function(resp) {
@@ -113,30 +117,34 @@ app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$window', '
 		}
 	}
 
-	$(".song-search").keypress(function(evt) {
+	var searchFunc = function(evt) {
 		if (evt.which == 13) {	//enter key
 			$("#advSongSearchBtn").click();
 		}
-	});
+	};
+
+	$(".song-search").on("keypress", searchFunc);
+
+	var tabFunc = function(e) {
+		console.log("subtab clicked");
+		console.log($(this)[0]);
+		var targetTab = $(this)[0]["dataset"]["target"];
+		songDatashare.tab = targetTab;
+		if (targetTab == "#addNewSong") {
+			songDatashare.loadEditTemplate("#addNewSong", $scope, null, true);
+		}
+		if (!$scope.$$phase) {
+			$scope.$apply();
+		}
+		console.log(songDatashare);
+		e.preventDefault();
+		$(".tab-pane").removeClass("show active");
+		$(targetTab).addClass("show active");
+	};
 
 	$(function() {
 		//handle subtab click
-		$("#listEditSongDiv .nav-link").on("click", function(e) {
-			console.log("subtab clicked");
-			console.log($(this)[0]);
-			var targetTab = $(this)[0]["dataset"]["target"];
-			songDatashare.tab = targetTab;
-			if (targetTab == "#addNewSong") {
-				songDatashare.loadEditTemplate("#addNewSong", $scope, null, true);
-			}
-			if (!$scope.$$phase) {
-				$scope.$apply();
-			}
-			console.log(songDatashare);
-			e.preventDefault();
-			$(".tab-pane").removeClass("show active");
-			$(targetTab).addClass("show active");
-		});
+		$("#listEditSongDiv .nav-link").on("click", tabFunc);
 
 		//prepare datepicker
 		$('#songStartDate, #songEndDate').datepicker({
@@ -151,6 +159,13 @@ app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$window', '
 	$scope.getThumbnail = youtubeFuncs.getThumbnail;
 
 	console.log("edit controller exec");
+
+	$scope.$on("$destroy", function() {
+		console.log("list template destroy");
+		$("#editSongSelect").off('ui-sortable-selectionschanged', updateSortable);
+		$(".song-search").off("keypress", searchFunc);
+		$("#listEditSongDiv .nav-link").off("click", tabFunc);
+	});
 	
 }]);
 console.log("edit exec");

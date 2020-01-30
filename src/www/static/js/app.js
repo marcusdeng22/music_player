@@ -104,8 +104,14 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 	//tab info
 	data.tab = "#existingSongSearch";	//#existingSongSearch or #addNewSong
 	data.listTemplateId = "";
+	var oldListTemplate = null;
 	data.loadListTemplate = function(targetId, $scope) {
-		$scope["loadTemplateDiv"] = targetId;
+		if (oldListTemplate != null && oldListTemplate["childScope"]) {
+			console.log("destroying old list template");
+			oldListTemplate["childScope"].$destroy();
+		}
+		oldListTemplate = $scope;
+		$scope["listTemplateDiv"] = targetId;
 		if (data.listTemplateId != "" && data.listTemplateId != targetId){
 		// if (data.listTemplateId != "") {
 			$(data.listTemplateId).empty();
@@ -116,6 +122,8 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 			data.songIndices = [];
 			data.tab = "#existingSongSearch";
 			$(targetId).load("/shared/list_edit_song.html", function() {
+				console.log("compiling template");
+				console.log($scope.$id);
 				$compile($(targetId).contents())($scope);
 			});
 		}
@@ -149,29 +157,21 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 	data.playem = new Playem();
 	var oldEditTemplate = null;
 	data.loadEditTemplate = function(targetId, $scope, toAdd=null, force=false, callback=null) {
-		// if (oldEditTemplate != null) {
-		// 	console.log("destroying old edit template");
-		// 	console.log(oldEditTemplate["childScope"]);
-		// 	oldEditTemplate["childScope"].$destroy();
-		// 	// delete oldEditTemplate["childScope"];
-		// }
-		// oldEditTemplate = $scope;
-		if (oldEditTemplate != null) {
-			oldEditTemplate.$destroy();
-			delete oldEditTemplate;
+		if (oldEditTemplate != null && oldEditTemplate["childScope"]) {
+			console.log("destroying old edit template");
+			oldEditTemplate["childScope"].$destroy();
 		}
+		oldEditTemplate = $scope;
 		$scope["editTemplateDiv"] = targetId;
 		console.log("SETTING SCOPE");
 		console.log($scope);
-		// if ((data.editTemplateId != "" && data.editTemplateId != targetId) || force) {
+		if ((data.editTemplateId != "" && data.editTemplateId != targetId) || force) {
 			$(data.editTemplateId).empty();
-		// }
+		}
 		force = true;
 		if (data.editTemplateId != targetId || force) {
 			console.log("loading edit template");
 			data.editTemplateId = targetId;
-			// //unload playem
-			// data.stopPlayem();
 			//set new data
 			if (toAdd != null) {
 				data.setEditData(toAdd);
@@ -181,24 +181,10 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 			}
 			//load and compile
 			$(targetId).load("/shared/editSong.html", function() {
-				// //load playem
-				// var config = {
-				// 	playerContainer: document.getElementById("previewDisplay")
-				// };
-				// data.playem.addPlayer(YoutubePlayer, config);	//TODO: ADD MORE PLAYERS HERE
+				//stop and load playem
 				data.reloadPlayem();
-				// data.playem = new Playem();
-				// data.playem.addPlayer(YoutubePlayer, {playerContainer: document.getElementById("previewDisplay")});
-				var x = 0;
 				$timeout(function() {
-					// $compile($(targetId).contents())($scope);
-					// if (callback != null) {
-					// 	console.log("compiling " + x++);
-					// 	callback();
-					// }
-					oldEditTemplate = $scope.$new(true);
-					oldEditTemplate["editTemplateDiv"] = targetId;
-					$compile($(targetId).contents())(oldEditTemplate);
+					$compile($(targetId).contents())($scope);
 					if (callback != null) {
 						callback();
 					}
@@ -494,31 +480,39 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 		editSubm["_id"] = [...data.editDataID];
 		console.log("EDIT SUBMISSION");
 		console.log(editSubm);
+		console.log(data.songData);
 		$http.post("/editMusic", editSubm).then(function(resp) {
 			console.log("edit request ok");
 			//only modify local data if editing song from the list view
-			if (fromList) {
-				var idIndices= {};
-				for (var i = 0; i < resp.data.length; i ++) {
-					idIndices[resp.data[i]["_id"]] = i;
-				}
-				//update local data
-				for (var i = 0; i < data.songIndices.length; i ++) {
-					data.songData[data.songIndices[i]] = resp.data[idIndices[data.songData[data.songIndices[i]]["_id"]]];
-				}
-				//sort
-				data.sortBy(data.orderVar, true);
-				//select the original indices
-				data.songIndices = [];
-				$("#editSongSelect > .songItem").removeClass("ui-sortable-selected");
-				for (var i = 0; i < resp.data.length; i ++) {
-					var newIndex = data.songData.findIndex(function(p) { return p["_id"] == resp.data[i]["_id"]; })
-					data.songIndices.push(newIndex);
-					$("#editSongSelect > .songItem").eq(newIndex).addClass("ui-sortable-selected");
-				}
-				$("#editSongSelect").trigger('ui-sortable-selectionschanged');
+			// if (fromList) {
+				// console.log("frpm list");
+				// var idIndices= {};
+				// for (var i = 0; i < resp.data.length; i ++) {
+				// 	idIndices[resp.data[i]["_id"]] = i;
+				// }
+				// console.log(idIndices);
+				// console.log(data.songData);
+				// console.log(data.songIndices);
+				// //update local data
+				// for (var i = 0; i < data.songIndices.length; i ++) {
+				// 	data.songData[data.songIndices[i]] = resp.data[idIndices[data.songData[data.songIndices[i]]["_id"]]];
+				// }
+				// //sort
+				// data.sortBy(data.orderVar, true);
+				// //select the original indices
+				// data.songIndices = [];
+				// console.log("EDIT -> UPDATING LOCAL");
+				// console.log(data.songData);
+				// console.log(resp.data);
+				// $("#editSongSelect > .songItem").removeClass("ui-sortable-selected");
+				// for (var i = 0; i < resp.data.length; i ++) {
+				// 	var newIndex = data.songData.findIndex(function(p) { return p["_id"] == resp.data[i]["_id"]; })
+				// 	data.songIndices.push(newIndex);
+				// 	$("#editSongSelect > .songItem").eq(newIndex).addClass("ui-sortable-selected");
+				// }
+				// $("#editSongSelect").trigger('ui-sortable-selectionschanged');
 				$rootScope.$emit("songChanged", resp.data);
-			}
+			// }
 			//now do callback
 			if (toCall != null) {
 				console.log("callback");

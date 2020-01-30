@@ -28,26 +28,37 @@ app.controller('editSongCtrl', ['$scope', '$rootScope', '$http', '$location', '$
 	})
 
 	//update song url preview on enter key
-	// $(document).keyup(function(e) {
-	// 	if ($("#newSongUrlInput").is(":focus") && e.key == "Enter") {
-	// 		$scope.previewSong();
-	// 	}
-	// 	// if ($($scope["editTemplateDiv"] + " #editSongDiv input:not('#newSongUrlInput')").is(":focus") && e.key == "Enter") {
-	// 	if ($("#editSongDiv input:not('#newSongUrlInput')").is(":focus") && e.key == "Enter") {
-	// 		console.log("enter pressed");
-	// 		console.log($scope["editTemplateDiv"]);
-	// 		//switch on the template for the dispatch
-	// 		// switch($scope["editTemplateDiv"]) {
-	// 		// 	case "#songEditTemplate":
-	// 		// 		console.log("song edit");
-	// 		// 		break;
-	// 		// 	case "#addNewSong":
-	// 		// 		console.log("add new song");
-	// 		// 		break;
-	// 		// 	case ""
-	// 		// }
-	// 	}
-	// });
+	$scope.enterSubmit = function() {
+		//switch on the template for the dispatch
+		console.log("enter key pressed");
+		console.log($scope["editTemplateDiv"]);
+		console.log($scope["listTemplateDiv"]);
+		switch($scope["editTemplateDiv"]) {
+			case "#addNewSong":
+				//playlist/song view add new song
+				if ($scope["listTemplateDiv"] == "#playlistSongEditDiv") {
+					$rootScope.$emit("playlistAddSubmit");
+				}
+				else if ($scope["listTemplateDiv"] == "#songEditDiv") {
+					$rootScope.$emit("songAddSubmit");
+				}
+				break;
+			case "#playlistEditTemplate":
+				//playlist edit song
+				$rootScope.$emit("playlistEditSubmit");
+				break;
+			case "#nowPlayingEditTemplate":
+				//play edit song
+				$rootScope.$emit("playEditSubmit");
+				break;
+			case "#songEditTemplate":
+				//songs edit song
+				$rootScope.$emit("songEditSubmit");
+				break;
+			default:
+				console.log("mismatch");
+		}
+	}
 
 	console.log("editting data:");
 	console.log($scope.songDatashare.editData);
@@ -56,7 +67,6 @@ app.controller('editSongCtrl', ['$scope', '$rootScope', '$http', '$location', '$
 	$scope.$on("$destroy", function() {
 		console.log("edit scope destroyed");
 		previewEvent();
-		$scope.$destroy();
 	});
 
 	$scope.testEnter = function() {

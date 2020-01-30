@@ -615,6 +615,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 				console.log("adding songs to playlist ok");
 				$scope.playlistData[$scope.playlistIndices] = resp["data"];
 				updatePlaylistSortable();
+				$scope.closeAddSongsModal();
 			}, function(err) {
 				console.log(err);
 				if (err.status == 403) {
@@ -635,6 +636,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 					console.log("adding new song to playlist ok");
 					$scope.playlistData[$scope.playlistIndices] = resp["data"];
 					updatePlaylistSortable();
+					$scope.closeAddSongsModal();
 				}, function(err) {
 					console.log(err);
 					if (err.status == 403) {
@@ -647,8 +649,11 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 				});
 			});
 		}
-		$scope.closeAddSongsModal();
 	}
+
+	$rootScope.$on("playlistAddSubmit", function() {
+		$scope.submitSongs();
+	});
 
 	$scope.closeAddSongsModal = function() {
 		songDatashare.clearSelected();
@@ -691,11 +696,16 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 					}
 				}
 			}
+			$scope.closeEditSongModal();
 		});
-		$scope.closeEditSongModal();
 	}
 
+	$rootScope.$on("playlistEditSubmit", function() {
+		$scope.submitEditSong();
+	});
+
 	$scope.closeEditSongModal = function() {
+		console.log("CLOSING PLAYLIST EDIT MODAL");
 		songDatashare.stopPlayem();
 		$("#editMusicModal").hide();
 	}
