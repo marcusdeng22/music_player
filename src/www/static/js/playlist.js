@@ -636,6 +636,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 					console.log("adding new song to playlist ok");
 					$scope.playlistData[$scope.playlistIndices] = resp["data"];
 					updatePlaylistSortable();
+					songDatashare.stopPlayem();
 					$scope.closeAddSongsModal();
 				}, function(err) {
 					console.log(err);

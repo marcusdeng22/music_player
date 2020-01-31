@@ -1,5 +1,5 @@
-app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$window', '$timeout', 'uiSortableMultiSelectionMethods', 'sortingFuncs', 'songDatashare', 'youtubeFuncs',
-		function($scope, $http, $location, $window, $timeout, uiSortableMultiSelectionMethods, sortingFuncs, songDatashare, youtubeFuncs) {
+app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location', '$window', '$timeout', 'uiSortableMultiSelectionMethods', 'sortingFuncs', 'songDatashare', 'youtubeFuncs',
+		function($scope, $rootScope, $http, $location, $window, $timeout, uiSortableMultiSelectionMethods, sortingFuncs, songDatashare, youtubeFuncs) {
 	//data model
 	$scope.songDatashare = songDatashare;
 
@@ -157,6 +157,20 @@ app.controller('listEditSongCtrl', ['$scope', '$http', '$location', '$window', '
 	});
 
 	$scope.getThumbnail = youtubeFuncs.getThumbnail;
+
+	$scope.submitDblClk = function() {
+		//switch on the source that loaded this template
+		switch($scope["listTemplateDiv"]) {
+			case "#playlistSongEditDiv":
+				$rootScope.$emit("playlistAddSubmit");
+				break;
+			case "#songEditDiv":
+				$rootScope.$emit("songEditTrigger");
+				break;
+			default:
+				console.log("mismatch");
+		}
+	}
 
 	console.log("edit controller exec");
 

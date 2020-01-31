@@ -15,6 +15,10 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', '$rootSc
 		$scope.submitEditSong();
 	});
 
+	$rootScope.$on("songEditTrigger", function() {
+		$scope.editSong();
+	});
+
 	$scope.playSelected = function() {
 		//switch tabs to "Play" and pass the playlist data
 		var passedList = {
@@ -104,6 +108,7 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', '$rootSc
 	$scope.addSong = function() {
 		songDatashare.addSong(function() {
 			$("#addSongNotifCompl").toast("show");
+			songDatashare.reloadPlayem();
 		});
 	};
 
