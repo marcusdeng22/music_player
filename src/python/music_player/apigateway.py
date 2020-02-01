@@ -701,9 +701,11 @@ class ApiGateway(object):
 			{
 				"_id": (_id, optional),
 				"name": (string, optional),
-				"contents": [(dict)] (optional),
+				"contents": [(dict)] (optional),	#order is important; will store the shuffled order
 				"startIndex": (int, optional),
-				"touched": (boolean, optional)
+				"touched": (boolean, optional),
+				"loop": (boolean, optional),
+				"shuffle": (boolean, optional)
 			}
 		"""
 		# check that we actually have json
@@ -727,6 +729,10 @@ class ApiGateway(object):
 			myQuery["playlist.startIndex"] = m_utils.checkValidData("startIndex", data, int)
 		if "touched" in data:
 			myQuery["playlist.touched"] = m_utils.checkValidData("touched", data, bool)
+		if "loop" in data:
+			myQuery["loop"] = m_utils.checkValidData("loop", data, bool)
+		if "shuffle" in data:
+			myQuery["shuffle"] = m_utils.checkValidData("shuffle", data, bool)
 
 		if len(myQuery) > 1:
 			self.colLast.update_one({"user": self.getUser()}, {"$set": myQuery}, upsert=True)
@@ -741,7 +747,9 @@ class ApiGateway(object):
 		result = self.colLast.find_one({"user": self.getUser()})
 		if result is None:
 			return
-		result = result["playlist"]
-		if "name" not in result or "contents" not in result:
+		# result = result["playlist"]
+		if "name" not in result["playlist"] or "contents" not in result["playlist"]:
 			return
+
+		del result["_id"]
 		return result

@@ -221,6 +221,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 			// delete data.playem;
 		}
 		$("#previewDisplay").empty();	//stops loading of video if stopping early
+		console.log("DONE STOPPING PLAYEM PREVIEWER");
 	};
 	data.reloadPlayem = function() {
 		data.stopPlayem();
@@ -228,6 +229,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 			playerContainer: document.getElementById("previewDisplay")
 		};
 		data.playem.addPlayer(YoutubePlayer, config);
+		console.log("DONE RELOADING PLAYEM PREVIEWER");
 	};
 	data.resetEdit = function() {
 		data.editData = {"url": "", "type": "youtube", "name": "", "artist": [], "album": "", "genre": "", "vol": 100, "start": 0, "end": 0};

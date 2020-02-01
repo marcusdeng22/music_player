@@ -308,16 +308,17 @@ angular.module('ui.sortable.multiselection', [])
               .concat(models.above));
 
             ui.item.parent().find('> .' + selectedItemClass).removeClass('' + selectedItemClass).show(); //ORIG - restores the display of the dragged items
-            // console.log("STOP MULTI SELECT");
-            // console.log(newPosition); //this is index where the items are dropped to
-            // console.log(newIndex);
-            // console.log(newIndex - indexes.above.length);
-            // console.log(newIndex + indexes.below.length);
-            // console.log(indexes); //i think this is the offset above/below the first selection of the selected items
-            // console.log(draggedElementIndexes);
+            console.log("STOP MULTI SELECT");
+            console.log(newPosition); //this is index where the items are dropped to
+            console.log(newIndex);
+            console.log(newIndex - indexes.above.length);
+            console.log(newIndex + indexes.below.length);
+            console.log(indexes); //i think this is the offset above/below the first selection of the selected items
+            console.log(draggedElementIndexes);
             ui.item.parent().children().filter(function(i) {  //ME: this is to update the display for the new positions of the selected elements
               // console.log(i);
-              return i >= newIndex - indexes.above.length && i <= newIndex + indexes.below.length;
+              // return i >= newIndex - indexes.above.length && i <= newIndex + indexes.below.length;
+              return i >= newIndex && i <= newIndex + draggedElementIndexes.length;
             }).addClass(selectedItemClass);
             //ME: trigger selected event on parent
             ui.item.parent().trigger("ui-sortable-selectionschanged");  //ME

@@ -27,7 +27,7 @@ app.controller('editSongCtrl', ['$scope', '$rootScope', '$http', '$location', '$
 		$scope.previewSong();
 	})
 
-	//update song url preview on enter key
+	//submit the edits on enter key
 	$scope.enterSubmit = function() {
 		//switch on the template for the dispatch
 		console.log("enter key pressed");
@@ -58,6 +58,7 @@ app.controller('editSongCtrl', ['$scope', '$rootScope', '$http', '$location', '$
 			default:
 				console.log("mismatch");
 		}
+		$("#newSongUrlInput").focus();
 	}
 
 	console.log("editting data:");
@@ -73,4 +74,6 @@ app.controller('editSongCtrl', ['$scope', '$rootScope', '$http', '$location', '$
 		console.log("test enter pressed");
 		console.log($scope["editTemplateDiv"]);
 	};
+
+	$("#newSongUrlInput").focus();
 }]);

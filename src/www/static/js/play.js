@@ -16,10 +16,6 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		playerContainer: document.getElementById("mainPlayerContainer"),
 		playerId: "mainPlayer"
 	};
-	//test
-	// $scope.playem.addPlayer(YoutubePlayer, config);
-	// $scope.playem.addTrackByUrl("https://www.youtube.com/watch?v=L16vTRw9mDQ");
-	// $scope.playem.play();
 
 	function loadPlayem() {
 		$scope.playem.stop();
@@ -41,7 +37,9 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		$scope.playlistData = data;
 		for (var i = 0; i < data["contents"].length; i ++) {
 			// $scope.playlistData["contents"][i]["artistStr"] = data["contents"][i]["artist"].join(", ");
-			$scope.playlistData["contents"][i]["origOrder"] = i;
+			if (!$scope.shuffleOn) {
+				$scope.playlistData["contents"][i]["origOrder"] = i;
+			}
 			$scope.playem.addTrackByUrl(data["contents"][i]["url"]);
 			//add to songsToAdd if no _id
 			if (data["contents"][i]["_id"] == null) {
@@ -55,11 +53,13 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 	};
 
 	$rootScope.$on("startPlay", function(e, data) {
+		$scope.shuffleOn = false;	//don't shuffle on load
 		loadAndStart(data);
 		var myQuery = {
 			"touched": false,
 			"name": $scope.playlistData.name,
-			"contents": $scope.playlistData.contents
+			"contents": $scope.playlistData.contents,
+			"shuffle": false
 		};
 		if ($scope.playlistData["_id"] != null) {
 			myQuery["_id"] = $scope.playlistData["_id"];
@@ -100,13 +100,24 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		refreshPositions: true,
 		stop: function(e, ui) {
 			setQueue();
+			//update only if order changes; need to update origOrder after determining no difference
+			var changed = false;
+			console.log("STOP DRAG");
+			console.log($scope.playlistData.contents);
 			for (var i = 0; i < $scope.playlistData.contents.length; i ++) {
-				$scope.playlistData.contents["origOrder"] = i;
+				if (!changed && $scope.playlistData.contents[i]["origOrder"] != i) {
+					changed = true;
+				}
+				if (changed) {
+					$scope.playlistData.contents[i]["origOrder"] = i;
+				}
 			}
-			$scope.playlistData.touched = true;
-			$http.post("/setLast", {"touched": true, "contents": $scope.playlistData.contents}).then(undefined, function(err) {
-				alert("Failed to update last playlist");
-			});
+			if (changed) {
+				$scope.playlistData.touched = true;
+				$http.post("/setLast", {"touched": true, "contents": $scope.playlistData.contents}).then(undefined, function(err) {
+					alert("Failed to update last playlist");
+				});
+			}
 		}
 	});
 
@@ -142,6 +153,8 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		//set the reccs here
 		console.log("TRACK CHANGED");
 		console.log($scope.nowPlaying);
+		console.log($scope.playem.getQueue());
+		console.log($scope.playem.getCurrentTrack());
 		//update last played playlist
 		$http.post("/setLast", {"startIndex": $scope.nowPlayingIndex}).then(undefined, function(err) {
 			alert("Failed to update last playlist");
@@ -355,6 +368,9 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 	$scope.repeatOn = false;
 	$scope.toggleRepeat = function() {
 		$scope.repeatOn = $scope.playem.toggleRepeat();
+		$http.post("/setLast", {"loop": $scope.repeatOn}).then(undefined, function(err) {
+			alert("Failed to update last playlist");
+		});
 	};
 
 	$scope.shuffleOn = false;
@@ -367,6 +383,9 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 			//rearrange to the original order
 			$scope.playlistData.contents.sort((a, b) => a.origOrder - b.origOrder);
 			setQueue();
+			$http.post("/setLast", {"shuffle": $scope.shuffleOn, "contents": $scope.playlistData.contents}).then(undefined, function(err) {
+				alert("Failed to update last playlist");
+			});
 			return;
 		}
 		//modified from: https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
@@ -374,6 +393,9 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		//else set currently playing to index 0, and shuffle rest
 		var j, x, i;
 		if ($scope.playlistData.contents.length < 2) {	//need at least 2 elements, otherwise no shuffling
+			$http.post("/setLast", {"shuffle": $scope.shuffleOn}).then(undefined, function(err) {
+				alert("Failed to update last playlist");
+			});
 			return;
 		}
 		else if ($scope.playlistData.contents.length == 2) {	//simple swap
@@ -381,6 +403,9 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 			$scope.playlistData.contents[0] = $scope.playlistData.contents[1];
 			$scope.playlistData.contents[1] = x;
 			setQueue();
+			$http.post("/setLast", {"shuffle": $scope.shuffleOn, "contents": $scope.playlistData.contents}).then(undefined, function(err) {
+				alert("Failed to update last playlist");
+			});
 			return;
 		}
 
@@ -399,6 +424,9 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 			$scope.playlistData.contents[j] = x;
 		}
 		setQueue();
+		$http.post("/setLast", {"shuffle": $scope.shuffleOn, "contents": $scope.playlistData.contents}).then(undefined, function(err) {
+			alert("Failed to update last playlist");
+		});
 	};
 
 	$scope.getThumbnail = youtubeFuncs.getThumbnail;
@@ -650,6 +678,8 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 
 	$scope.closeEditSongModal = function() {
 		edittingToAdd = [];
+		console.log("MY PLAYEM:");
+		console.log($scope.playem.getPlayers());
 		songDatashare.stopPlayem();
 		$("#nowPlayingEditMusicModal").hide();
 	};
@@ -661,7 +691,14 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		if (resp.data != null) {
 			// $scope.playlistData = resp.data.playlist;
 			// $scope.
-			loadAndStart(resp.data, $window.location.hash == "#!#play");
+			if (resp.data.loop) {
+				$scope.toggleRepeat();
+			}
+			if (resp.data.shuffle) {
+				//set the shuffle mode only; the content is already shuffled
+				$scope.shuffleOn = resp.data.shuffle;
+			}
+			loadAndStart(resp.data.playlist, $window.location.hash == "#!#play");
 		}
 	}, function(err) {
 		if (err.status == 403) {

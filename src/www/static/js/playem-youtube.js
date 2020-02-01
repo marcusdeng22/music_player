@@ -94,26 +94,32 @@ console.log(window.location);
     this.trackInfo = {};
     this.player = {};
     var that = this;
-    window.onYoutubeStateChange = function(newState) {
-      if (newState.data == YT.PlayerState.PLAYING){
-        that.trackInfo.duration = that.player.getDuration();
-      }
-      console.log("------> YT newState:", newState, newState.data);
-      var eventName = EVENT_MAP[newState.data];
-      if (eventName && that.eventHandlers[eventName])
-        that.eventHandlers[eventName](that);
+    // window.onYoutubeStateChange = function(newState) {
+    //   console.log("YT STATE CHANGE");
+    //   console.log(that);
+    //   console.log(that.player);
+    //   if (newState.data == YT.PlayerState.PLAYING){
+    //     that.trackInfo.duration = that.player.getDuration();
+    //   }
+    //   console.log("------> YT newState:", newState, newState.data);
+    //   var eventName = EVENT_MAP[newState.data];
+    //   if (eventName && that.eventHandlers[eventName])
+    //     that.eventHandlers[eventName](that);
 
-      if (prevState == 3 && newState.data == -1) {  //buffered and now unstarted, so trigger play
-        console.log("bufferd -> unstarted, so playing");
-        that.player.playVideo();
-      }
-      prevState = newState.data;
-    };
+    //   if (prevState == 3 && newState.data == -1) {  //buffered and now unstarted, so trigger play
+    //     console.log("bufferd -> unstarted, so playing");
+    //     that.player.playVideo();
+    //   }
+    //   else if (newState.data == -1) { //unstarted; start it
+    //     that.player.playVideo();
+    //   }
+    //   prevState = newState.data;
+    // };
 
-    window.onYoutubeError = function(error) {
-      //console.log(that.embedVars.playerId + " error:", error);
-      eventHandlers.onError && eventHandlers.onError(that, {source:"YoutubePlayer", code: error});
-    }
+    // window.onYoutubeError = function(error) {
+    //   //console.log(that.embedVars.playerId + " error:", error);
+    //   eventHandlers.onError && eventHandlers.onError(that, {source:"YoutubePlayer", code: error});
+    // }
 
     whenApiReady(function(){
       that.isReady = true;
@@ -155,9 +161,36 @@ console.log(window.location);
     $(this.element).show();
 
     var that = this;
+    console.log("YT PLAYER PROTO EMBED");
+    console.log(that);
     that.player = new YT.Player(that.embedVars.playerId || 'ytplayer', DEFAULT_PARAMS);
-    that.player.addEventListener("onStateChange", "onYoutubeStateChange");
-    that.player.addEventListener("onError", "onYoutubeError");
+    // that.player.addEventListener("onStateChange", "onYoutubeStateChange");
+    that.player.addEventListener("onStateChange", function(newState) {
+      console.log("YT STATE CHANGE");
+      console.log(that);
+      console.log(that.player);
+      if (newState.data == YT.PlayerState.PLAYING){
+        that.trackInfo.duration = that.player.getDuration();
+      }
+      console.log("------> YT newState:", newState, newState.data);
+      var eventName = EVENT_MAP[newState.data];
+      if (eventName && that.eventHandlers[eventName])
+        that.eventHandlers[eventName](that);
+
+      if (prevState == 3 && newState.data == -1) {  //buffered and now unstarted, so trigger play
+        console.log("bufferd -> unstarted, so playing");
+        that.player.playVideo();
+      }
+      else if (newState.data == -1) { //unstarted; start it
+        that.player.playVideo();
+      }
+      prevState = newState.data;
+    });
+    // that.player.addEventListener("onError", "onYoutubeError");
+    that.player.addEventListener("onError", function(error) {
+      //console.log(that.embedVars.playerId + " error:", error);
+      eventHandlers.onError && eventHandlers.onError(that, {source:"YoutubePlayer", code: error});
+    });
     that.element = that.player.getIframe();
     that.player.addEventListener('onReady', function(event) {
       that.safeClientCall("onEmbedReady");
