@@ -7,7 +7,6 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 	$scope.reccMode = true;
 	$scope.nowPlaying = null;
 	$scope.nowPlayingIndex = 0;
-	// var curIndex = 0;
 	var userSet = false;	//used to handle user playing a song; true if action is from user or simulates user, false if normal progression of tracks
 	var songsToAdd = [];	//keep track of songs added through reccommended link
 	var edittingToAdd = [];	//keep track of songs that are editting
@@ -16,6 +15,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		playerContainer: document.getElementById("mainPlayerContainer"),
 		playerId: "mainPlayer"
 	};
+	var autoSelect = true;	//set to false when dragging, multiple selected, or edit modal open (download modal downloads entire playlist)
 
 	function loadPlayem() {
 		$scope.playem.stop();
@@ -84,20 +84,19 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 			$scope.selectIndex(nextIndex);
 		}
 		else {
-			// curIndex = $scope.playlistData.contents.findIndex(function(song) { return song["origOrder"] == $scope.nowPlaying["origOrder"]; });
-			// $scope.selectIndex(curIndex, false);
 			if (select) {
 				$scope.selectIndex($scope.nowPlayingIndex, false);	//select the now playing song, but don't trigger play
 			}
-			// userSet = false;
 			//set the current playing
-			// $scope.nowPlayingIndex = $scope.playem.setCurrentTrack(curIndex).index;
 			$scope.playem.setCurrentTrack($scope.nowPlayingIndex);
 		}
 	};
 
 	$scope.sortablePlayingList = uiSortableMultiSelectionMethods.extendOptions({
 		refreshPositions: true,
+		start: function(e, ui) {
+			autoSelect = false;
+		},
 		stop: function(e, ui) {
 			setQueue();
 			//update only if order changes; need to update origOrder after determining no difference
@@ -118,21 +117,29 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 					alert("Failed to update last playlist");
 				});
 			}
+			if ($scope.songIndices.length <= 1) {
+				autoSelect = true;
+			}
 		}
 	});
 
 	$scope.playem.on("onTrackChange", function(data) {
 		console.log("track changed");
-		// console.log(curIndex);
 		console.log(userSet);
 		//set the new index here if continuing (ie not user set)
 		if (!userSet) {
-			// curIndex ++;
-			// curIndex = $scope.playem.getCurrentTrack().index;
 			$scope.nowPlayingIndex = $scope.playem.getCurrentTrack().index;
 		}
-		// $scope.selectIndex($scope.nowPlayingIndex, false);
-		// $scope.selectIndex(curIndex, false);
+		//don't select the current song if dragging, multiple selected, or modal open
+		if (autoSelect) {
+			$scope.selectIndex($scope.nowPlayingIndex, false);
+			//scroll into view: https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
+			$(".playItem").eq($scope.songIndices)[0].scrollIntoView({
+				behavior: "smooth",
+				block: "start",
+				inline: "nearest"
+			});
+		}
 		$scope.nowPlaying = $scope.playlistData.contents[data.index];
 		$scope.nowPlayingIndex = data.index;
 		//set media navigator; TODO: does not work
@@ -148,7 +155,6 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 			})
 			// console.log(navigator);
 		}
-		// userSet = false;
 		console.log(data);
 		//set the reccs here
 		console.log("TRACK CHANGED");
@@ -276,6 +282,12 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		$scope.songIndices = $(this).find('.ui-sortable-selected').map(function(i, element){
 		  return $(this).index();
 		}).toArray();
+		if ($scope.songIndices.length > 1) {
+			autoSelect = false;
+		}
+		else {
+			autoSelect = true;
+		}
 		$scope.$apply();
 	});
 
@@ -285,8 +297,6 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 	};
 
 	$scope.selectIndex = function(index, play=true) {
-		// userSet = true;
-		// curIndex = index;
 		$scope.nowPlayingIndex = index;
 		$scope.songIndices = [index];
 		console.log($scope.songIndices);
@@ -587,6 +597,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 	};
 
 	$scope.editSelected = function() {
+		autoSelect = false;
 		//load the edit song file
 		var toEdit = [];
 		for (var i = 0; i < $scope.songIndices.length; i ++) {
@@ -682,6 +693,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		console.log($scope.playem.getPlayers());
 		songDatashare.stopPlayem();
 		$("#nowPlayingEditMusicModal").hide();
+		autoSelect = true;
 	};
 
 	//default load old playlist
