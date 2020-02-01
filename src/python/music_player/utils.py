@@ -76,8 +76,21 @@ def checkValidNumber(key, data, optional=False, default=""):
 		else:
 			return default
 
+def checkAndConvertID(data, convert):
+	if ObjectId.is_valid(data):
+		if convert:
+			if isinstance(data, ObjectId):
+				return data
+			else:
+				return ObjectId(data)
+		else:
+			return str(data)
+	else:
+		raise cherrypy.HTTPError(400, "ObjectId is not valid")
+
 # checks if data has valid object ID
-def checkValidID(data):
+# if convert is true, converts the OID to type ObjectId; otherwise returns a str
+def checkValidID(data, convert=True):
 	"""
 	This function takes a data dict, determines whether it has a MongoDB
 	ObjectId and that the ID is valid.
@@ -85,23 +98,30 @@ def checkValidID(data):
 	:param data: data dict
 	:return: data, if conditions are met
 	"""
+	# if isinstance(data, ObjectId):
+	# 	if ObjectId.is_valid(data):
+	# 		return data
+	# 	else:
+	# 		raise cherrypy.HTTPError(400, "Object id not valid")
+	# elif '_id' in data:
+	# 	myID = data['_id']
+	# 	if ObjectId.is_valid(myID):
+	# 		return ObjectId(myID)
+	# 	else:
+	# 		raise cherrypy.HTTPError(400, 'Object id not valid')
+	# else:
+	# 	# raise cherrypy.HTTPError(400, 'data needs object id')
+	# 	if (ObjectId.is_valid(data)):
+	# 		return ObjectId(data)
+	# 	else:
+	# 		raise cherrypy.HTTPError(400, "Object id not valid")
 	if isinstance(data, ObjectId):
-		if ObjectId.is_valid(data):
-			return data
-		else:
-			raise cherrypy.HTTPError(400, "Object id not valid")
+		return checkAndConvertID(data, convert)
 	elif '_id' in data:
 		myID = data['_id']
-		if ObjectId.is_valid(myID):
-			return ObjectId(myID)
-		else:
-			raise cherrypy.HTTPError(400, 'Object id not valid')
+		return checkAndConvertID(myID, convert)
 	else:
-		# raise cherrypy.HTTPError(400, 'data needs object id')
-		if (ObjectId.is_valid(data)):
-			return ObjectId(data)
-		else:
-			raise cherrypy.HTTPError(400, "Object id not valid")
+		return checkAndConvertID(data, convert)
 
 def createMusic(data, musicDB):
 	myMusic = dict()
@@ -139,7 +159,7 @@ def createMusic(data, musicDB):
 # 	ret = []
 # 	musicDB.find()
 
-def makeMusicQuery(data, musicDB, fast=False):
+def makeMusicQuery(data, musicDB, fast=False, query=True):
 	myMusic = dict()
 	myProjection = {"relev": {"$meta": "textScore"}}
 
@@ -227,6 +247,8 @@ def makeMusicQuery(data, musicDB, fast=False):
 	# 		if key == "vol" and myMusic[key] > 100: myMusic[key] = 100
 	# return myMusic
 	print("music query:", myMusic)
+	if not query:
+		return
 	if fast:
 		return list(musicDB.find(myMusic))
 	return cleanRet(musicDB.find(myMusic, myProjection).sort([("relev", {"$meta": "textScore"})]))	#this returns a relev score of 0 even if text search not used

@@ -56,16 +56,26 @@ class ApiGateway(object):
 		# self.colMusic = db['music']
 		# self.colPlaylists = db['playlists']
 		self.colUsers = self.db['users']
+		self.colLast = self.db["lastPlay"]
+
+	@authUser
+	def getUser(self):
+		return cherrypy.session.get("name")
 
 	@authUser
 	def musicDB(self):
-		user = cherrypy.session.get("name")
-		return self.db[user + "-music"]
+		# user = cherrypy.session.get("name")
+		return self.db[self.getUser() + "-music"]
 
 	@authUser
 	def playlistDB(self):
-		user = cherrypy.session.get("name")
-		return self.db[user + "-playlist"]
+		# user = cherrypy.session.get("name")
+		return self.db[self.getUser() + "-playlist"]
+
+	# @authUser
+	# def lastDB(self):
+	# 	# user = cherrypy.session.get("name")
+	# 	return self.db[self.getUser() + "-last"]
 
 	# API Functions go below. DO EXPOSE THESE
 
@@ -679,3 +689,59 @@ class ApiGateway(object):
 		res = cherrypy.lib.static.serve_download(os.path.join(absDir, targetPath), os.path.basename(targetPath))
 		shutil.rmtree(os.path.join(argv[0], argv[1]), ignore_errors=True)
 		return res
+
+	@cherrypy.expose
+	@authUser
+	@cherrypy.tools.json_in()
+	def setLast(self):
+		"""
+		Sets the last played playlist
+
+		Expected input:
+			{
+				"_id": (_id, optional),
+				"name": (string, optional),
+				"contents": [(dict)] (optional),
+				"startIndex": (int, optional),
+				"touched": (boolean, optional)
+			}
+		"""
+		# check that we actually have json
+		if hasattr(cherrypy.request, 'json'):
+			data = cherrypy.request.json
+		else:
+			raise cherrypy.HTTPError(400, 'No data was given')
+
+		# sanitize the input
+		myQuery = {
+			"user": self.getUser(),
+			# "playlist": {}
+		}
+		if "_id" in data:
+			myQuery["playlist._id"] = m_utils.checkValidID(data, False)		#don't store as ObjectId
+		if "name" in data:
+			myQuery["playlist.name"] = m_utils.checkValidData("name", data, str)
+		if "contents" in data:
+			myQuery["playlist.contents"] = m_utils.checkValidData("contents", data, list)
+		if "startIndex" in data:
+			myQuery["playlist.startIndex"] = m_utils.checkValidData("startIndex", data, int)
+		if "touched" in data:
+			myQuery["playlist.touched"] = m_utils.checkValidData("touched", data, bool)
+
+		if len(myQuery) > 1:
+			self.colLast.update_one({"user": self.getUser()}, {"$set": myQuery}, upsert=True)
+
+	@cherrypy.expose
+	@authUser
+	@cherrypy.tools.json_out()
+	def getLast(self):
+		"""
+		Gets the last played playlist
+		"""
+		result = self.colLast.find_one({"user": self.getUser()})
+		if result is None:
+			return
+		result = result["playlist"]
+		if "name" not in result or "contents" not in result:
+			return
+		return result

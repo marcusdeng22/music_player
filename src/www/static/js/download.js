@@ -17,16 +17,16 @@ app.controller('downloadCtrl', ['$scope', '$http', '$location', '$window', '$tim
 		$("#downloadPlaylistModal").hide();
 	};
 
-	$("body").on("click", function(evt) {
-		if ($(".modal").toArray().includes(evt.target)) {
-			$scope.closeDownload();
-		}
-	})
-	.keyup(function(evt) {
-		if (evt.keyCode == 27) {	//escape key
-			$scope.closeDownload();
-		}
-	});
+	// $("body").on("click", function(evt) {
+	// 	if ($(".modal").toArray().includes(evt.target)) {
+	// 		$scope.closeDownload();
+	// 	}
+	// })
+	// .keyup(function(evt) {
+	// 	if (evt.keyCode == 27) {	//escape key
+	// 		$scope.closeDownload();
+	// 	}
+	// });
 
 	$rootScope.$on("loadDownload", function(e, data, callback) {
 		$("#downloadPlaylistModal").css("display", "flex");

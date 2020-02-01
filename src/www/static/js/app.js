@@ -462,12 +462,23 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 				$window.location.href = "/";
 			}
 			else {
-				alert("Failed to add music");
+				alert("Failed to add music; perhaps it already exists?");
 			}
 		});
 	};
 	data.editSong = function(toCall=null, fromList=false) {
-		if (data.checkSongFields() || data.editDataID.size == 0) {
+		if (data.checkSongFields()) {
+			console.log("EDIT FAILED: BAD DATA");
+			return;
+		}
+		if (data.editDataID.size == 0) {
+			//no data, so technically successful; do callback
+			console.log("EDIT SIZE 0");
+			var emptyRet = {};
+			$rootScope.$emit("songChanged", emptyRet);
+			if (toCall != null) {
+				toCall(emptyRet);
+			}
 			return;
 		}
 		var editSubm = {}
@@ -483,36 +494,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 		console.log(data.songData);
 		$http.post("/editMusic", editSubm).then(function(resp) {
 			console.log("edit request ok");
-			//only modify local data if editing song from the list view
-			// if (fromList) {
-				// console.log("frpm list");
-				// var idIndices= {};
-				// for (var i = 0; i < resp.data.length; i ++) {
-				// 	idIndices[resp.data[i]["_id"]] = i;
-				// }
-				// console.log(idIndices);
-				// console.log(data.songData);
-				// console.log(data.songIndices);
-				// //update local data
-				// for (var i = 0; i < data.songIndices.length; i ++) {
-				// 	data.songData[data.songIndices[i]] = resp.data[idIndices[data.songData[data.songIndices[i]]["_id"]]];
-				// }
-				// //sort
-				// data.sortBy(data.orderVar, true);
-				// //select the original indices
-				// data.songIndices = [];
-				// console.log("EDIT -> UPDATING LOCAL");
-				// console.log(data.songData);
-				// console.log(resp.data);
-				// $("#editSongSelect > .songItem").removeClass("ui-sortable-selected");
-				// for (var i = 0; i < resp.data.length; i ++) {
-				// 	var newIndex = data.songData.findIndex(function(p) { return p["_id"] == resp.data[i]["_id"]; })
-				// 	data.songIndices.push(newIndex);
-				// 	$("#editSongSelect > .songItem").eq(newIndex).addClass("ui-sortable-selected");
-				// }
-				// $("#editSongSelect").trigger('ui-sortable-selectionschanged');
-				$rootScope.$emit("songChanged", resp.data);
-			// }
+			$rootScope.$emit("songChanged", resp.data);
 			//now do callback
 			if (toCall != null) {
 				console.log("callback");

@@ -21,7 +21,15 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 	// $scope.playem.addTrackByUrl("https://www.youtube.com/watch?v=L16vTRw9mDQ");
 	// $scope.playem.play();
 
-	$rootScope.$on("startPlay", function(e, data) {
+	function loadPlayem() {
+		$scope.playem.stop();
+		$scope.playem.clearQueue();
+		$scope.playem.clearPlayers();
+		$("#mainPlayerContainer").empty();
+		$scope.playem.addPlayer(YoutubePlayer, config);	//TODO: add more players here
+	};
+
+	function loadAndStart(data, play=true) {
 		$scope.updatePlayView();
 		console.log("starting to play");
 		console.log(data);
@@ -29,23 +37,36 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		songsToAdd = [];
 		edittingToAdd = [];
 		//add into queue
-		$scope.playem.stop();
-		$scope.playem.clearQueue();
-		$scope.playem.clearPlayers();
-		$("#mainPlayerContainer").empty();
-		// var config = {playerContainer: document.getElementById("mainPlayer")}
-		// var config = {
-		// 	playerContainer: document.getElementById("mainPlayer")
-		// };
-		$scope.playem.addPlayer(YoutubePlayer, config);	//TODO: add more players here
+		loadPlayem();
 		$scope.playlistData = data;
 		for (var i = 0; i < data["contents"].length; i ++) {
 			// $scope.playlistData["contents"][i]["artistStr"] = data["contents"][i]["artist"].join(", ");
 			$scope.playlistData["contents"][i]["origOrder"] = i;
 			$scope.playem.addTrackByUrl(data["contents"][i]["url"]);
+			//add to songsToAdd if no _id
+			if (data["contents"][i]["_id"] == null) {
+				console.log("load adding song to add queue");
+				songsToAdd.push(data["contents"][i]);
+			}
 		}
 		console.log($scope.playem);
-		$scope.selectIndex(data["startIndex"] || 0);	//triggers play
+		console.log(songsToAdd);
+		$scope.selectIndex(data["startIndex"] || 0, play);	//triggers play
+	};
+
+	$rootScope.$on("startPlay", function(e, data) {
+		loadAndStart(data);
+		var myQuery = {
+			"touched": false,
+			"name": $scope.playlistData.name,
+			"contents": $scope.playlistData.contents
+		};
+		if ($scope.playlistData["_id"] != null) {
+			myQuery["_id"] = $scope.playlistData["_id"];
+		}
+		$http.post("/setLast", myQuery).then(undefined ,function(err) {
+			alert("Failed to update last playlist");
+		});
 	});
 
 	function setQueue(nextIndex=0, select=false) {
@@ -83,6 +104,9 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 				$scope.playlistData.contents["origOrder"] = i;
 			}
 			$scope.playlistData.touched = true;
+			$http.post("/setLast", {"touched": true, "contents": $scope.playlistData.contents}).then(undefined, function(err) {
+				alert("Failed to update last playlist");
+			});
 		}
 	});
 
@@ -118,6 +142,10 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		//set the reccs here
 		console.log("TRACK CHANGED");
 		console.log($scope.nowPlaying);
+		//update last played playlist
+		$http.post("/setLast", {"startIndex": $scope.nowPlayingIndex}).then(undefined, function(err) {
+			alert("Failed to update last playlist");
+		});
 		//from: http://www.whateverorigin.org/
 		$.getJSON('http://www.whateverorigin.org/get?url=' + encodeURIComponent($scope.nowPlaying["url"]) + '&callback=?', function(data){
 			// alert(data.contents);
@@ -220,6 +248,10 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 					$scope.$apply();
 					setQueue();
 					$scope.playlistData.touched = true;
+					$http.post("/setLast", {"touched": true, "contents": $scope.playlistData.contents}).then(undefined, function(err) {
+						console.log(err);
+						alert("Failed to update last playlist");
+					});
 				});
 			}
 		});
@@ -396,8 +428,19 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 			else {
 				setQueue(Math.min(lastSelectedIndex, $scope.playlistData.contents.length - 1), true);
 			}
+			$http.post("/setLast", {"touched": true, "contents": $scope.playlistData.contents}).then(undefined, function(err) {
+				alert("Failed to update last playlist");
+			});
 		}
 	};
+
+	function doSavePlaylistCallback() {
+		$rootScope.$emit("songsRemoved");
+		$scope.playlistData.touched = false;
+		$http.post("/setLast", {"touched": false, "name": $scope.playlistData.name, "contents": $scope.playlistData.contents}).then(undefined, function(err) {
+			alert("Failed to update last playlist");
+		});
+	}
 
 	function doSavePlaylist() {
 		var submission = {};
@@ -411,8 +454,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 			submission["_id"] = $scope.playlistData["_id"];
 			$http.post("/editPlaylist", submission).then(function(resp) {
 				console.log("editting playlist ok");
-				$rootScope.$emit("songsRemoved");
-				$scope.playlistData.touched = false;
+				doSavePlaylistCallback();
 				alert("Playlist saved!");
 			}, function(err) {
 				console.log(err);
@@ -429,8 +471,8 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 			console.log("adding playlist");
 			$http.post("/addPlaylist", submission).then(function(resp) {
 				console.log("adding playlist ok");
-				$rootScope.$emit("songsRemoved");
-				$scope.playlistData.touched = false;
+				doSavePlaylistCallback();
+				alert("Playlist added!");
 			}, function(err) {
 				console.log(err);
 				if (err.status == 403) {
@@ -567,14 +609,14 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 				}
 				edittingToAdd = [];
 				//data is now coerced and ready to push
-				songDatashare.editSong(function(insertedData) {
+				songDatashare.editSong(function() {
 					// $rootScope.$emit("songChanged", insertedData);
 					$scope.closeEditSongModal();
 				});
 			});
 		}
 		else {
-			songDatashare.editSong(function(insertedData) {
+			songDatashare.editSong(function() {
 				// $rootScope.$emit("songChanged", insertedData);
 				$scope.closeEditSongModal();
 			});
@@ -599,6 +641,11 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 				}
 			}
 		}
+		console.log("SONG CHANGED CALLBACK:");
+		console.log($scope.playlistData.contents);
+		$http.post("/setLast", {"contents": $scope.playlistData.contents}).then(undefined, function(err) {
+			alert("Failed to update last playlist");
+		});
 	})
 
 	$scope.closeEditSongModal = function() {
@@ -606,4 +653,24 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		songDatashare.stopPlayem();
 		$("#nowPlayingEditMusicModal").hide();
 	};
+
+	//default load old playlist
+	$http.post("/getLast").then(function(resp) {
+		console.log("GETTING LAST");
+		console.log(resp.data);
+		if (resp.data != null) {
+			// $scope.playlistData = resp.data.playlist;
+			// $scope.
+			loadAndStart(resp.data, $window.location.hash == "#!#play");
+		}
+	}, function(err) {
+		if (err.status == 403) {
+			alert("Session timed out");
+			$window.location.href = "/";
+		}
+		else {
+			console.log(err);
+			alert("Failed to load last playlist");
+		}
+	});
 }]);
