@@ -1,20 +1,21 @@
 <nav ng-controller="NavCtrl" class="navbar navbar-expand-sm bg-dark navbar-dark">
-    <ul class="navbar-nav" style="width: 100%; padding: 3px;">
-        <li class="nav-item">
-            <a class="nav-link" style="color: white !important">Music Player</a>
-        </li>
-
-
-        <li class="nav-item">
+    <a class="navbar-brand" href="#">Music Player</a>
+    <ul id="mainNavbar" class="navbar-nav" style="width: 100%; padding: 3px;">
+        <li id="playlistNavbar" class="nav-item">
             <a class="nav-link" href="#playlist" style="">Playlists</a>
         </li>
 
-        <li class="nav-item">
+        <li id="playNavbar" class="nav-item">
             <a class="nav-link" href="#play" style="">Play</a>
         </li>
 
-        <li class="nav-item">
+        <li id="songNavbar" class="nav-item">
             <a class="nav-link" href="#song" style="">Songs</a>
+        </li>
+    </ul>
+    <ul class="navbar-nav" style="padding: 12px;">
+        <li class="nav-item">
+            <a class="nav-link" href="#logout">Logout</a>
         </li>
     </ul>
 </nav>

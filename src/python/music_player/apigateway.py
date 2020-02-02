@@ -137,6 +137,14 @@ class ApiGateway(object):
 			raise cherrypy.HTTPError(403, "Invalid login credentials")
 
 	@cherrypy.expose
+	@authUser
+	def logout(self):
+		"""
+		Logs user out of system
+		"""
+		cherrypy.lib.sessions.expire()
+
+	@cherrypy.expose
 	@cherrypy.tools.json_in()
 	@cherrypy.tools.json_out()
 	@authUser
