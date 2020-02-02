@@ -311,6 +311,10 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 			if (key == "artist") {
 				//force to array if str
 				if (typeof data.editData[key] === "string" || data.editData[key] instanceof String) {
+					var tempArtistStr = data.editData[key].trim();
+					if (tempArtistStr.charAt(tempArtistStr.length - 1) == ",") {
+						return true;
+					}
 					data.editData[key] = data.editData[key].split(",").filter(function(el) {return el;});
 				}
 			}
