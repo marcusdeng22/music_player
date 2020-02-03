@@ -25,13 +25,27 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		$scope.playem.addPlayer(YoutubePlayer, config);	//TODO: add more players here
 	};
 
+	//https://stackoverflow.com/questions/34883555/how-to-scroll-text-within-a-div-to-left-when-hovering-the-div/43889818#43889818
+	$("#nowPlaying").on("mouseover", function() {
+		var maxScroll = $(this).width();
+		$(this).removeClass("ellipsis").animate({
+			scrollLeft: maxScroll
+		}, "fast");
+	}).on("mouseout", function() {
+		$(this).stop().addClass("ellipsis").animate({
+			scrollLeft: 0
+		}, "fast");
+	});
+
 	//scroll into view: https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
 	function scrollSelected() {
-		$(".playItem").eq($scope.songIndices)[0].scrollIntoView({
-			behavior: "smooth",
-			block: "start",
-			inline: "nearest"
-		});
+		if ($scope.songIndices.length > 0) {
+			$(".playItem").eq($scope.songIndices)[0].scrollIntoView({
+				behavior: "smooth",
+				block: "start",
+				inline: "nearest"
+			});
+		}
 	};
 
 	function loadAndStart(data, play=true) {
@@ -334,6 +348,10 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 				console.log($scope.playem.getPlayers());
 				$scope.playem.pause();
 			}
+		}
+		if (next.split("#")[2] == "play") {
+			console.log("switched to play");
+			$timeout(scrollSelected);
 		}
 	});
 

@@ -99,7 +99,7 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', '$rootSc
 		songDatashare.addSong(function() {
 			$("#addSongNotifCompl").toast("show");
 			songDatashare.reloadPlayem();
-			//TODO: clear the search
+			//clear the search
 			$rootScope.$emit("clearSongSearch");
 		});
 	};
