@@ -60,6 +60,7 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 			console.log("songs returned: ", $scope.songDatashare.songData);
 			//sort data
 			$scope.sortBy(sortVar, sortRev);
+			songDatashare.clearSelected();
 		}, function(err) {
 			console.log(err);
 			if (err.status == 403) {
@@ -81,6 +82,7 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 	$scope.songArtistSearch = "";
 	$scope.songAlbumSearch = "";
 	$scope.songGenreSearch = "";
+	$scope.songUrlSearch = "";
 	$scope.advSearch = function() {
 		$scope.songDatashare.songIndices = [];
 		// create query
@@ -108,6 +110,10 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 			query["genre_names"] = $scope.songGenreSearch.split(",").map(i => i.trim()).filter(function(i) {return i != "";});
 			sortByRelev = true;
 		}
+		if (!($scope.songUrlSearch == undefined || $scope.songUrlSearch == "")) {
+			query["url"] = $scope.songUrlSearch.split(",").map(i => i.trim()).filter(function(i) {return i != "";});
+			sortByRelev = true;
+		}
 		console.log("query:", query)
 		if (sortByRelev) {
 			$scope.getSongData(query, "relev");
@@ -115,7 +121,18 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 		else {
 			$scope.getSongData(query);
 		}
-	}
+	};
+
+	$rootScope.$on("clearSongSearch", function() {
+		$scope.songNameSearch = "";
+		$scope.songStartDate = "";
+		$scope.songEndDate = "";
+		$scope.songArtistSearch = "";
+		$scope.songAlbumSearch = "";
+		$scope.songGenreSearch = "";
+		$scope.songUrlSearch = "";
+		$scope.getSongData();
+	})
 
 	var searchFunc = function(evt) {
 		if (evt.which == 13) {	//enter key
@@ -132,6 +149,9 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 		songDatashare.tab = targetTab;
 		if (targetTab == "#addNewSong") {
 			songDatashare.loadEditTemplate("#addNewSong", $scope, null, true);
+		}
+		else if (targetTab == "#existingSongSearch") {
+			songDatashare.stopPlayem();
 		}
 		if (!$scope.$$phase) {
 			$scope.$apply();

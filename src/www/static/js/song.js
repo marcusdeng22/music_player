@@ -63,16 +63,6 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', '$rootSc
 	}
 
 	$rootScope.$on("songChanged", function(e, insertedData) {
-		// var idIndices= {};
-		// for (var i = 0; i < insertedData.length; i ++) {
-		// 	idIndices[insertedData[i]["_id"]] = i;
-		// }
-		// console.log("EDIT START");
-		// console.log(songDatashare.songData);
-		// //update local data
-		// for (var i = 0; i < songDatashare.songIndices.length; i ++) {
-		// 	songDatashare.songData[songDatashare.songIndices[i]] = insertedData[idIndices[songDatashare.songData[songDatashare.songIndices[i]]["_id"]]];
-		// }
 		for (var i = 0; i < insertedData.length; i ++) {
 			var newIndex = songDatashare.songData.findIndex(function(p) { return p["_id"] == insertedData[i]["_id"]; });
 			songDatashare.songData[newIndex] = insertedData[i];
@@ -109,6 +99,8 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', '$rootSc
 		songDatashare.addSong(function() {
 			$("#addSongNotifCompl").toast("show");
 			songDatashare.reloadPlayem();
+			//TODO: clear the search
+			$rootScope.$emit("clearSongSearch");
 		});
 	};
 

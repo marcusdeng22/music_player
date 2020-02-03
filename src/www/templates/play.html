@@ -8,7 +8,9 @@
 				</div>
 			</div>
 			<div id="playerCtrlDiv" style="padding-top: 10px;">
-				<div id="nowPlaying" ng-show="focusMode == true && nowPlaying" ng-model="nowPlaying">Now playing: {{nowPlaying.name}} - {{nowPlaying.artistStr}}</div>
+				<div id="nowPlaying" ng-show="focusMode == true && nowPlaying" ng-model="nowPlaying" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+					Now playing: {{nowPlaying.name}} - {{nowPlaying.artistStr}}
+				</div>
 				<div id="playerCtrlBtns">
 					<button id="prevSong" class="btn" ng-click="previousSong()"><img class="icon-l icon-prev"></img></button>
 					<button id="playPause" ng-show="focusMode==true" class="btn" ng-click="playPause()"><img class="icon-l" ng-class="(currentState==1) ? 'icon-pause' : 'icon-play'"></img></button>

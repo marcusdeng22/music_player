@@ -146,6 +146,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 	data.clearSelected = function() {
 		console.log("datashare clearing");
 		$("#editSongSelect > .ui-sortable-selected").removeClass("ui-sortable-selected");
+		$("#editSongSelect").trigger('ui-sortable-selectionschanged');
 		data.songIndices = [];
 	};
 	//edit data below

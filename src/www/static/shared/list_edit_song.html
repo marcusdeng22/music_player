@@ -43,6 +43,12 @@
 						<!--TODO: add a drop down for genres-->
 					</div>
 					<div class="input-group">
+						<span class="input-group-addon">Includes URLs:</span>
+						<div data-tip="Use commas to separate entries">
+							<input type="text" class="song-search input-sm form-control" ng-model="songUrlSearch">
+						</div>
+					</div>
+					<div class="input-group">
 						<button type="button" id="advSongSearchBtn" ng-click="advSearch()">Search</button>
 					</div>
 				</div>

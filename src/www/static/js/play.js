@@ -25,6 +25,15 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		$scope.playem.addPlayer(YoutubePlayer, config);	//TODO: add more players here
 	};
 
+	//scroll into view: https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
+	function scrollSelected() {
+		$(".playItem").eq($scope.songIndices)[0].scrollIntoView({
+			behavior: "smooth",
+			block: "start",
+			inline: "nearest"
+		});
+	};
+
 	function loadAndStart(data, play=true) {
 		$scope.updatePlayView();
 		console.log("starting to play");
@@ -50,6 +59,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		console.log($scope.playem);
 		console.log(songsToAdd);
 		$scope.selectIndex(data["startIndex"] || 0, play);	//triggers play
+		$(window).on("load", scrollSelected);
 	};
 
 	$rootScope.$on("startPlay", function(e, data) {
@@ -133,12 +143,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		//don't select the current song if dragging, multiple selected, or modal open
 		if (autoSelect) {
 			$scope.selectIndex($scope.nowPlayingIndex, false);
-			//scroll into view: https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
-			$(".playItem").eq($scope.songIndices)[0].scrollIntoView({
-				behavior: "smooth",
-				block: "start",
-				inline: "nearest"
-			});
+			scrollSelected();
 		}
 		$scope.nowPlaying = $scope.playlistData.contents[data.index];
 		$scope.nowPlayingIndex = data.index;

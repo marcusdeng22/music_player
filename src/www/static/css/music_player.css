@@ -165,11 +165,11 @@
 }
 
 #existingSongSearch > .joinCollapseContainer.collapse:not(.show) {
-	height: calc(100% - 240px) !important;
+	height: calc(100% - 270px) !important;
 }
 
 #existingSongSearch > .joinCollapseContainer.collapsing {
-	height: calc(100% - 240px) !important;
+	height: calc(100% - 270px) !important;
 }
 
 .joinCollapseContainer.collapse.show {
