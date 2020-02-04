@@ -160,7 +160,9 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 			console.log("got song data");
 			console.log(resp);
 			data.songData = data.songData.concat(resp.data);
-			data.clearSelected();
+			if (data.curPage == 0) {
+				data.clearSelected();
+			}
 			data.curPage ++;
 			data.scrollBusy = false;
 		}, function(err) {
