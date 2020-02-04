@@ -132,6 +132,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 	};
 	//song data below
 	data.songData = [];
+	data.totalResults = 0;
 	data.songIndices = [];
 	data.curQuery = {};
 	data.orderVar = "date";
@@ -161,7 +162,8 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 		return $http.post("/findMusic", query).then(function(resp) {
 			console.log("got song data");
 			console.log(resp);
-			data.songData = data.songData.concat(resp.data);
+			data.songData = data.songData.concat(resp.data.results);
+			data.totalResults = resp.data.count;
 			if (data.curPage == 0) {
 				data.clearSelected();
 			}
@@ -178,13 +180,6 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 			}
 		});
 	};
-	//TODO: deprecate; use getSongData
-	// data.sortBy = function(propertyName, preserveOrder=false) {
-	// 	var res = sortingFuncs.sortBy(data.songData, data.reverse, data.orderVar, propertyName, preserveOrder);
-	// 	data.reverse = res["reverse"];
-	// 	data.orderVar = res["orderVar"];
-	// 	data.songData = res["data"];
-	// };
 	data.sortGlyph = function(type) {
 		return sortingFuncs.sortGlyph(data.reverse, data.orderVar, type);
 	};

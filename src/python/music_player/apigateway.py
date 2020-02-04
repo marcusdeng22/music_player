@@ -278,6 +278,11 @@ class ApiGateway(object):
 				"descend": (boolean, default True, True=descending),
 				"page": (integer, default 0)
 			}
+
+		Returns: {
+			"results": [{results}],
+			"count": (int)
+		}
 		"""
 		# check that we actually have json
 		if hasattr(cherrypy.request, 'json'):

@@ -157,7 +157,7 @@ def createMusic(data, musicDB):
 
 	return myMusic
 
-# queries DB for query in data; if fast then we return all matching results unsorted and uncleaned
+# queries DB for query in data; if fast then we return all matching results unsorted and uncleaned (used as a helper method)
 def makeMusicQuery(data, musicDB, fast=False):
 	myMusic = dict()
 	myProjection = {"relev": {"$meta": "textScore"}}
@@ -242,6 +242,7 @@ def makeMusicQuery(data, musicDB, fast=False):
 	if fast:
 		return list(musicDB.find(myMusic))
 
+	#below is used for actual queries to be used by client
 	pageNo = 0
 	sortBy = "date"
 	orderBy = True
@@ -254,6 +255,7 @@ def makeMusicQuery(data, musicDB, fast=False):
 	if "descend" in data:
 		orderBy = checkValidData("descend", data, bool)
 	ret = musicDB.find(myMusic, myProjection)
+	totalCount = ret.count()
 	if sortBy == "relev":	#this returns a relev score of 0 even if text search not used
 		ret = cleanRet(ret.sort([("relev", {"$meta": "textScore"})]))
 		if not orderBy:
@@ -261,7 +263,7 @@ def makeMusicQuery(data, musicDB, fast=False):
 		ret = ret[pageNo * SONG_PAGE_SIZE : (pageNo + 1) * SONG_PAGE_SIZE]
 	else:
 		ret = cleanRet(ret.collation({"locale": "en"}).sort(sortBy, DESCENDING if orderBy else ASCENDING).skip(pageNo * SONG_PAGE_SIZE).limit(SONG_PAGE_SIZE))
-	return ret
+	return {"results": ret, "count": totalCount}
 
 def makePlaylistQuery(data, playlistDB, musicDB):
 	print("creating query")
