@@ -73,7 +73,8 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		console.log($scope.playem);
 		console.log(songsToAdd);
 		$scope.selectIndex(data["startIndex"] || 0, play);	//triggers play
-		$(window).on("load", scrollSelected);
+		// $(window).on("load", scrollSelected);
+		$timeout(scrollSelected);
 	};
 
 	$rootScope.$on("startPlay", function(e, data) {
@@ -351,7 +352,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		}
 		if (next.split("#")[2] == "play") {
 			console.log("switched to play");
-			$timeout(scrollSelected);
+			// $timeout(scrollSelected);
 		}
 	});
 
@@ -731,7 +732,11 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 				//set the shuffle mode only; the content is already shuffled
 				$scope.shuffleOn = resp.data.shuffle;
 			}
-			loadAndStart(resp.data.playlist, $window.location.hash == "#!#play");
+			$(window).on("load", function() {
+				$timeout(function() {
+					loadAndStart(resp.data.playlist, $window.location.hash == "#!#play")
+				});
+			});
 		}
 	}, function(err) {
 		if (err.status == 403) {
