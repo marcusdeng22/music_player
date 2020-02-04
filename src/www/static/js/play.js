@@ -672,14 +672,12 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 				edittingToAdd = [];
 				//data is now coerced and ready to push
 				songDatashare.editSong(function() {
-					// $rootScope.$emit("songChanged", insertedData);
 					$scope.closeEditSongModal();
 				});
 			});
 		}
 		else {
 			songDatashare.editSong(function() {
-				// $rootScope.$emit("songChanged", insertedData);
 				$scope.closeEditSongModal();
 			});
 		}

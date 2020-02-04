@@ -32,39 +32,17 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 	var updateSortable = function (e, args) {
 		console.log("song select changed");
 		console.log(e);
-		console.log(args);
-		$scope.songDatashare.songIndices = $(this).find('.ui-sortable-selected').map(function(i, element){
-		// songDatashare.songIndices = $(this).find('.ui-sortable-selected').map(function(i, element){
+		// $scope.songDatashare.songIndices = $(this).find('.ui-sortable-selected').map(function(i, element){
+		songDatashare.songIndices = $(this).find('.ui-sortable-selected').map(function(i, element){
 			return $(this).index();
 		}).toArray();
 		if (!$scope.$$phase) {
 			$scope.$apply();
 		}
+		console.log($scope.songDatashare.songIndices);
 	};
 
 	$("#editSongSelect").on('ui-sortable-selectionschanged', updateSortable);
-
-	// $scope.getSongData = function(query={}, sortVar="date", sortRev=true) {
-	// 	$http.post("/findMusic", query).then(function(resp) {
-	// 		console.log("edit music query success");
-	// 		$scope.songDatashare.songData = resp.data;
-	// 		console.log("songs returned: ", $scope.songDatashare.songData);
-	// 		//sort data
-	// 		$scope.sortBy(sortVar, sortRev);
-	// 		songDatashare.clearSelected();
-	// 	}, function(err) {
-	// 		console.log(err);
-	// 		if (err.status == 403) {
-	// 			alert("Session timed out");
-	// 			$window.location.href = "/";
-	// 		}
-	// 		else {
-	// 			alert("Failed to get song data");
-	// 		}
-	// 	});
-	// };
-
-	// $scope.getSongData();
 
 	//search variables
 	$scope.songNameSearch = "";
@@ -128,19 +106,6 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 		songDatashare.curPage = 0;
 		songDatashare.getSongData();
 	}
-
-	// var songPage = 0;
-	// $scope.scrollBusy = false;
-	// $scope.scrollLoad = function() {
-	// 	if ($scope.scrollBusy) {
-	// 		return;
-	// 	}
-	// 	$scope.scrollBusy = true;
-	// 	songDatashare.getSongData(songDatashare.curQuery, songDatashare.orderVar, songDatashare.reverse, songPage, function() {
-	// 		songPage ++;
-	// 		$scope.scrollBusy = false;
-	// 	});
-	// }
 
 	$rootScope.$on("clearSongSearch", function() {
 		$scope.songNameSearch = "";

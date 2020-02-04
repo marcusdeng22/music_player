@@ -419,7 +419,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 		else {
 			data.editData["end"] = 0;
 		}
-		console.log("edit data ok");
+		// console.log("edit data ok");
 		return false;
 	};
 	data.addSong = function(toCall=null) {
@@ -547,17 +547,25 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 		$http.post("/editMusic", editSubm).then(function(resp) {
 			console.log("edit request ok");
 			var insertedData = resp.data;
+			console.log(insertedData);
 			//update local data with a search
 			data.curPage = 0;
 			data.getSongData().then(function() {
-				//select old updated data, if present
-				$("#editSongSelect > .songItem").removeClass("ui-sortable-selected");
-				for (var i = 0; i < insertedData.length; i ++) {
-					var newIndex = data.songData.findIndex(function(p) { return p["_id"] == insertedData[i]["_id"]; })
-					// data.songIndices.push(newIndex);
-					$("#editSongSelect > .songItem").eq(newIndex).addClass("ui-sortable-selected");
-				}
-				$("#editSongSelect").trigger('ui-sortable-selectionschanged');
+				$timeout(function() {
+					console.log("selecting old index");
+					console.log($("#editSongSelect").data('uiSortableMultiSelectionState'));
+					//select old updated data, if present
+					$("#editSongSelect > .songItem").removeClass("ui-sortable-selected");
+					for (var i = 0; i < insertedData.length; i ++) {
+						var newIndex = data.songData.findIndex(function(p) { return p["_id"] == insertedData[i]["_id"]; })
+						data.songIndices.push(newIndex);
+						$("#editSongSelect > .songItem").eq(newIndex).addClass("ui-sortable-selected");
+						if (i == insertedData.length - 1) {
+							$("#editSongSelect").data('uiSortableMultiSelectionState', {lastIndex: newIndex});
+						}
+					}
+					$("#editSongSelect").trigger('ui-sortable-selectionschanged');
+				});
 				$rootScope.$emit("songChanged", insertedData);
 				//now do callback
 				if (toCall != null) {
