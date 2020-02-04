@@ -50,7 +50,11 @@ app.factory("youtubeFuncs", ["$http", function($http) {
 	var data = {};
 	data.cleanUrl = function(id){
 		// return /([a-zA-Z0-9_\-]+)/.test(id) && RegExp.lastParen;
-		return id.match(/^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*/)[1];
+		ret = id.match(/^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*/);
+		if (ret != null) {
+			return ret[1];
+		}
+		return
 	};
 
 	data.getThumbnail = function(item) {

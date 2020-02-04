@@ -336,6 +336,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		});
 	};
 
+	var initLoad = false;
 	$scope.$on("$locationChangeStart", function(event, next, current) {
 		console.log("CHANGING LOCATION");
 		//make the following only trigger if we are navigating away from the play view
@@ -354,7 +355,10 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		}
 		if (next.split("#")[2] == "play") {
 			console.log("switched to play");
-			// $timeout(scrollSelected);
+			if (!initLoad) {
+				initLoad = true;
+				$timeout(scrollSelected);
+			}
 		}
 	});
 
