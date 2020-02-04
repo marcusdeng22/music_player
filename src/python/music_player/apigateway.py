@@ -531,6 +531,8 @@ class ApiGateway(object):
 				"name": (string) (optional),
 				"contents": [(_id)] (optional)
 			}
+
+		Returns the resolved contents of the updated playlist
 		"""
 		# check that we actually have json
 		if hasattr(cherrypy.request, 'json'):

@@ -52,8 +52,8 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 	$scope.songAlbumSearch = "";
 	$scope.songGenreSearch = "";
 	$scope.songUrlSearch = "";
-	$scope.advSearch = function(sortBy="date", descending=true, page=0) {
-		$scope.songDatashare.songIndices = [];
+	$scope.advSearch = function() {
+		// $scope.songDatashare.songIndices = [];
 		// create query
 		// available keys: "name", "start_date", "end_date", "artist_names" "_id"
 		var query = {};
@@ -95,6 +95,8 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 			songDatashare.getSongData(query);
 		}
 	};
+
+	$scope.advSearch();
 
 	$scope.changeSort = function(sortBy) {
 		if (sortBy == songDatashare.orderVar) {

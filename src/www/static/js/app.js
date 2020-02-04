@@ -117,7 +117,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 		// if (data.listTemplateId != "") {
 			$(data.listTemplateId).empty();
 		}
-		if (data.listTemplateId != targetId) {		//or should it always recompile?
+		// if (data.listTemplateId != targetId) {		//or should it always recompile?
 			//load template
 			data.listTemplateId = targetId;
 			data.songIndices = [];
@@ -127,7 +127,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 				console.log($scope.$id);
 				$compile($(targetId).contents())($scope);
 			});
-		}
+		// }
 		//$templateRequest does not work for some reason; fails to bind properly
 	};
 	//song data below
@@ -140,12 +140,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 	data.scrollBusy = false;
 	data.getSongData = function(query=data.curQuery, sortBy=data.orderVar, descending=data.reverse, page=data.curPage) {
 		console.log("getting song data");
-		if (data.scrollBusy) {
-			console.log("busy");
-			return;
-		}
-		//set busy, and set the new defaults
-		data.scrollBusy = true;
+		console.log(data.curQuery);
 		data.curQuery = query;
 		data.orderVar = sortBy;
 		data.reverse = descending;
@@ -153,6 +148,13 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 		if(data.curPage == 0) {
 			data.songData = [];
 		}
+		if (data.scrollBusy) {
+			console.log("busy");
+			return;
+		}
+		//set busy, and set the new defaults
+		data.scrollBusy = true;
+		
 		query["sortby"] = sortBy;
 		query["descend"] = descending;
 		query["page"] = page;
@@ -431,15 +433,12 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 		$http.post("/addMusic", data.editData).then(function(resp) {
 			console.log("add music ok");
 			console.log(resp);
-			// data.songData.push(resp["data"]);
-			// data.sortBy(data.orderVar, true);
-			// data.clearSelected();
-			data.curPage = 0;
-			data.getSongData();
 
 			if (toCall != null) {
 				toCall(resp["data"]);
 			}
+			//clear the search
+			$rootScope.$emit("clearSongSearch");
 			data.resetEdit();
 		}, function(err) {
 			console.log(err);
@@ -448,7 +447,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 				$window.location.href = "/";
 			}
 			else {
-				alert("Failed to add music");
+				alert("Failed to add music; does it exist already?");
 			}
 		});
 	};
@@ -500,9 +499,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 		$http.post("/addManyMusic", myQuery).then(function(resp) {
 			console.log("add many music ok");
 			console.log(resp.data);
-			//add new song data
-			// data.songData = data.songData.concat(resp.data);
-			// data.sortBy(data.orderVar, true);
+			//get new song data
 			data.curPage = 0;
 			data.getSongData();
 			if (toCall != null) {

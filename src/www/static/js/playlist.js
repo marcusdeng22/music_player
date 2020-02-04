@@ -126,9 +126,19 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 			console.log("playlist query songs returned: ", $scope.songData);
 			if (selectedSongs != null) {
 				$timeout(function() {
-					for (var i = 0; i < selectedSongs.length; i ++) {
+					var i = 0;
+					for (; i < selectedSongs.length; i ++) {
 						$("#songSelect > .songItem").eq(selectedSongs[i]).addClass("ui-sortable-selected");
+						if (i == selectedSongs.length - 1) {
+							$("#songSelect").data('uiSortableMultiSelectionState', {lastIndex: selectedSongs[i]});
+						}
 					}
+					$("#songSelect").trigger('ui-sortable-selectionschanged');
+					$("#songSelect > .songItem").eq(selectedSongs[i-1])[0].scrollIntoView({
+						behavior: "smooth",
+						block: "start",
+						inline: "nearest"
+					});
 				});
 			}
 		}, function(err) {
@@ -243,7 +253,9 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 		}).toArray();
 		console.log("before apply: indices");
 		console.log($scope.songIndices);
-		$scope.$apply();
+		if (!$scope.$$phase) {
+			$scope.$apply();
+		}
 		console.log("after apply: indices");
 		console.log($scope.songIndices);
 		// console.log($scope.songIndices);
@@ -268,13 +280,8 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 			}
 			$scope.playlistIndices = [$scope.playlistData.findIndex(function(p) { return p["_id"] == oldID; })];
 		}
-		angular.element(document).ready(function() {
-			// // $scope.songIndices = [];
-			// clearSongSelected();
-			// // $scope.$apply();
-			// console.log("clicking: " + $scope.playlistIndices);
-			// $(".playlistItem").eq($scope.playlistIndices).click();
-
+		// angular.element(document).ready(function() {
+		$timeout(function() {
 			console.log("clicking new playlist");
 			$(".playlistItem").eq($scope.playlistIndices).addClass("ui-sortable-selected");
 			if (selectSongs) {
@@ -283,22 +290,12 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 			else {
 				$("#playlistSelect").trigger('ui-sortable-selectionschanged');
 			}
-			// $(".playlistItem").eq($scope.playlistIndices).click();
-			// // $(".playlistItem").eq($scope.playlistIndices).addClass("ui-sortable-selected");
-			// // $("#playlistSelect").trigger('ui-sortable-selectionschanged');
-			// console.log(selectSongs);
-			// console.log(oldSongIndices);
-			// if (selectSongs) {
-			// 	// clearSongSelected();
-			// 	// $timeout(function() {
-			// 		console.log($("#songSelect").children());
-			// 		for (var i = 0; i < oldSongIndices.length; i ++) {
-			// 			// $("#songSelect > .songItem").eq(oldSongIndices[i]).addClass("ui-sortable-selected");
-			// 			$("#songSelect").children().eq(oldSongIndices[i]).addClass("ui-sortable-selected");
-			// 		}
-			// 		// $("#songSelect").trigger("ui-sortable-selectionschanged");
-			// 	// });
-			// }
+			//scroll to it
+			$("#playlistSelect > .playlistItem").eq($scope.playlistIndices)[0].scrollIntoView({
+				behavior: "smooth",
+				block: "start",
+				inline: "nearest"
+			});
 		});
 	}
 
@@ -604,8 +601,24 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 		$("#addMusicListModal").css("display", "flex");
 	}
 
+	function addSongsOk(insertedData, oldLen) {
+		console.log("ADD SONGS OK");
+		console.log(insertedData);
+		console.log($scope.songData.length);
+		$scope.playlistData[$scope.playlistIndices] = insertedData;
+		$scope.songIndices = [];
+		for (var i = oldLen; i < insertedData.contents.length; i ++) {
+			$scope.songIndices.push(i);
+		}
+		console.log("target select songs:");
+		console.log($scope.songIndices);
+		updatePlaylistSortable(undefined, true);
+		$scope.closeAddSongsModal();
+	}
+
 	$scope.submitSongs = function() {
 		console.log(songDatashare);
+		var oldLen = $scope.songData.length;
 		//add selected songs
 		if (songDatashare.tab == "#existingSongSearch") {
 			for (const i of songDatashare.songIndices) {
@@ -613,9 +626,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 			}
 			$http.post("/editPlaylist", {"_id": $scope.playlistData[$scope.playlistIndices]["_id"], "contents": getSongIDList()}).then(function(resp) {
 				console.log("adding songs to playlist ok");
-				$scope.playlistData[$scope.playlistIndices] = resp["data"];
-				updatePlaylistSortable();
-				$scope.closeAddSongsModal();
+				addSongsOk(resp.data, oldLen);
 			}, function(err) {
 				console.log(err);
 				if (err.status == 403) {
@@ -634,10 +645,8 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 				$scope.songData.push(insertedData);
 				$http.post("/editPlaylist", {"_id": $scope.playlistData[$scope.playlistIndices]["_id"], "contents": getSongIDList()}).then(function(resp) {
 					console.log("adding new song to playlist ok");
-					$scope.playlistData[$scope.playlistIndices] = resp["data"];
-					updatePlaylistSortable();
 					songDatashare.stopPlayem();
-					$scope.closeAddSongsModal();
+					addSongsOk(resp.data, oldLen);
 				}, function(err) {
 					console.log(err);
 					if (err.status == 403) {
