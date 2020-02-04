@@ -62,26 +62,26 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', '$rootSc
 		$scope.closeEdit();
 	}
 
-	$rootScope.$on("songChanged", function(e, insertedData) {
-		for (var i = 0; i < insertedData.length; i ++) {
-			var newIndex = songDatashare.songData.findIndex(function(p) { return p["_id"] == insertedData[i]["_id"]; });
-			songDatashare.songData[newIndex] = insertedData[i];
-		}
-		//sort
-		songDatashare.sortBy(songDatashare.orderVar, true);
-		//select the original indices
-		songDatashare.songIndices = [];
-		console.log("EDIT -> UPDATING LOCAL");
-		console.log(songDatashare.songData);
-		console.log(insertedData);
-		$("#editSongSelect > .songItem").removeClass("ui-sortable-selected");
-		for (var i = 0; i < insertedData.length; i ++) {
-			var newIndex = songDatashare.songData.findIndex(function(p) { return p["_id"] == insertedData[i]["_id"]; })
-			songDatashare.songIndices.push(newIndex);
-			$("#editSongSelect > .songItem").eq(newIndex).addClass("ui-sortable-selected");
-		}
-		$("#editSongSelect").trigger('ui-sortable-selectionschanged');
-	});
+	// $rootScope.$on("songChanged", function(e, insertedData) {	//TODO: replace this with redo search to get new paged data
+	// 	for (var i = 0; i < insertedData.length; i ++) {
+	// 		var newIndex = songDatashare.songData.findIndex(function(p) { return p["_id"] == insertedData[i]["_id"]; });
+	// 		songDatashare.songData[newIndex] = insertedData[i];
+	// 	}
+	// 	//sort
+	// 	songDatashare.sortBy(songDatashare.orderVar, true);
+	// 	//select the original indices
+	// 	songDatashare.songIndices = [];
+	// 	console.log("EDIT -> UPDATING LOCAL");
+	// 	console.log(songDatashare.songData);
+	// 	console.log(insertedData);
+	// 	$("#editSongSelect > .songItem").removeClass("ui-sortable-selected");
+	// 	for (var i = 0; i < insertedData.length; i ++) {
+	// 		var newIndex = songDatashare.songData.findIndex(function(p) { return p["_id"] == insertedData[i]["_id"]; })
+	// 		songDatashare.songIndices.push(newIndex);
+	// 		$("#editSongSelect > .songItem").eq(newIndex).addClass("ui-sortable-selected");
+	// 	}
+	// 	$("#editSongSelect").trigger('ui-sortable-selectionschanged');
+	// });
 
 	$scope.closeEdit = function() {
 		console.log("song closing edit");

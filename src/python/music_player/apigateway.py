@@ -261,7 +261,7 @@ class ApiGateway(object):
 	@authUser
 	def findMusic(self):
 		"""
-		Returns a list of songs matching the query presented
+		Returns a list of songs matching the query presented; limits to 25
 
 		Expected input (no field present -> return all):
 			{
@@ -273,7 +273,10 @@ class ApiGateway(object):
 				"genre_names": [(string)],
 				"start_date": (datetime),
 				"end_date": (datetime),
-				"_id": [(string)]
+				"_id": [(string)],
+				"sortby": (string, default "date", ["date", "relev", "name"]),
+				"descend": (boolean, default True, True=descending),
+				"page": (integer, default 0)
 			}
 		"""
 		# check that we actually have json

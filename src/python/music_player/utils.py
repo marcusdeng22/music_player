@@ -12,8 +12,11 @@ import operator
 from bson.objectid import ObjectId
 from bson.regex import Regex
 from pymongo.cursor import Cursor
+from pymongo import ASCENDING, DESCENDING
 
 supportedTypes = ["youtube", "mp3"]
+SONG_PAGE_SIZE = 25
+PLAYLIST_PAGE_SIZE = 50
 
 # checks if key value exists and is the right type
 def checkValidData(key, data, dataType, optional=False, default="", coerce=False):
@@ -154,12 +157,8 @@ def createMusic(data, musicDB):
 
 	return myMusic
 
-# #expects a name of a song and returns a list of _ids with a similar name, sorted by relevance
-# def findMusicByName(name, musicDB):
-# 	ret = []
-# 	musicDB.find()
-
-def makeMusicQuery(data, musicDB, fast=False, query=True):
+# queries DB for query in data; if fast then we return all matching results unsorted and uncleaned
+def makeMusicQuery(data, musicDB, fast=False):
 	myMusic = dict()
 	myProjection = {"relev": {"$meta": "textScore"}}
 
@@ -239,19 +238,30 @@ def makeMusicQuery(data, musicDB, fast=False, query=True):
 					myIDs.append(checkValidID(i))
 				myMusic["_id"] = {"$in": myIDs}
 
-	# # int fields
-	# for key in ("vol", "start", "end"):
-	# 	if key in data:
-	# 		myMusic[key] = checkValidData(key, data, int)
-	# 		if myMusic[key] < 0: myMusic[key] = 0
-	# 		if key == "vol" and myMusic[key] > 100: myMusic[key] = 100
-	# return myMusic
 	print("music query:", myMusic)
-	if not query:
-		return
 	if fast:
 		return list(musicDB.find(myMusic))
-	return cleanRet(musicDB.find(myMusic, myProjection).sort([("relev", {"$meta": "textScore"})]))	#this returns a relev score of 0 even if text search not used
+
+	pageNo = 0
+	sortBy = "date"
+	orderBy = True
+	if "page" in data:
+		pageNo = checkValidData("page", data, int)
+	if "sortby" in data:
+		sortBy = checkValidData("sortby", data, str)
+		if sortBy not in ["date", "relev", "name"]:
+			raise cherrypy.HTTPError(400, "Invalid sort parameter")
+	if "descend" in data:
+		orderBy = checkValidData("descend", data, bool)
+	ret = musicDB.find(myMusic, myProjection)
+	if sortBy == "relev":	#this returns a relev score of 0 even if text search not used
+		ret = cleanRet(ret.sort([("relev", {"$meta": "textScore"})]))
+		if not orderBy:
+			ret.reverse()
+		ret = ret[pageNo * SONG_PAGE_SIZE : (pageNo + 1) * SONG_PAGE_SIZE]
+	else:
+		ret = cleanRet(ret.collation({"locale": "en"}).sort(sortBy, DESCENDING if orderBy else ASCENDING).skip(pageNo * SONG_PAGE_SIZE).limit(SONG_PAGE_SIZE))
+	return ret
 
 def makePlaylistQuery(data, playlistDB, musicDB):
 	print("creating query")

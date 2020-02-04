@@ -10,18 +10,9 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 	$scope.reverse = true;
 	//sorting funcs
 	// $scope.sortBy = function(propertyName, preserveOrder=false) {
-	// 	var res = sortingFuncs.sortBy($scope.songs.songData, $scope.reverse, $scope.orderVar, propertyName, preserveOrder);
-	// 	$scope.reverse = res["reverse"];
-	// 	$scope.orderVar = res["orderVar"];
-	// 	$scope.songs.songData = res["data"];
-	// }
-	$scope.sortBy = function(propertyName, preserveOrder=false) {
-		songDatashare.sortBy(propertyName, preserveOrder);
-	};
+	// 	songDatashare.sortBy(propertyName, preserveOrder);
+	// };
 
-	// $scope.sortGlyph = function(type) {
-	// 	return sortingFuncs.sortGlyph($scope.reverse, $scope.orderVar, type);
-	// }
 	$scope.sortGlyph = function(type) {
 		return songDatashare.sortGlyph(type);
 	}
@@ -53,27 +44,27 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 
 	$("#editSongSelect").on('ui-sortable-selectionschanged', updateSortable);
 
-	$scope.getSongData = function(query={}, sortVar="date", sortRev=true) {
-		$http.post("/findMusic", query).then(function(resp) {
-			console.log("edit music query success");
-			$scope.songDatashare.songData = resp.data;
-			console.log("songs returned: ", $scope.songDatashare.songData);
-			//sort data
-			$scope.sortBy(sortVar, sortRev);
-			songDatashare.clearSelected();
-		}, function(err) {
-			console.log(err);
-			if (err.status == 403) {
-				alert("Session timed out");
-				$window.location.href = "/";
-			}
-			else {
-				alert("Failed to get song data");
-			}
-		});
-	};
+	// $scope.getSongData = function(query={}, sortVar="date", sortRev=true) {
+	// 	$http.post("/findMusic", query).then(function(resp) {
+	// 		console.log("edit music query success");
+	// 		$scope.songDatashare.songData = resp.data;
+	// 		console.log("songs returned: ", $scope.songDatashare.songData);
+	// 		//sort data
+	// 		$scope.sortBy(sortVar, sortRev);
+	// 		songDatashare.clearSelected();
+	// 	}, function(err) {
+	// 		console.log(err);
+	// 		if (err.status == 403) {
+	// 			alert("Session timed out");
+	// 			$window.location.href = "/";
+	// 		}
+	// 		else {
+	// 			alert("Failed to get song data");
+	// 		}
+	// 	});
+	// };
 
-	$scope.getSongData();
+	// $scope.getSongData();
 
 	//search variables
 	$scope.songNameSearch = "";
@@ -83,7 +74,7 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 	$scope.songAlbumSearch = "";
 	$scope.songGenreSearch = "";
 	$scope.songUrlSearch = "";
-	$scope.advSearch = function() {
+	$scope.advSearch = function(sortBy="date", descending=true, page=0) {
 		$scope.songDatashare.songIndices = [];
 		// create query
 		// available keys: "name", "start_date", "end_date", "artist_names" "_id"
@@ -116,12 +107,40 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 		}
 		console.log("query:", query)
 		if (sortByRelev) {
-			$scope.getSongData(query, "relev");
+			// $scope.getSongData(query, "relev");
+			songDatashare.curPage = 0;
+			songDatashare.getSongData(query, "relev")
 		}
 		else {
-			$scope.getSongData(query);
+			// $scope.getSongData(query);
+			songDatashare.curPage = 0;
+			songDatashare.getSongData(query);
 		}
 	};
+
+	$scope.changeSort = function(sortBy) {
+		if (sortBy == songDatashare.orderVar) {
+			songDatashare.reverse = !songDatashare.reverse;
+		}
+		else {
+			songDatashare.orderVar = sortBy;
+		}
+		songDatashare.curPage = 0;
+		songDatashare.getSongData();
+	}
+
+	// var songPage = 0;
+	// $scope.scrollBusy = false;
+	// $scope.scrollLoad = function() {
+	// 	if ($scope.scrollBusy) {
+	// 		return;
+	// 	}
+	// 	$scope.scrollBusy = true;
+	// 	songDatashare.getSongData(songDatashare.curQuery, songDatashare.orderVar, songDatashare.reverse, songPage, function() {
+	// 		songPage ++;
+	// 		$scope.scrollBusy = false;
+	// 	});
+	// }
 
 	$rootScope.$on("clearSongSearch", function() {
 		$scope.songNameSearch = "";
@@ -131,8 +150,9 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 		$scope.songAlbumSearch = "";
 		$scope.songGenreSearch = "";
 		$scope.songUrlSearch = "";
-		$scope.getSongData();
-	})
+		// $scope.getSongData();
+		$scope.advSearch();
+	});
 
 	var searchFunc = function(evt) {
 		if (evt.which == 13) {	//enter key

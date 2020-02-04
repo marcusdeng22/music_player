@@ -81,8 +81,9 @@ app.factory("sortingFuncs", ["orderByFilter", function(orderBy) {
 		}
 	};
 
-	//ordering function
+	//ordering function: local data only
 	//TODO: make this a stable sort? https://stackoverflow.com/questions/24678527/is-backbonejs-and-angularjs-sorting-stable
+	//TODO: deprecate this and use server DB sort
 	sortingFuncs.sortBy = function(data, reverse, orderVar, propertyName, preserveOrder=false) {
 		if (!preserveOrder) {
 			reverse = (propertyName !== null && orderVar === propertyName) ? !reverse : false;
@@ -132,14 +133,54 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 	//song data below
 	data.songData = [];
 	data.songIndices = [];
+	data.curQuery = {};
 	data.orderVar = "date";
 	data.reverse = true;
-	data.sortBy = function(propertyName, preserveOrder=false) {
-		var res = sortingFuncs.sortBy(data.songData, data.reverse, data.orderVar, propertyName, preserveOrder);
-		data.reverse = res["reverse"];
-		data.orderVar = res["orderVar"];
-		data.songData = res["data"];
+	data.curPage = 0;
+	data.scrollBusy = false;
+	data.getSongData = function(query=data.curQuery, sortBy=data.orderVar, descending=data.reverse, page=data.curPage) {
+		console.log("getting song data");
+		if (data.scrollBusy) {
+			console.log("busy");
+			return;
+		}
+		//set busy, and set the new defaults
+		data.scrollBusy = true;
+		data.curQuery = query;
+		data.orderVar = sortBy;
+		data.reverse = descending;
+		data.curPage = page;
+		if(data.curPage == 0) {
+			data.songData = [];
+		}
+		query["sortby"] = sortBy;
+		query["descend"] = descending;
+		query["page"] = page;
+		return $http.post("/findMusic", query).then(function(resp) {
+			console.log("got song data");
+			console.log(resp);
+			data.songData = data.songData.concat(resp.data);
+			data.clearSelected();
+			data.curPage ++;
+			data.scrollBusy = false;
+		}, function(err) {
+			console.log(err);
+			if (err.status == 403) {
+				alert("Session timed out");
+				$window.location.href = "/";
+			}
+			else {
+				alert("Failed to get song data");
+			}
+		});
 	};
+	//TODO: deprecate; use getSongData
+	// data.sortBy = function(propertyName, preserveOrder=false) {
+	// 	var res = sortingFuncs.sortBy(data.songData, data.reverse, data.orderVar, propertyName, preserveOrder);
+	// 	data.reverse = res["reverse"];
+	// 	data.orderVar = res["orderVar"];
+	// 	data.songData = res["data"];
+	// };
 	data.sortGlyph = function(type) {
 		return sortingFuncs.sortGlyph(data.reverse, data.orderVar, type);
 	};
@@ -388,9 +429,11 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 		$http.post("/addMusic", data.editData).then(function(resp) {
 			console.log("add music ok");
 			console.log(resp);
-			data.songData.push(resp["data"]);
-			data.sortBy(data.orderVar, true);
-			data.clearSelected();
+			// data.songData.push(resp["data"]);
+			// data.sortBy(data.orderVar, true);
+			// data.clearSelected();
+			data.curPage = 0;
+			data.getSongData();
 
 			if (toCall != null) {
 				toCall(resp["data"]);
@@ -456,8 +499,10 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 			console.log("add many music ok");
 			console.log(resp.data);
 			//add new song data
-			data.songData = data.songData.concat(resp.data);
-			data.sortBy(data.orderVar, true);
+			// data.songData = data.songData.concat(resp.data);
+			// data.sortBy(data.orderVar, true);
+			data.curPage = 0;
+			data.getSongData();
 			if (toCall != null) {
 				toCall(resp.data);
 			}
@@ -501,12 +546,25 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 		console.log(data.songData);
 		$http.post("/editMusic", editSubm).then(function(resp) {
 			console.log("edit request ok");
-			$rootScope.$emit("songChanged", resp.data);
-			//now do callback
-			if (toCall != null) {
-				console.log("callback");
-				toCall(resp["data"]);
-			}
+			var insertedData = resp.data;
+			//update local data with a search
+			data.curPage = 0;
+			data.getSongData().then(function() {
+				//select old updated data, if present
+				$("#editSongSelect > .songItem").removeClass("ui-sortable-selected");
+				for (var i = 0; i < insertedData.length; i ++) {
+					var newIndex = data.songData.findIndex(function(p) { return p["_id"] == insertedData[i]["_id"]; })
+					// data.songIndices.push(newIndex);
+					$("#editSongSelect > .songItem").eq(newIndex).addClass("ui-sortable-selected");
+				}
+				$("#editSongSelect").trigger('ui-sortable-selectionschanged');
+				$rootScope.$emit("songChanged", insertedData);
+				//now do callback
+				if (toCall != null) {
+					console.log("callback");
+					toCall(insertedData);
+				}
+			});
 		}, function(err) {
 			console.log(err);
 			if (err.status == 403) {
