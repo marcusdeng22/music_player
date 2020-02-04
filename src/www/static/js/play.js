@@ -39,7 +39,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 
 	//scroll into view: https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
 	function scrollSelected() {
-		if ($scope.songIndices.length > 0) {
+		if ($scope.songIndices.length > 0 && $(".playItem").eq($scope.songIndices).length > 0) {
 			$(".playItem").eq($scope.songIndices)[0].scrollIntoView({
 				behavior: "smooth",
 				block: "start",
@@ -48,7 +48,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		}
 	};
 
-	function loadAndStart(data, play=true) {
+	function loadAndStart(data, play=true, delay=50) {
 		$scope.updatePlayView();
 		console.log("starting to play");
 		console.log(data);
@@ -72,9 +72,11 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		}
 		console.log($scope.playem);
 		console.log(songsToAdd);
-		$scope.selectIndex(data["startIndex"] || 0, play);	//triggers play
-		// $(window).on("load", scrollSelected);
-		$timeout(scrollSelected);
+		$timeout(function() {
+			$scope.selectIndex(data["startIndex"] || 0, play);	//triggers play
+			// $(window).on("load", scrollSelected);
+			$timeout(scrollSelected, delay);
+		}, delay);
 	};
 
 	$rootScope.$on("startPlay", function(e, data) {
@@ -638,6 +640,10 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		songDatashare.loadEditTemplate("#nowPlayingEditTemplate", $scope, toEdit);
 		//display modal
 		$("#nowPlayingEditMusicModal").css("display", "flex");
+		//disable URL since we shouldn't be allowed to edit that in play view
+		$timeout(function() {
+			$("#newSongUrlInput").prop("disabled", true);
+		}, 50);
 	};
 
 	$scope.submitEditSong = function() {
@@ -715,6 +721,8 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		console.log($scope.playem.getPlayers());
 		songDatashare.stopPlayem();
 		$("#nowPlayingEditMusicModal").hide();
+		//re-enable URL
+		$("#newSongUrlInput").prop("disabled", false);
 		autoSelect = true;
 	};
 
@@ -733,9 +741,10 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 				$scope.shuffleOn = resp.data.shuffle;
 			}
 			$(window).on("load", function() {
-				$timeout(function() {
-					loadAndStart(resp.data.playlist, $window.location.hash == "#!#play")
-				});
+				// $timeout(function() {
+				// 	loadAndStart(resp.data.playlist, $window.location.hash == "#!#play")
+				// }, 1000);
+				loadAndStart(resp.data.playlist, $window.location.hash == "#!#play", 500);
 			});
 		}
 	}, function(err) {
