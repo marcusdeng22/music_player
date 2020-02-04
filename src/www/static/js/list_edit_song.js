@@ -5,14 +5,6 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 
 	$scope.$parent["childScope"] = $scope;
 
-	//order vars
-	$scope.orderVar = "date";
-	$scope.reverse = true;
-	//sorting funcs
-	// $scope.sortBy = function(propertyName, preserveOrder=false) {
-	// 	songDatashare.sortBy(propertyName, preserveOrder);
-	// };
-
 	$scope.sortGlyph = function(type) {
 		return songDatashare.sortGlyph(type);
 	}
@@ -24,10 +16,6 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 			ui.item.sortable.cancel();
 		}
 	});
-	// $scope.sortableSongs = songDatashare.songSortable;
-
-	// console.log("sortablesongs:");
-	// console.log($scope.sortableSongs);
 
 	var updateSortable = function (e, args) {
 		console.log("song select changed");
@@ -109,7 +97,9 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 		songDatashare.getSongData();
 	}
 
-	$rootScope.$on("clearSongSearch", function() {
+	$rootScope.$on("clearSongSearch", $scope.clearSearch);
+
+	$scope.clearSearch = function() {
 		$scope.songNameSearch = "";
 		$scope.songStartDate = "";
 		$scope.songEndDate = "";
@@ -117,9 +107,8 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 		$scope.songAlbumSearch = "";
 		$scope.songGenreSearch = "";
 		$scope.songUrlSearch = "";
-		// $scope.getSongData();
 		$scope.advSearch();
-	});
+	}
 
 	var searchFunc = function(evt) {
 		if (evt.which == 13) {	//enter key
@@ -149,9 +138,19 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 		$(targetTab).addClass("show active");
 	};
 
+	var expandFunc = function(e) {
+		e.preventDefault();
+		if ($("#editSongAdvSearchContainer").hasClass("show")) {
+			$scope.clearSearch();
+		}
+	};
+
 	$(function() {
 		//handle subtab click
 		$("#listEditSongDiv .nav-link").on("click", tabFunc);
+
+		//handle advanced search expand
+		$("#editCollapse").on("click", expandFunc);
 
 		//prepare datepicker
 		$('#songStartDate, #songEndDate').datepicker({
@@ -186,6 +185,7 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 		$("#editSongSelect").off('ui-sortable-selectionschanged', updateSortable);
 		$(".song-search").off("keypress", searchFunc);
 		$("#listEditSongDiv .nav-link").off("click", tabFunc);
+		$("#editCollapse").off("click", expandFunc);
 	});
 	
 }]);

@@ -11,7 +11,7 @@
 					<input type="text" id="songNameSearch" ng-model="songNameSearch" ng-model-options='{debounce: 500}' ng-change="advSearch()" placeholder="Search for song name" style="width: 100%;">
 				</div>
 				<a id="editCollapse" data-toggle="collapse" data-target=".songCollapse" href="">Advanced Search</a>
-				<div class="songCollapse collapse" style="padding-bottom: 10px;">
+				<div id="editSongAdvSearchContainer" class="songCollapse collapse" style="padding-bottom: 10px;">
 					<div id="songDatePicker" class="input-daterange input-group" style="z-index: 1;">
 						<span class="input-group-addon">Dates:</span>
 						<input type="text" class="input-sm form-control" name="start" id="songStartDate" ng-model="songStartDate"/>
@@ -50,12 +50,14 @@
 					</div>
 					<div class="input-group">
 						<button type="button" id="advSongSearchBtn" ng-click="advSearch()">Search</button>
+						<button type="button" id="clearAdvSongSearchBtn" ng-click="clearSearch()" style="float: right;">Clear</button>
 					</div>
 				</div>
 			</div>
 			<div>
 				<button type="button" ng-click="changeSort('name')">Name<img ng-class="sortGlyph('name')" style="left: 2px;"></img></button>
 				<button type="button" ng-click="changeSort('relev')">Relevance<img ng-class="sortGlyph('relev')" style="left: 2px;"></img></button>
+				<span id="songSearchCount"># Results here</span>
 				<button type="button" ng-click="changeSort('date')" style="float: right;">Date<img ng-class="sortGlyph('date')" style="left: 2px;"></img></button>
 			</div>
 			<div class="joinCollapseContainer sortableDataContainer songCollapse collapse show" style="height: calc(100% - 85px);">
@@ -82,9 +84,5 @@
 </div>
 
 <script type="text/javascript">
-	//handle advanced search expand
-	$("#editCollapse").click(function(e) {
-		e.preventDefault();
-		console.log("edit expand clicked");
-	});
+	
 </script>

@@ -6,7 +6,7 @@
 				<div data-tip="Use commas to separate entries" style="width: 100%">
 					<input type="text" id="playlistNameSearch" ng-model="playlistNameSearch" ng-model-options='{debounce: 500}' ng-change="advSearch()" placeholder="Search for playlist name" style="width: 100%;">
 				</div>
-				<a data-toggle="collapse" data-target=".playlistCollapse" href="">Advanced Search</a>
+				<a id="playlistAdvSearchToggle" data-toggle="collapse" data-target=".playlistCollapse" href="">Advanced Search</a>
 				<div id="advSearchDiv" class="playlistCollapse collapse" style="padding-bottom: 10px;">
 					<div id="playlistDatePicker" class="input-daterange input-group" style="z-index: 1;">
 						<span class="input-group-addon">Dates:</span>
@@ -49,6 +49,7 @@
 					</div>
 					<div class="input-group">
 						<button type="button" id="advSearchBtn" ng-click="advSearch()">Search</button>
+						<button type="button" ng-click="clearSearch()" style="float: right;">Clear</button>
 					</div>
 				</div>
 			</div>

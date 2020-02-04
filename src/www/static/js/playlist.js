@@ -94,7 +94,18 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 		$scope.playlistAlbumSearch = "";
 		$scope.playlistGenreSearch = "";
 		$('#playlistStartDate, #playlistEndDate').datepicker("clearDates");
-	}
+	};
+
+	$scope.clearSearch = function() {
+		clearSearch();
+		$scope.getPlaylistData();
+	};
+
+	$("#playlistAdvSearchToggle").on("click", function() {
+		if ($("#advSearchDiv").hasClass("show")) {
+			$scope.clearSearch();
+		}
+	});
 
 	// $("#playlistSongSearch,#playlistArtistSearch").keypress(function(evt) {
 	$(".playlist-search").keypress(function(evt) {
@@ -317,8 +328,6 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 
 	$rootScope.$on("songsRemoved", function() {
 		//get the new playlist info
-		// $scope.clearSearch();
-		// $scope.getPlaylistData();
 		var targetID = $scope.playlistIndices.length == 1 ? $scope.playlistData[$scope.playlistIndices]["_id"] : null;
 		$scope.advSearch(function() {
 			updatePlaylistSortable(targetID);
