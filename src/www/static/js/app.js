@@ -61,7 +61,8 @@ app.factory("youtubeFuncs", ["$http", function($http) {
 		// console.log("THUMBNAIL");
 		// console.log(item);
 		if (item.url) {
-			return "https://img.youtube.com/vi/" + data.cleanUrl(item.url) + "/0.jpg";
+			return "https://img.youtube.com/vi/" + data.cleanUrl(item.url) + "/default.jpg";
+			// return "https://img.youtube.com/vi/" + data.cleanUrl(item.url) + "/0.jpg";
 		}
 	}
 	return data;
@@ -143,6 +144,8 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 	data.reverse = true;
 	data.curPage = 0;
 	data.scrollBusy = false;
+
+	var SONG_PAGE_SIZE = 25;
 	data.getSongData = function(query=data.curQuery, sortBy=data.orderVar, descending=data.reverse, page=data.curPage) {
 		console.log("getting song data");
 		console.log(data.curQuery);
@@ -150,8 +153,12 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 		data.orderVar = sortBy;
 		data.reverse = descending;
 		data.curPage = page;
-		if(data.curPage == 0) {
-			data.songData = [];
+		if (data.curPage == 0) {
+			data.songData = [];	//clear old data, since loading page 0
+		}
+		else if (page * SONG_PAGE_SIZE > data.totalResults) {
+			console.log("requested page more than limit");
+			return;
 		}
 		if (data.scrollBusy) {
 			console.log("busy");
@@ -544,7 +551,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 		console.log(data.songData);
 		$http.post("/editMusic", editSubm).then(function(resp) {
 			console.log("edit request ok");
-			var insertedData = resp.data;
+			var insertedData = resp.data.results;
 			console.log(insertedData);
 			//update local data with a search
 			data.curPage = 0;
@@ -552,16 +559,25 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 				$timeout(function() {
 					console.log("selecting old index");
 					console.log($("#editSongSelect").data('uiSortableMultiSelectionState'));
+					console.log(insertedData);
+					console.log(insertedData.length);
 					//select old updated data, if present
 					$("#editSongSelect > .songItem").removeClass("ui-sortable-selected");
 					for (var i = 0; i < insertedData.length; i ++) {
 						var newIndex = data.songData.findIndex(function(p) { return p["_id"] == insertedData[i]["_id"]; })
 						data.songIndices.push(newIndex);
+						console.log(newIndex);
 						$("#editSongSelect > .songItem").eq(newIndex).addClass("ui-sortable-selected");
 						if (i == insertedData.length - 1) {
 							$("#editSongSelect").data('uiSortableMultiSelectionState', {lastIndex: newIndex});
 						}
 					}
+					console.log("trigger song change");
+					$("#editSongSelect > .songItem.ui-sortable-selected").first()[0].scrollIntoView({	//scroll first element into view
+						behavior: "smooth",
+						block: "start",
+						inline: "nearest"
+					});
 					$("#editSongSelect").trigger('ui-sortable-selectionschanged');
 				});
 				$rootScope.$emit("songChanged", insertedData);

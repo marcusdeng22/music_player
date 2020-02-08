@@ -61,7 +61,7 @@
 				<button type="button" ng-click="changeSort('date')" style="float: right;">Date<img ng-class="sortGlyph('date')" style="left: 2px;"></img></button>
 			</div>
 			<div class="joinCollapseContainer sortableDataContainer songCollapse collapse show" style="height: calc(100% - 85px);">
-				<div infinite-scroll="songDatashare.getSongData()" infinite-scroll-disbled="songDatashare.scrollBusy" infinite-scroll-distance="0.5" infinite-scroll-parent>
+				<div infinite-scroll="songDatashare.getSongData()" infinite-scroll-disbled="songDatashare.scrollBusy" infinite-scroll-distance="0.75" infinite-scroll-parent>
 					<div ui-sortable="sortableSongs" ng-model="songDatashare.songData" id="editSongSelect" class="ng-cloak list" style="width: 100%; min-height: 100%;">
 						<div ui-sortable-selectable ng-repeat="song in songDatashare.songData track by $index" class="item songItem">
 							<div ng-dblclick="submitDblClk()" class="playRow">

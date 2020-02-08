@@ -265,9 +265,9 @@
 	/*border-bottom: 1px solid #444;*/
 }
 
-.item:last-child {
+/*.item:last-child {
 	border-bottom: 0px;
-}
+}*/
 
 .item.ui-sortable-selected {
 	background-color: LightSkyBlue;

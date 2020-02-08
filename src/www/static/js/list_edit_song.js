@@ -97,9 +97,12 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 		songDatashare.getSongData();
 	}
 
-	$rootScope.$on("clearSongSearch", $scope.clearSearch);
+	$rootScope.$on("clearSongSearch", function() {
+		$scope.clearSearch();
+	});
 
 	$scope.clearSearch = function() {
+		console.log("CLEARING SONG SEARCH");
 		$scope.songNameSearch = "";
 		$scope.songStartDate = "";
 		$scope.songEndDate = "";

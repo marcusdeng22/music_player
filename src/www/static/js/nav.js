@@ -37,7 +37,8 @@ app.controller('NavCtrl', ['$scope', '$rootScope', '$timeout', '$location', '$wi
 			$http.post("/logout").then(function(resp) {
 				$window.location.href = '/';
 			}, function(err) {
-				alert("Failed to logout");
+				alert("Session expired");
+				$window.location.href = '/';
 			});
 		}
 		else {

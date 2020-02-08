@@ -676,6 +676,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 
 	$scope.closeAddSongsModal = function() {
 		songDatashare.clearSelected();
+		songDatashare.stopPlayem();
 		$("#addMusicListModal").hide();
 	}
 
