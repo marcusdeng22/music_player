@@ -181,9 +181,9 @@ console.log(window.location);
         console.log("bufferd -> unstarted, so playing");
         that.player.playVideo();
       }
-      else if (newState.data == -1) { //unstarted; start it
-        that.player.playVideo();
-      }
+      // else if (newState.data == -1) { //unstarted; start it; this causes looping
+      //   that.player.playVideo();
+      // }
       prevState = newState.data;
     });
     // that.player.addEventListener("onError", "onYoutubeError");

@@ -134,6 +134,13 @@ angular.module('ui.sortable.multiselection', [])
         return first;
       }
 
+      function cancelSort(e) {
+        if (e.which === 27) {
+          e.data.sortUI.item.sortable.cancel();
+          $(this).mouseup();
+        }
+      };
+
       return {
         extendOptions: function (sortableOptions) {
           sortableOptions = sortableOptions || {};
@@ -197,6 +204,7 @@ angular.module('ui.sortable.multiselection', [])
           return helper.append(elements);
         },
         start: function(e, ui) {
+          $(document).on("keydown", {sortUI: ui}, cancelSort);  //ME: escape key cancels sort
           ui.item.sortableMultiSelect.sourceElement = ui.item.parent();
 
           //ME: add selection changed notification to parent
@@ -255,6 +263,7 @@ angular.module('ui.sortable.multiselection', [])
           }
         },
         stop: function (e, ui) {
+          $(document).off("keydown", cancelSort); //ME: remove escape cancelling sort
           var sourceElement = ui.item.sortableMultiSelect.sourceElement || ui.item.parent();
           if (!ui.item.sortable.received &&
              // ('dropindex' in ui.item.sortable) &&
