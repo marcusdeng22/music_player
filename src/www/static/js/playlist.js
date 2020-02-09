@@ -24,15 +24,9 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 	$scope.playlistAlbumSearch = "";
 	$scope.playlistGenreSearch = "";
 
-	function scrollToSelected(selector, first=true) {
-		var selectedScroll = $(selector);
-		if (first) {
-			selectedScroll = selectedScroll.first();
-		}
-		else {
-			selectedScroll = selectedScroll.last();
-		}
-		if (selectedScroll.length > 1) {
+	function scrollToSelected(selector, index) {
+		var selectedScroll = $(selector).eq(index);
+		if (selectedScroll.length >= 1) {
 			selectedScroll[0].scrollIntoView({
 				behavior: "smooth",
 				block: "start",
@@ -48,6 +42,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 			console.log($scope.playlistData);
 			clearPlaylistSelected();
 			$scope.sortBy(sortVar, sortRev);
+			$timeout(initiatilizeDrop);
 			if (callback != null) {
 				callback();
 			}
@@ -162,7 +157,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 						}
 					}
 					$("#songSelect").trigger('ui-sortable-selectionschanged');
-					scrollToSelected("#songSelect > .songItem.ui-sortable-selected", false);
+					scrollToSelected("#songSelect > .songItem.ui-sortable-selected", 0);
 				});
 			}
 		}, function(err) {
@@ -327,11 +322,12 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 			// 	$("#playlistSelect").trigger('ui-sortable-selectionschanged');
 			// }
 			//scroll to it
-			$("#playlistSelect > .playlistItem").eq($scope.playlistIndices)[0].scrollIntoView({
-				behavior: "smooth",
-				block: "start",
-				inline: "nearest"
-			});
+			// $("#playlistSelect > .playlistItem").eq($scope.playlistIndices)[0].scrollIntoView({
+			// 	behavior: "smooth",
+			// 	block: "start",
+			// 	inline: "nearest"
+			// });
+			scrollToSelected("#playlistSelect > .playlistItem.ui-sortable-selected", 0);
 		});
 	}
 

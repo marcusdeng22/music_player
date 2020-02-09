@@ -30,6 +30,7 @@ app.directive("ngOffClose", function() {
 		restrict: "A",
 		link: function(scope, element, attrs) {
 			var f = function(e) {
+				console.log($(e.target).closest(element));
 				if ((e.which === 27 || e.which === 1) && !$(e.target).closest(element).length && element.is(":visible")) {
 					scope.$apply(function() {
 						scope.$eval(attrs.ngOffClose);
@@ -37,10 +38,20 @@ app.directive("ngOffClose", function() {
 				}
 			};
 
+			var g = function(e) {
+				if (e.which === 27 && element.is(":visible")) {
+					scope.$apply(function() {
+						scope.$eval(attrs.ngOffClose);
+					});
+				}
+			};
+
 			$("body").on("mousedown", f).on("keyup", f);
+			element.on("keyup", "input", g);
 
 			scope.$on("$destroy", function() {
 				$("body").off("mousedown", f).off("keyup", f);
+				$(element + " input").off("keyup", "input", g);
 			});
 		}
 	}
