@@ -253,21 +253,14 @@
 
 .item {
 	width: 100%;
-	/*border-top: 1px solid #444;*/
 	border-bottom: 1px solid #444;
-	/*border: 0px;*/
 	text-align: left;
 	cursor: move;
 }
 
 .item:not(:first-child) {
 	margin: -1px 0;
-	/*border-bottom: 1px solid #444;*/
 }
-
-/*.item:last-child {
-	border-bottom: 0px;
-}*/
 
 .item.ui-sortable-selected {
 	background-color: LightSkyBlue;
@@ -280,16 +273,15 @@
 
 .ui-sortable-placeholder {
 	visibility: visible !important;
-	/*background-color: Blue;*/
 }
 
 .over {
-	/*border: solid 2px DodgerBlue;*/
 	background-color: DodgerBlue;
 }
-/*.ui-droppable-hover {
-	background-color: Yellow;
-}*/
+
+.playingSong {
+	border: 2px solid RoyalBlue;
+}
 
 
 /***  Extra ***/

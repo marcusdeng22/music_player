@@ -59,7 +59,13 @@ app.controller('editSongCtrl', ['$scope', '$rootScope', '$http', '$location', '$
 				console.log("mismatch");
 		}
 		$("#newSongUrlInput").focus();
-	}
+	};
+
+	$rootScope.$on("editTemplateUpdateSource", function(event, newEditSource, newListSource) {
+		// console.log(newSource);
+		$scope["editTemplateDiv"] = newEditSource;
+		$scope["listTemplateDiv"] = newListSource;
+	});
 
 	console.log("editting data:");
 	console.log($scope.songDatashare.editData);

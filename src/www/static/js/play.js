@@ -712,6 +712,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 				}
 			}
 		}
+		setQueue();
 		console.log("SONG CHANGED CALLBACK:");
 		console.log($scope.playlistData.contents);
 		$http.post("/setLast", {"contents": $scope.playlistData.contents}).then(undefined, function(err) {

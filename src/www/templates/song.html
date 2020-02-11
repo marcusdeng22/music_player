@@ -19,6 +19,7 @@
 		<div class="modal-content" ng-off-close="closeEdit()" style="width:75%;">
 			<div id="songEditTemplate">
 				<!-- put file here -->
+				<%include file="list_edit_song.html"/>
 			</div>
 			<div>
 				<button type="button" class="col-md-3 btn btn-success" ng-disabled="songDatashare.checkSongFields()" ng-click="submitEditSong()">Update</button>

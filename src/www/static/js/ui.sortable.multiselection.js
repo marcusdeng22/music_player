@@ -137,7 +137,12 @@ angular.module('ui.sortable.multiselection', [])
       function cancelSort(e) {
         if (e.which === 27) {
           e.data.sortUI.item.sortable.cancel();
+          $(".playlistItem").droppable({accept: ''});
           $(this).mouseup();
+          $(".playlistItem").droppable({accept: "#songSelect > .songItem"});
+          $(".playlistItem").removeClass("over");
+          // e.preventDefault();
+          // e.stopImmediatePropagation();
         }
       };
 

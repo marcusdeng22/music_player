@@ -127,7 +127,7 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 		var targetTab = $(this)[0]["dataset"]["target"];
 		songDatashare.tab = targetTab;
 		if (targetTab == "#addNewSong") {
-			songDatashare.loadEditTemplate("#addNewSong", $scope, null, true);
+			songDatashare.loadEditTemplate("#addNewSong", $scope);
 		}
 		else if (targetTab == "#existingSongSearch") {
 			songDatashare.stopPlayem();
@@ -148,27 +148,44 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 		}
 	};
 
+	$scope.initializeJQ = function() {
+	// $(function() {
+		console.log("dom ready in list template");
+		console.log($("#listEditSongDiv .nav-link").length);
+		// $timeout(function() {
+		// 	$(function() {
+				console.log("attached tab events");
+				//handle subtab click
+				$("#listEditSongDiv .nav-link").on("click", tabFunc);
+
+				//handle advanced search expand
+				$("#editCollapse").on("click", expandFunc);
+
+				//prepare datepicker
+				$('#songStartDate, #songEndDate').datepicker({
+					todayBtn: "linked",
+					clearBtn: true,
+					autoclose: true,
+					todayHighlight: true
+				});
+				$('#songStartDate, #songEndDate').datepicker("clearDates");
+		// 	});
+		// }, 200);
+	// });
+	};
+
 	$(function() {
-		//handle subtab click
-		$("#listEditSongDiv .nav-link").on("click", tabFunc);
-
-		//handle advanced search expand
-		$("#editCollapse").on("click", expandFunc);
-
-		//prepare datepicker
-		$('#songStartDate, #songEndDate').datepicker({
-			todayBtn: "linked",
-			clearBtn: true,
-			autoclose: true,
-			todayHighlight: true
-		});
-		$('#songStartDate, #songEndDate').datepicker("clearDates");
+		console.log("attaching tab events");
+		$scope.initializeJQ();
 	});
 
 	$scope.getThumbnail = youtubeFuncs.getThumbnail;
 
 	$scope.submitDblClk = function() {
 		//switch on the source that loaded this template
+		console.log("dbl click from list edit");
+		console.log($scope["listTemplateDiv"]);
+		console.log($scope);
 		switch($scope["listTemplateDiv"]) {
 			case "#playlistSongEditDiv":
 				$rootScope.$emit("playlistAddSubmit");
@@ -179,7 +196,12 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 			default:
 				console.log("mismatch");
 		}
-	}
+	};
+
+	$rootScope.$on("listTemplateUpdateSource", function(event, newSource) {
+		console.log(newSource);
+		$scope["listTemplateDiv"] = newSource;
+	});
 
 	console.log("edit controller exec");
 

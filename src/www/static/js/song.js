@@ -42,7 +42,7 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', '$rootSc
 		}
 		if (toEdit.length == 1) {
 			//load the edit song file
-			songDatashare.loadEditTemplate("#songEditTemplate", $scope, toEdit, undefined, function() {
+			songDatashare.loadEditTemplate("#songEditTemplate", $scope, toEdit, function() {
 				console.log("dispatching preview");
 				$rootScope.$emit("preview");
 			});

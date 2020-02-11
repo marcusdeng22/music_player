@@ -30,7 +30,6 @@ app.directive("ngOffClose", function() {
 		restrict: "A",
 		link: function(scope, element, attrs) {
 			var f = function(e) {
-				console.log($(e.target).closest(element));
 				if ((e.which === 27 || e.which === 1) && !$(e.target).closest(element).length && element.is(":visible")) {
 					scope.$apply(function() {
 						scope.$eval(attrs.ngOffClose);
@@ -46,12 +45,12 @@ app.directive("ngOffClose", function() {
 				}
 			};
 
-			$("body").on("mousedown", f).on("keyup", f);
-			element.on("keyup", "input", g);
+			$("body").on("mousedown", f).on("keydown", f);
+			element.on("keydown", "input", g);
 
 			scope.$on("$destroy", function() {
-				$("body").off("mousedown", f).off("keyup", f);
-				$(element + " input").off("keyup", "input", g);
+				$("body").off("mousedown", f).off("keydown", f);
+				$(element + " input").off("keydown", "input", g);
 			});
 		}
 	}
@@ -123,28 +122,36 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 	data.listTemplateId = "";
 	var oldListTemplate = null;
 	data.loadListTemplate = function(targetId, $scope) {
-		if (oldListTemplate != null && oldListTemplate["childScope"]) {
-			console.log("destroying old list template");
-			oldListTemplate["childScope"].$destroy();
-		}
-		oldListTemplate = $scope;
-		$scope["listTemplateDiv"] = targetId;
-		if (data.listTemplateId != "" && data.listTemplateId != targetId){
-		// if (data.listTemplateId != "") {
-			$(data.listTemplateId).empty();
-		}
-		// if (data.listTemplateId != targetId) {		//or should it always recompile?
-			//load template
-			data.listTemplateId = targetId;
-			data.songIndices = [];
-			data.tab = "#existingSongSearch";
-			$(targetId).load("/shared/list_edit_song.html", function() {
-				console.log("compiling template");
-				console.log($scope.$id);
-				$compile($(targetId).contents())($scope);
-			});
+		console.log("loading list template");
+		// if (oldListTemplate != null && oldListTemplate["childScope"]) {
+		// 	console.log("destroying old list template");
+		// 	oldListTemplate["childScope"].$destroy();
 		// }
-		//$templateRequest does not work for some reason; fails to bind properly
+		// oldListTemplate = $scope;
+		// $scope["listTemplateDiv"] = targetId;
+		// console.log("LIST TEMPLATE SCOPE SET");
+		// console.log($scope);
+		// // if (data.listTemplateId != "" && data.listTemplateId != targetId){	//always empty
+		// if (data.listTemplateId != "") {
+		// 	$(data.listTemplateId).empty();
+		// }
+		// // if (data.listTemplateId != targetId) {		//or should it always recompile?
+		// 	//load template
+			data.listTemplateId = targetId;
+		// 	data.songIndices = [];
+		// 	data.tab = "#existingSongSearch";
+		// 	$(targetId).load("/shared/list_edit_song.html", function() {
+		// 		console.log("compiling template");
+		// 		console.log($scope.$id);
+		// 		$compile($(targetId).contents())($scope);
+		// 	});
+		// // }
+		// //$templateRequest does not work for some reason; fails to bind properly
+		data.songIndices = [];
+		$("#listEditSongDiv").detach().appendTo($(targetId));
+		$rootScope.$emit("clearSongSearch");
+		$rootScope.$emit("listTemplateUpdateSource", data.listTemplateId);
+		$("#songListTab").click();
 	};
 	//song data below
 	data.songData = [];
@@ -219,59 +226,53 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 	// data.playem = null;	//store the preview player info here
 	data.playem = new Playem();
 	var oldEditTemplate = null;
-	data.loadEditTemplate = function(targetId, $scope, toAdd=null, force=false, callback=null) {
-		if (oldEditTemplate != null && oldEditTemplate["childScope"]) {
-			console.log("destroying old edit template");
-			oldEditTemplate["childScope"].$destroy();
-		}
-		oldEditTemplate = $scope;
-		$scope["editTemplateDiv"] = targetId;
-		console.log("SETTING SCOPE");
-		console.log($scope);
-		if ((data.editTemplateId != "" && data.editTemplateId != targetId) || force) {
-			$(data.editTemplateId).empty();
-		}
-		force = true;
-		if (data.editTemplateId != targetId || force) {
-			console.log("loading edit template");
+	data.loadEditTemplate = function(targetId, $scope, toAdd=null, callback=null) {
+		// if (oldEditTemplate != null && oldEditTemplate["childScope"]) {
+		// 	console.log("destroying old edit template");
+		// 	oldEditTemplate["childScope"].$destroy();
+		// }
+		// oldEditTemplate = $scope;
+		// $scope["editTemplateDiv"] = targetId;
+		// console.log("SETTING SCOPE");
+		// console.log($scope);
+		// // force = true;
+		// // if ((data.editTemplateId != "" && data.editTemplateId != targetId) || force) {
+		// if (data.editTemplateId != "") {
+		// 	$(data.editTemplateId).empty();
+		// }
+		// // if (data.editTemplateId != targetId || force) {
+		// 	console.log("loading edit template");
 			data.editTemplateId = targetId;
-			//set new data
-			if (toAdd != null) {
-				data.setEditData(toAdd);
-			}
-			else {
-				data.resetEdit();
-			}
-			//load and compile
-			$(targetId).load("/shared/editSong.html", function() {
-				//stop and load playem
-				data.reloadPlayem();
-				$timeout(function() {
-					$compile($(targetId).contents())($scope);
-					if (callback != null) {
-						callback();
-					}
-				});
-			});
+		// 	//set new data
+		// 	if (toAdd != null) {
+		// 		data.setEditData(toAdd);
+		// 	}
+		// 	else {
+		// 		data.resetEdit();
+		// 	}
+		// 	//load and compile
+		// 	$(targetId).load("/shared/editSong.html", function() {
+		// 		//stop and load playem
+		// 		data.reloadPlayem();
+		// 		$timeout(function() {
+		// 			$compile($(targetId).contents())($scope);
+		// 			if (callback != null) {
+		// 				callback();
+		// 			}
+		// 		});
+		// 	});
+		// // }
+		if (toAdd != null) {
+			data.setEditData(toAdd);
 		}
 		else {
-			// data.stopPlayem();
-			// var config = {
-			// 	playerContainer: document.getElementById("previewDisplay")
-			// };
-			// data.playem.addPlayer(YoutubePlayer, config);
-			data.reloadPlayem();
-			//set new data
-			if (toAdd != null) {
-				data.setEditData(toAdd);
-			}
-			else {
-				data.resetEdit();
-			}
-			if (callback != null) {
-				console.log("callback");
-				callback();
-			}
+			data.resetEdit();
+		}
+		data.reloadPlayem();
+		$("#editSongDiv").detach().appendTo($(targetId));
+		$rootScope.$emit("editTemplateUpdateSource", data.editTemplateId, data.listTemplateId);
+		if (callback != null) {
+			callback();
 		}
 	};
 	data.stopPlayem = function() {

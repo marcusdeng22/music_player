@@ -434,7 +434,8 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 		$(".playlistItem").droppable({
 			drop: dropAction,
 			over: overAction,
-			out: outAction
+			out: outAction,
+			accept: "#songSelect > .songItem"
 		});
 	};
 
@@ -715,7 +716,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 			toEdit.push($scope.songData[$scope.songIndices[i]]);
 		}
 		if (toEdit.length == 1) {
-			songDatashare.loadEditTemplate("#playlistEditTemplate", $scope, toEdit, undefined, function() {
+			songDatashare.loadEditTemplate("#playlistEditTemplate", $scope, toEdit, function() {
 				$rootScope.$emit("preview");
 			});
 		}
