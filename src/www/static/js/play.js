@@ -83,7 +83,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		$scope.shuffleOn = false;	//don't shuffle on load
 		loadAndStart(data);
 		var myQuery = {
-			"touched": false,
+			"touched": data.touched,
 			"name": $scope.playlistData.name,
 			"contents": $scope.playlistData.contents,
 			"shuffle": false
