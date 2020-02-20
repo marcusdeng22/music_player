@@ -276,7 +276,7 @@ class ApiGateway(object):
 				"_id": [(string)],
 				"sortby": (string, default "date", ["date", "relev", "name"]),
 				"descend": (boolean, default True, True=descending),
-				"page": (integer, default 0)
+				# "page": (integer, default 0)
 			}
 
 		Returns: {
@@ -313,7 +313,7 @@ class ApiGateway(object):
 			raise cherrypy.HTTPError(400, 'No data was given')
 
 		if "content" in data:
-			print("finding:", data["content"])
+			# print("finding:", data["content"])
 			# idList = [ObjectId(i) for i in data["content"]]
 			idList = [m_utils.checkValidID(i) for i in m_utils.checkValidData("content", data, list)]
 			# for x in idList:

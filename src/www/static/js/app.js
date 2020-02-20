@@ -157,47 +157,101 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 	data.songData = [];
 	data.totalResults = 0;
 	data.songIndices = [];
-	data.curQuery = {};
+	data.curQuery = null;
 	data.orderVar = "date";
 	data.reverse = true;
 	data.curPage = 0;
 	data.scrollBusy = false;
 
 	var SONG_PAGE_SIZE = 25;
+	var curIndex = 0;
+	data.dataNotReady = true;
+	// var scrollBusy = false;
 	data.getSongData = function(query=data.curQuery, sortBy=data.orderVar, descending=data.reverse, page=data.curPage) {
 		console.log("getting song data");
+		console.log(query);
 		console.log(data.curQuery);
+		data.clearSelected();
+		//confirm if query is new
+		var diff = false;
+		if (data.curQuery == null) {
+			diff = true;
+		}
+		else {
+			console.log("CHECKING");
+			for (const [key, value] of Object.entries(data.curQuery)) {
+				if (key == "sortby") {
+					if (value != sortBy) {
+						diff = true;
+						break;
+					}
+					continue;
+				}
+				if (key == "descend") {
+					if (value != descending) {
+						diff = true;
+						break;
+					}
+					continue;
+				}
+				if (key == "page") {
+					continue;
+				}
+				if (!(key in query) || value != query[key]) {
+					diff = true;
+					break;
+				}
+			}
+			if (!diff) {
+				for (const [key, value] of Object.entries(query)) {
+					if (!(key in data.curQuery) || value != data.curQuery[key]) {
+						diff = true;
+						break;
+					}
+				}
+			}
+		}
+		console.log("DONE CHECKING");
+		if (!diff) {
+			console.log('not diff');
+			return $timeout();
+		}
+		data.dataNotReady = true;
 		data.curQuery = query;
 		data.orderVar = sortBy;
 		data.reverse = descending;
-		data.curPage = page;
-		if (data.curPage == 0) {
-			data.songData = [];	//clear old data, since loading page 0
-		}
-		else if (page * SONG_PAGE_SIZE > data.totalResults) {
-			console.log("requested page more than limit");
-			return;
-		}
-		if (data.scrollBusy) {
-			console.log("busy");
-			return;
-		}
+		// data.curPage = page;
+		// if (data.curPage == 0) {
+		// 	data.songData = [];	//clear old data, since loading page 0
+		// }
+		// else if (page * SONG_PAGE_SIZE > data.totalResults) {
+		// 	console.log("requested page more than limit");
+		// 	return;
+		// }
+		// if (data.scrollBusy) {
+		// 	console.log("busy");
+		// 	return;
+		// }
 		//set busy, and set the new defaults
-		data.scrollBusy = true;
+		// data.scrollBusy = true;
 		
 		query["sortby"] = sortBy;
 		query["descend"] = descending;
-		query["page"] = page;
+		// query["page"] = page;
 		return $http.post("/findMusic", query).then(function(resp) {
 			console.log("got song data");
 			console.log(resp);
-			data.songData = data.songData.concat(resp.data.results);
+			// data.songData = data.songData.concat(resp.data.results);
+			data.songData = resp.data.results;
 			data.totalResults = resp.data.count;
-			if (data.curPage == 0) {
-				data.clearSelected();
-			}
-			data.curPage ++;
-			data.scrollBusy = false;
+			// if (data.curPage == 0) {
+				// data.clearSelected();
+			// }
+			// data.curPage ++;
+			// data.scrollBusy = false;
+			curIndex = 0;
+			data.displayedSongData = [];
+			data.dataNotReady = false;
 		}, function(err) {
 			console.log(err);
 			if (err.status == 403) {
@@ -208,6 +262,20 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 				alert("Failed to get song data");
 			}
 		});
+	};
+	data.displayedSongData = [];
+	data.loadDisplayedSongData = function() {
+		// if (scrollBusy) {
+		// 	return;
+		// }
+		// scrollBusy = true;
+		console.log("DISPLAYING");
+		console.log(data.songData[0]);
+		for (var x = 0; x < SONG_PAGE_SIZE; x ++) {
+			data.displayedSongData.push(data.songData[curIndex++]);
+		}
+		console.log(data.displayedSongData);
+		// scrollBusy = false;
 	};
 	data.sortGlyph = function(type) {
 		return sortingFuncs.sortGlyph(data.reverse, data.orderVar, type);

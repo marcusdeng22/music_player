@@ -2,6 +2,7 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 		function($scope, $rootScope, $http, $location, $window, $timeout, uiSortableMultiSelectionMethods, sortingFuncs, songDatashare, youtubeFuncs) {
 	//data model
 	$scope.songDatashare = songDatashare;
+	// songDatashare.getSongData();
 
 	$scope.$parent["childScope"] = $scope;
 

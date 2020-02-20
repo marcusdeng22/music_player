@@ -243,11 +243,11 @@ def makeMusicQuery(data, musicDB, fast=False):
 		return list(musicDB.find(myMusic))
 
 	#below is used for actual queries to be used by client
-	pageNo = 0
+	# pageNo = 0
 	sortBy = "date"
 	orderBy = True
-	if "page" in data:
-		pageNo = checkValidData("page", data, int)
+	# if "page" in data:
+	# 	pageNo = checkValidData("page", data, int)
 	if "sortby" in data:
 		sortBy = checkValidData("sortby", data, str)
 		if sortBy not in ["date", "relev", "name"]:
@@ -260,9 +260,10 @@ def makeMusicQuery(data, musicDB, fast=False):
 		ret = cleanRet(ret.sort([("relev", {"$meta": "textScore"})]))
 		if not orderBy:
 			ret.reverse()
-		ret = ret[pageNo * SONG_PAGE_SIZE : (pageNo + 1) * SONG_PAGE_SIZE]
+		# ret = ret[pageNo * SONG_PAGE_SIZE : (pageNo + 1) * SONG_PAGE_SIZE]
 	else:
-		ret = cleanRet(ret.collation({"locale": "en"}).sort(sortBy, DESCENDING if orderBy else ASCENDING).skip(pageNo * SONG_PAGE_SIZE).limit(SONG_PAGE_SIZE))
+		ret = cleanRet(ret.collation({"locale": "en"}).sort(sortBy, DESCENDING if orderBy else ASCENDING))
+		# ret = cleanRet(ret.collation({"locale": "en"}).sort(sortBy, DESCENDING if orderBy else ASCENDING).skip(pageNo * SONG_PAGE_SIZE).limit(SONG_PAGE_SIZE))
 	return {"results": ret, "count": totalCount}
 
 def makePlaylistQuery(data, playlistDB, musicDB):
@@ -283,9 +284,9 @@ def makePlaylistQuery(data, playlistDB, musicDB):
 						raise cherrypy.HTTPError(400, "Invalid playlist name given")
 				myPlaylist["name"] = {"$in": myPlaylistNames}
 			if key == "start_date":
-				print("checking start")
-				print(checkValidData(key, data, datetime.datetime, coerce=True))
-				print("passed")
+				# print("checking start")
+				# print(checkValidData(key, data, datetime.datetime, coerce=True))
+				# print("passed")
 				if "date" not in myPlaylist:
 					myPlaylist["date"] = {"$gte": checkValidData(key, data, datetime.datetime, coerce=True)}
 				else:
@@ -316,7 +317,7 @@ def makePlaylistQuery(data, playlistDB, musicDB):
 				myPlaylist[key] = checkValidID(data)
 	if len(musicList) > 0:
 		myPlaylist["contents"] = {"$in": list(musicList)}
-	print("myPlaylist.contents:", musicList)
+	# print("myPlaylist.contents:", musicList)
 	print("playlist query:", myPlaylist)
 	ret = list(playlistDB.find(myPlaylist))
 	#add relevance markers in
@@ -332,7 +333,7 @@ def makePlaylistQuery(data, playlistDB, musicDB):
 
 def cleanRet(dataList):
 	print("cleaning called")
-	print(dataList)
+	# print(dataList)
 	if (isinstance(dataList, list) or isinstance(dataList, Cursor)):
 		print("cleaning list")
 		ret = list()
@@ -347,7 +348,8 @@ def cleanRet(dataList):
 			if "artist" in data:
 				data["artistStr"] = ", ".join(data["artist"])
 			ret.append(data)
-		print("returning:", ret)
+		# print("returning:", ret)
+		print("list clean ok")
 		return ret
 	elif (isinstance(dataList, dict)):
 		print("cleaning dict")
@@ -364,7 +366,8 @@ def cleanRet(dataList):
 				ret[key] = dataList[key]
 				if key == "artist":
 					ret["artistStr"] = ", ".join(dataList[key])
-		print("returing:", ret)
+		# print("returing:", ret)
+		print("dict clean ok")
 		return ret
 	else:
 		print("unknown clean")
