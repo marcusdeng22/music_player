@@ -166,6 +166,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 	var SONG_PAGE_SIZE = 25;
 	var curIndex = 0;
 	data.dataNotReady = true;
+	data.allSelect = true;
 	// var scrollBusy = false;
 	data.getSongData = function(query=data.curQuery, sortBy=data.orderVar, descending=data.reverse, page=data.curPage) {
 		console.log("getting song data");
@@ -252,6 +253,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 			curIndex = 0;
 			data.displayedSongData = [];
 			data.dataNotReady = false;
+			$timeout(data.loadDisplayedSongData(), 20);
 		}, function(err) {
 			console.log(err);
 			if (err.status == 403) {
@@ -271,7 +273,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 		// scrollBusy = true;
 		console.log("DISPLAYING");
 		console.log(data.songData[0]);
-		for (var x = 0; x < SONG_PAGE_SIZE; x ++) {
+		for (var x = 0; x < SONG_PAGE_SIZE && curIndex < data.songData.length; x ++) {
 			data.displayedSongData.push(data.songData[curIndex++]);
 		}
 		console.log(data.displayedSongData);
@@ -285,6 +287,12 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 		$("#editSongSelect > .ui-sortable-selected").removeClass("ui-sortable-selected");
 		$("#editSongSelect").trigger('ui-sortable-selectionschanged');
 		data.songIndices = [];
+	};
+	data.selectAll = function() {
+		data.allSelect = true;
+		$("#editSongSelect > .songItem").addClass("ui-sortable-selected");
+		// $("#editSongSelect").trigger('ui-sortable-selectionschanged');
+		data.songIndices = Array.from(Array(data.songData.length).keys());
 	};
 	//edit data below
 	data.editTemplateId = "";

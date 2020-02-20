@@ -64,7 +64,7 @@
 				<div infinite-scroll="songDatashare.loadDisplayedSongData()" infinite-scroll-disabled="songDatashare.dataNotReady" infinite-scroll-distance="0.75" infinite-scroll-parent>
 				<!-- <div infinite-scroll="songDatashare.getSongData()" infinite-scroll-disbled="songDatashare.scrollBusy" infinite-scroll-distance="0.75" infinite-scroll-parent> -->
 					<div ui-sortable="sortableSongs" ng-model="songDatashare.displayedSongData" id="editSongSelect" class="ng-cloak list" style="width: 100%; min-height: 100%;">
-						<div ui-sortable-selectable ng-repeat="song in songDatashare.displayedSongData track by $index" class="item songItem">
+						<div ui-sortable-selectable ng-repeat="song in songDatashare.displayedSongData track by $index" class="item songItem" ng-init="$last && addSelectClass()">
 							<div ng-dblclick="submitDblClk()" class="playRow">
 								<div class="item-contents"><img ng-src="{{getThumbnail(song)}}" width="64px"/></div>
 								<div class="item-contents song-attr">

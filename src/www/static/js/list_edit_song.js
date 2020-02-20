@@ -21,7 +21,7 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 	var updateSortable = function (e, args) {
 		console.log("song select changed");
 		console.log(e);
-		// $scope.songDatashare.songIndices = $(this).find('.ui-sortable-selected').map(function(i, element){
+		songDatashare.allSelect = false;
 		songDatashare.songIndices = $(this).find('.ui-sortable-selected').map(function(i, element){
 			return $(this).index();
 		}).toArray();
@@ -104,6 +104,7 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 
 	$scope.clearSearch = function() {
 		console.log("CLEARING SONG SEARCH");
+		songDatashare.allSelect = false;
 		$scope.songNameSearch = "";
 		$scope.songStartDate = "";
 		$scope.songEndDate = "";
@@ -203,6 +204,12 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 		console.log(newSource);
 		$scope["listTemplateDiv"] = newSource;
 	});
+
+	$scope.addSelectClass = function() {
+		if (songDatashare.allSelect) {
+			$("#editSongSelect > .songItem").addClass("ui-sortable-selected");
+		}
+	};
 
 	console.log("edit controller exec");
 

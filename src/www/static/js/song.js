@@ -103,5 +103,7 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', '$rootSc
 		console.log(songDatashare.editData);
 		$rootScope.$emit("loadDownload", {"songs": [songDatashare.editData]}, $scope.addSong);
 		// songDatashare.addSong();	//this resets the input
-	}
+	};
+
+	$scope.selectAll = songDatashare.selectAll;
 }]);
