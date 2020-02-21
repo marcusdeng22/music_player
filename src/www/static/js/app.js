@@ -168,54 +168,56 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 	data.dataNotReady = true;
 	data.allSelect = true;
 	// var scrollBusy = false;
-	data.getSongData = function(query=data.curQuery, sortBy=data.orderVar, descending=data.reverse, page=data.curPage) {
+	data.getSongData = function(query=data.curQuery, sortBy=data.orderVar, descending=data.reverse, force=false) {
 		console.log("getting song data");
 		console.log(query);
 		console.log(data.curQuery);
 		data.clearSelected();
 		//confirm if query is new
-		var diff = false;
-		if (data.curQuery == null) {
-			diff = true;
-		}
-		else {
-			console.log("CHECKING");
-			for (const [key, value] of Object.entries(data.curQuery)) {
-				if (key == "sortby") {
-					if (value != sortBy) {
+		if (!force) {
+			var diff = false;
+			if (data.curQuery == null) {
+				diff = true;
+			}
+			else {
+				console.log("CHECKING");
+				for (const [key, value] of Object.entries(data.curQuery)) {
+					if (key == "sortby") {
+						if (value != sortBy) {
+							diff = true;
+							break;
+						}
+						continue;
+					}
+					if (key == "descend") {
+						if (value != descending) {
+							diff = true;
+							break;
+						}
+						continue;
+					}
+					if (key == "page") {
+						continue;
+					}
+					if (!(key in query) || value != query[key]) {
 						diff = true;
 						break;
 					}
-					continue;
 				}
-				if (key == "descend") {
-					if (value != descending) {
-						diff = true;
-						break;
+				if (!diff) {
+					for (const [key, value] of Object.entries(query)) {
+						if (!(key in data.curQuery) || value != data.curQuery[key]) {
+							diff = true;
+							break;
+						}
 					}
-					continue;
-				}
-				if (key == "page") {
-					continue;
-				}
-				if (!(key in query) || value != query[key]) {
-					diff = true;
-					break;
 				}
 			}
+			console.log("DONE CHECKING");
 			if (!diff) {
-				for (const [key, value] of Object.entries(query)) {
-					if (!(key in data.curQuery) || value != data.curQuery[key]) {
-						diff = true;
-						break;
-					}
-				}
+				console.log('not diff');
+				return $timeout();
 			}
-		}
-		console.log("DONE CHECKING");
-		if (!diff) {
-			console.log('not diff');
-			return $timeout();
 		}
 		data.dataNotReady = true;
 		data.curQuery = query;
@@ -594,8 +596,8 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 			console.log("add many music ok");
 			console.log(resp.data);
 			//get new song data
-			data.curPage = 0;
-			data.getSongData();
+			// data.getSongData(undefined, undefined, undefined, true);	//force reload of song data
+			$rootScope.$emit("clearSongSearch");
 			if (toCall != null) {
 				toCall(resp.data);
 			}
@@ -642,8 +644,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 			var insertedData = resp.data.results;
 			console.log(insertedData);
 			//update local data with a search
-			data.curPage = 0;
-			data.getSongData().then(function() {
+			data.getSongData(undefined, undefined, undefined, true).then(function() {	//force update of new song data
 				$timeout(function() {
 					console.log("selecting old index");
 					console.log($("#editSongSelect").data('uiSortableMultiSelectionState'));
@@ -696,7 +697,11 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 		$http.post("/removeMusic", {"music": idList}).then(function(resp) {
 			$rootScope.$emit("songsRemoved", idList);
 			for (var i = data.songIndices.length - 1; i >= 0; i--) {
-				data.songData.splice(data.songIndices[i], 1);
+				var index = data.songIndices[i];
+				data.songData.splice(index, 1);
+				if (index < data.displayedSongData.length) {
+					data.displayedSongData.splice(index, 1);
+				}
 			}
 			data.clearSelected();
 		}, function(err) {

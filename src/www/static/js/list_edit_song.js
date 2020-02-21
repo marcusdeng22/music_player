@@ -2,7 +2,6 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 		function($scope, $rootScope, $http, $location, $window, $timeout, uiSortableMultiSelectionMethods, sortingFuncs, songDatashare, youtubeFuncs) {
 	//data model
 	$scope.songDatashare = songDatashare;
-	// songDatashare.getSongData();
 
 	$scope.$parent["childScope"] = $scope;
 
@@ -41,7 +40,7 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 	$scope.songAlbumSearch = "";
 	$scope.songGenreSearch = "";
 	$scope.songUrlSearch = "";
-	$scope.advSearch = function() {
+	$scope.advSearch = function(force=false) {
 		// $scope.songDatashare.songIndices = [];
 		// create query
 		// available keys: "name", "start_date", "end_date", "artist_names" "_id"
@@ -74,14 +73,10 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 		}
 		console.log("query:", query)
 		if (sortByRelev) {
-			// $scope.getSongData(query, "relev");
-			songDatashare.curPage = 0;
-			songDatashare.getSongData(query, "relev")
+			songDatashare.getSongData(query, "relev", undefined, force);
 		}
 		else {
-			// $scope.getSongData(query);
-			songDatashare.curPage = 0;
-			songDatashare.getSongData(query);
+			songDatashare.getSongData(query, undefined, undefined, force);
 		}
 	};
 
@@ -94,7 +89,6 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 		else {
 			songDatashare.orderVar = sortBy;
 		}
-		songDatashare.curPage = 0;
 		songDatashare.getSongData();
 	}
 
@@ -112,7 +106,7 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 		$scope.songAlbumSearch = "";
 		$scope.songGenreSearch = "";
 		$scope.songUrlSearch = "";
-		$scope.advSearch();
+		$scope.advSearch(true);
 	}
 
 	var searchFunc = function(evt) {

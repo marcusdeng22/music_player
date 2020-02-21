@@ -192,11 +192,11 @@ def makeMusicQuery(data, musicDB, fast=False):
 						raise cherrypy.HTTPError(400, "Bad file type")
 					myMusic["type"] = {"$in": myTypes}
 			if key == "artist_names":		#TODO: replace this with a check against artist db?
-				print("finding artists")
+				# print("finding artists")
 				artistList = checkValidData(key, data, list)
 				myArtists = []
 				for artist in artistList:
-					print(artist)
+					# print(artist)
 					if isinstance(artist, str):
 						reg = Regex(r".*" + artist.strip() + r".*", "i")	#TODO: replace this with a direct check if we use an artist db
 						# myArtists.append(artist)
@@ -238,7 +238,7 @@ def makeMusicQuery(data, musicDB, fast=False):
 					myIDs.append(checkValidID(i))
 				myMusic["_id"] = {"$in": myIDs}
 
-	print("music query:", myMusic)
+	# print("music query:", myMusic)
 	if fast:
 		return list(musicDB.find(myMusic))
 
@@ -297,13 +297,13 @@ def makePlaylistQuery(data, playlistDB, musicDB):
 				else:
 					myPlaylist["date"]["$lte"] = checkValidData(key, data, datetime.datetime, coerce=True) + datetime.timedelta(days=1)
 			if key == "song_names":
-				print("querying for song names")
+				# print("querying for song names")
 				# for n in checkValidData(key, data, list):
 				# 	for v in makeMusicQuery({"name": n}, musicDB, fast=True):
 				# 		musicList.add(v["_id"])
 				for v in makeMusicQuery({"song_names": data[key]}, musicDB, fast=True):
 					musicList.add(v["_id"])
-				print("done with song name query")
+				# print("done with song name query")
 			if key == "artist_names":
 				for v in makeMusicQuery({"artist_names": data[key]}, musicDB, fast=True):
 					musicList.add(v["_id"])
@@ -318,7 +318,7 @@ def makePlaylistQuery(data, playlistDB, musicDB):
 	if len(musicList) > 0:
 		myPlaylist["contents"] = {"$in": list(musicList)}
 	# print("myPlaylist.contents:", musicList)
-	print("playlist query:", myPlaylist)
+	# print("playlist query:", myPlaylist)
 	ret = list(playlistDB.find(myPlaylist))
 	#add relevance markers in
 	if len(musicList) > 0:

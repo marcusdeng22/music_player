@@ -558,47 +558,69 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		//check if need to write songs first
 		if (songsToAdd.length > 0) {
 			if (confirm("There are new songs to add; continue?")) {
-				//add multiple with their default values
-				//then make save playlist
-				var songsToAddMap = {};
-				for (var i = 0; i < songsToAdd.length; i ++) {
-					songsToAddMap[songsToAdd[i]["url"]] = songsToAdd[i];
-				}
-				songsToAdd = Object.values(songsToAddMap);
-				console.log(songsToAdd);
-
-				$http.post("/addManyMusic", songsToAdd).then(function(resp) {
-					console.log(resp);
+				songDatashare.addMultipleSongs(songsToAdd, function(insertedData) {
 					//clear songsToAdd, and copy in new info
-					for (var j = 0; j < resp.data.length; j ++) {
+					for (var j = 0; j < insertedData.length; j ++) {
 						for (var i = songsToAdd.length - 1; i >= 0; i --) {
-							if (songsToAdd[i]["url"] == resp.data[j]["url"]) {
+							if (songsToAdd[i]["url"] == insertedData[j]["url"]) {
 								songsToAdd.splice(i, 1);
 								break;
 							}
 						}
 						//add info to current playlist
 						for (var i = 0; i < $scope.playlistData.contents.length; i ++) {
-							if ($scope.playlistData.contents[i]["url"] == resp.data[j]["url"]) {
+							if ($scope.playlistData.contents[i]["url"] == insertedData[j]["url"]) {
 								//save the origOrder
 								var origOrder = $scope.playlistData.contents[i]["origOrder"];
-								$scope.playlistData.contents[i] = resp.data[j];
+								$scope.playlistData.contents[i] = insertedData[j];
 								$scope.playlistData.contents[i]["origOrder"] = origOrder;
 							}
 						}
 					}
 					//then make save
 					doSavePlaylist();
-				}, function(err) {
-					console.log(err);
-					if (err.status == 403) {
-						alert("Session timed out");
-						$window.location.href = "/";
-					}
-					else {
-						alert("Error adding songs");
-					}
 				});
+				// //add multiple with their default values
+				// //then make save playlist
+				// var songsToAddMap = {};
+				// for (var i = 0; i < songsToAdd.length; i ++) {
+				// 	songsToAddMap[songsToAdd[i]["url"]] = songsToAdd[i];
+				// }
+				// songsToAdd = Object.values(songsToAddMap);
+				// console.log(songsToAdd);
+
+				// $http.post("/addManyMusic", songsToAdd).then(function(resp) {
+				// 	console.log(resp);
+				// 	//clear songsToAdd, and copy in new info
+				// 	for (var j = 0; j < resp.data.length; j ++) {
+				// 		for (var i = songsToAdd.length - 1; i >= 0; i --) {
+				// 			if (songsToAdd[i]["url"] == resp.data[j]["url"]) {
+				// 				songsToAdd.splice(i, 1);
+				// 				break;
+				// 			}
+				// 		}
+				// 		//add info to current playlist
+				// 		for (var i = 0; i < $scope.playlistData.contents.length; i ++) {
+				// 			if ($scope.playlistData.contents[i]["url"] == resp.data[j]["url"]) {
+				// 				//save the origOrder
+				// 				var origOrder = $scope.playlistData.contents[i]["origOrder"];
+				// 				$scope.playlistData.contents[i] = resp.data[j];
+				// 				$scope.playlistData.contents[i]["origOrder"] = origOrder;
+				// 			}
+				// 		}
+				// 	}
+				// 	//then make save
+				// 	doSavePlaylist();
+				// }, function(err) {
+				// 	console.log(err);
+				// 	if (err.status == 403) {
+				// 		alert("Session timed out");
+				// 		$window.location.href = "/";
+				// 	}
+				// 	else {
+				// 		alert("Error adding songs");
+				// 	}
+				// });
 			}
 			else {
 				return;

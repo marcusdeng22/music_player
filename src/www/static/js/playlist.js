@@ -639,14 +639,14 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 		$("#addMusicListModal").css("display", "flex");
 	}
 
-	function addSongsOk(insertedData, oldLen) {
+	function addSongsOk(insertedData, oldIndex, insertCount) {
 		console.log("ADD SONGS OK");
 		console.log(insertedData);
 		console.log($scope.songData.length);
 		$scope.playlistData[$scope.playlistIndices] = insertedData;
 		$scope.songIndices = [];
-		for (var i = oldLen; i < insertedData.contents.length; i ++) {
-			$scope.songIndices.push(i);
+		for (var i = 0; i < insertCount; i ++) {
+			$scope.songIndices.push(i + oldIndex);
 		}
 		console.log("target select songs:");
 		console.log($scope.songIndices);
@@ -656,15 +656,30 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 
 	$scope.submitSongs = function() {
 		console.log(songDatashare);
-		var oldLen = $scope.songData.length;
+		var oldIndex = $scope.songData.length;
 		//add selected songs
 		if (songDatashare.tab == "#existingSongSearch") {
-			for (const i of songDatashare.songIndices) {
-				$scope.songData.push(songDatashare.songData[i]);
+			// for (const i of songDatashare.songIndices) {
+			// 	$scope.songData.push(songDatashare.songData[i]);
+			// }
+			if ($scope.songIndices.length > 0) {
+				//https://stackoverflow.com/questions/7032550/javascript-insert-an-array-inside-another-array
+				oldIndex = $scope.songIndices[$scope.songIndices.length - 1] + 1;
+				// $scope.songData.splice(oldIndex, 0, ...songDatashare.songData);
+				for (var i = 0; i < songDatashare.songIndices.length; i ++) {
+					$scope.songData.splice(oldIndex + i, 0, songDatashare.songData[songDatashare.songIndices[i]]);
+				}
 			}
+			else {
+				// $scope.songData = $scope.songData.concat(songDatashare.songData);
+				for (const i of songDatashare.songIndices) {
+					$scope.songData.push(songDatashare.songData[i]);
+				}
+			}
+			var insertCount = songDatashare.songIndices.length;
 			$http.post("/editPlaylist", {"_id": $scope.playlistData[$scope.playlistIndices]["_id"], "contents": getSongIDList()}).then(function(resp) {
 				console.log("adding songs to playlist ok");
-				addSongsOk(resp.data, oldLen);
+				addSongsOk(resp.data, oldIndex, insertCount);
 			}, function(err) {
 				console.log(err);
 				if (err.status == 403) {
@@ -680,11 +695,17 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 		else if (songDatashare.tab == "#addNewSong") {
 			songDatashare.addSong(function(insertedData) {
 				//now append to local song data and push to DB
-				$scope.songData.push(insertedData);
+				if ($scope.songIndices.length > 0) {
+					oldIndex = $scope.songIndices[$scope.songIndices.length - 1] + 1;
+					$scope.songData.splice(oldIndex, 0, insertedData);
+				}
+				else {
+					$scope.songData.push(insertedData);
+				}
 				$http.post("/editPlaylist", {"_id": $scope.playlistData[$scope.playlistIndices]["_id"], "contents": getSongIDList()}).then(function(resp) {
 					console.log("adding new song to playlist ok");
 					songDatashare.stopPlayem();
-					addSongsOk(resp.data, oldLen);
+					addSongsOk(resp.data, oldIndex, 1);
 				}, function(err) {
 					console.log(err);
 					if (err.status == 403) {

@@ -240,7 +240,7 @@ class ApiGateway(object):
 
 			# insert the data into the database
 			myRequest.append(reqSong)
-			print(reqSong)
+			# print(reqSong)
 
 			#TODO: check if the artist exists; add if DNE
 			# for artist in reqSong["artist"]:
@@ -252,7 +252,7 @@ class ApiGateway(object):
 		inserted = self.musicDB().insert_many(myRequest)	#this is ordered by default
 		for i, song in enumerate(myRequest):
 			myRequest[i]["_id"] = inserted.inserted_ids[i]
-		print(myRequest)
+		# print(myRequest)
 		return m_utils.cleanRet(myRequest)
 
 	@cherrypy.expose
@@ -563,7 +563,7 @@ class ApiGateway(object):
 					raise cherrypy.HTTPError(400, "Invalid song ID")
 			myPlaylist["contents"] = myContent
 		myPlaylist["date"] = datetime.now()
-		print("updating playlist with:", myPlaylist)
+		# print("updating playlist with:", myPlaylist)
 
 		inserted = self.playlistDB().update_one({"_id": myID}, {"$set": myPlaylist})
 		print("updated playlist:", inserted.raw_result)
@@ -653,13 +653,13 @@ class ApiGateway(object):
 				m_utils.checkValidData(key, data, str)
 			else:
 				for s in m_utils.checkValidData(key, data, list):
-					print(s)
+					# print(s)
 					if isinstance(s, dict):
 						for u in s:
 							if u in ["url", "id", "name", "album", "artistStr", "genre"]:
-								print(u)
+								# print(u)
 								m_utils.checkValidData(u, s, str)
-						print("passed")
+						# print("passed")
 						for k in ["url", "id", "name"]:
 							if k not in s:
 								raise cherrypy.HTTPError(400, "Missing {} key".format(k))
