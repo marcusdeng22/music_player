@@ -468,6 +468,7 @@ function Playem (playemPrefs) {
         callPlayerFct('resume')
       },
       next: function () {
+        console.log("next");
         if (playemPrefs.loop || currentTrack.index + 1 < trackList.length) { playTrack(trackList[(currentTrack.index + 1) % trackList.length]) }
       },
       prev: function () {

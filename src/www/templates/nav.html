@@ -1,6 +1,6 @@
 <nav ng-controller="NavCtrl" class="navbar navbar-expand-sm bg-dark navbar-dark">
     <a class="navbar-brand" href="#">Music Player</a>
-    <ul id="mainNavbar" class="navbar-nav" style="width: 100%; padding: 3px;">
+    <ul id="mainNavbar" class="navbar-nav" style="padding: 3px; margin-right: 50px;">
         <li id="playlistNavbar" class="nav-item">
             <a class="nav-link" href="#playlist" style="">Playlists</a>
         </li>
@@ -13,6 +13,11 @@
             <a class="nav-link" href="#song" style="">Songs</a>
         </li>
     </ul>
+    <div id="globalPlayCtrl" class="navbar-nav" style="flex-grow: 100;">
+        <!-- <button class="btn" ng-click="previousSong()"><img class="icon-l icon-prev"></img></button>
+        <button class="btn" ng-click="playPause()"><img class="icon-l icon-play"></img></button>
+        <button class="btn" ng-click="nextSong()"><img class="icon-l icon-next"></img></button> -->
+    </div>
     <ul class="navbar-nav" style="padding: 12px;">
         <li class="nav-item">
             <a class="nav-link" href="#logout">Logout</a>

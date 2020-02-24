@@ -1,5 +1,5 @@
-app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http", "uiSortableMultiSelectionMethods", "$rootScope", "youtubeFuncs", "songDatashare",
-		function ($scope, $timeout, $location, $window, $http, uiSortableMultiSelectionMethods, $rootScope, youtubeFuncs, songDatashare) {
+app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http", "uiSortableMultiSelectionMethods", "$rootScope", "youtubeFuncs", "songDatashare", "playDatashare",
+		function ($scope, $timeout, $location, $window, $http, uiSortableMultiSelectionMethods, $rootScope, youtubeFuncs, songDatashare, playDatashare) {
 	$scope.songDatashare = songDatashare;
 	$scope.playlistData = {touched: false};
 	$scope.songIndices = [];
@@ -10,20 +10,20 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 	var userSet = false;	//used to handle user playing a song; true if action is from user or simulates user, false if normal progression of tracks
 	var songsToAdd = [];	//keep track of songs added through reccommended link
 	var edittingToAdd = [];	//keep track of songs that are editting
-	$scope.playem = new Playem();
-	var config = {
-		playerContainer: document.getElementById("mainPlayerContainer"),
-		playerId: "mainPlayer"
-	};
+	// $scope.playem = new Playem();
+	// var config = {
+	// 	playerContainer: document.getElementById("mainPlayerContainer"),
+	// 	playerId: "mainPlayer"
+	// };
 	var autoSelect = true;	//set to false when dragging, multiple selected, or edit modal open (download modal downloads entire playlist)
 
-	function loadPlayem() {
-		$scope.playem.stop();
-		$scope.playem.clearQueue();
-		$scope.playem.clearPlayers();
-		$("#mainPlayerContainer").empty();
-		$scope.playem.addPlayer(YoutubePlayer, config);	//TODO: add more players here
-	};
+	// function loadPlayem() {
+	// 	$scope.playem.stop();
+	// 	$scope.playem.clearQueue();
+	// 	$scope.playem.clearPlayers();
+	// 	$("#mainPlayerContainer").empty();
+	// 	$scope.playem.addPlayer(YoutubePlayer, config);	//TODO: add more players here
+	// };
 
 	//https://stackoverflow.com/questions/34883555/how-to-scroll-text-within-a-div-to-left-when-hovering-the-div/43889818#43889818
 	$("#nowPlaying").on("mouseover", function() {
@@ -56,21 +56,23 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		songsToAdd = [];
 		edittingToAdd = [];
 		//add into queue
-		loadPlayem();
+		// loadPlayem();
+		playDatashare.loadPlayem();
 		$scope.playlistData = data;
 		for (var i = 0; i < data["contents"].length; i ++) {
 			// $scope.playlistData["contents"][i]["artistStr"] = data["contents"][i]["artist"].join(", ");
 			if (!$scope.shuffleOn) {
 				$scope.playlistData["contents"][i]["origOrder"] = i;
 			}
-			$scope.playem.addTrackByUrl(data["contents"][i]["url"]);
+			// $scope.playem.addTrackByUrl(data["contents"][i]["url"]);
+			playDatashare.playem.addTrackByUrl(data["contents"][i]["url"]);
 			//add to songsToAdd if no _id
 			if (data["contents"][i]["_id"] == null) {
 				console.log("load adding song to add queue");
 				songsToAdd.push(data["contents"][i]);
 			}
 		}
-		console.log($scope.playem);
+		// console.log($scope.playem);
 		console.log(songsToAdd);
 		$timeout(function() {
 			$scope.selectIndex(data["startIndex"] || 0, play);	//triggers play
@@ -96,26 +98,33 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		});
 	});
 
-	function setQueue(nextIndex=0, select=false) {
+	function setQueue(nextIndex=0, select=false, scroll=select) {
 		//update playem queue here
-		$scope.playem.clearQueue();
+		playDatashare.playem.clearQueue();
+		// $scope.playem.clearQueue();
 		console.log($scope.playlistData.contents);
 		for (var i = 0; i < $scope.playlistData.contents.length; i ++) {
-			$scope.playem.addTrackByUrl($scope.playlistData.contents[i]["url"]);
+			playDatashare.playem.addTrackByUrl($scope.playlistData.contents[i]["url"]);
+			// $scope.playem.addTrackByUrl($scope.playlistData.contents[i]["url"]);
 		}
-		console.log($scope.playem.getQueue());
+		// console.log($scope.playem.getQueue());
 		//select the current playing
 		$scope.nowPlayingIndex = $scope.playlistData.contents.findIndex(function(song) { return song["origOrder"] == $scope.nowPlaying["origOrder"]; });
 		if ($scope.nowPlayingIndex == -1) {
 			//can't find the index, so it must have been removed. select the next index and play
-			$scope.selectIndex(nextIndex);
+			$scope.selectIndex(nextIndex);	//track changes -> scrolls
 		}
 		else {
 			if (select) {
 				$scope.selectIndex($scope.nowPlayingIndex, false);	//select the now playing song, but don't trigger play
+				//scroll
+				if (scroll) {
+					scrollSelected();
+				}
 			}
 			//set the current playing
-			$scope.playem.setCurrentTrack($scope.nowPlayingIndex);
+			playDatashare.playem.setCurrentTrack($scope.nowPlayingIndex);
+			// $scope.playem.setCurrentTrack($scope.nowPlayingIndex);
 		}
 	};
 
@@ -150,12 +159,14 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		}
 	});
 
-	$scope.playem.on("onTrackChange", function(data) {
+	playDatashare.playem.on("onTrackChange", function(data) {
+	// $scope.playem.on("onTrackChange", function(data) {
 		console.log("track changed");
 		console.log(userSet);
 		//set the new index here if continuing (ie not user set)
 		if (!userSet) {
-			$scope.nowPlayingIndex = $scope.playem.getCurrentTrack().index;
+			$scope.nowPlayingIndex = playDatashare.playem.getCurrentTrack().index;
+			// $scope.nowPlayingIndex = $scope.playem.getCurrentTrack().index;
 		}
 		//don't select the current song if dragging, multiple selected, or modal open
 		if (autoSelect) {
@@ -181,8 +192,8 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		//set the reccs here
 		console.log("TRACK CHANGED");
 		console.log($scope.nowPlaying);
-		console.log($scope.playem.getQueue());
-		console.log($scope.playem.getCurrentTrack());
+		// console.log($scope.playem.getQueue());
+		// console.log($scope.playem.getCurrentTrack());
 		//update last played playlist
 		$http.post("/setLast", {"startIndex": $scope.nowPlayingIndex}).then(undefined, function(err) {
 			alert("Failed to update last playlist");
@@ -315,7 +326,8 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 
 	$scope.startPlay = function(index) {
 		console.log("playing now!");
-		$scope.playem.play(index);
+		playDatashare.playem.play(index);
+		// $scope.playem.play(index);
 	};
 
 	$scope.selectIndex = function(index, play=true) {
@@ -348,9 +360,11 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 				//trigger save
 				$scope.savePlaylist();
 			}
-			if ($scope.playem != null && $scope.playem.getPlayers().length > 0 && $scope.playem.getCurrentTrack() != null) {
-				console.log($scope.playem.getPlayers());
-				$scope.playem.pause();
+			if (playDatashare.playem != null && playDatashare.playem.getPlayers().length > 0 && playDatashare.playem.getCurrentTrack() != null) {
+			// if ($scope.playem != null && $scope.playem.getPlayers().length > 0 && $scope.playem.getCurrentTrack() != null) {
+				// console.log($scope.playem.getPlayers());
+				playDatashare.playem.pause();
+				// $scope.playem.pause();
 			}
 		}
 		if (next.split("#")[2] == "play") {
@@ -362,52 +376,72 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		}
 	});
 
-	$scope.previousSong = function() {
-		if ($scope.playem != null) {
-			$scope.playem.prev();
-		}
-	};
+	// $scope.previousSong = function() {
+	// 	if ($scope.playem != null) {
+	// 		$scope.playem.prev();
+	// 	}
+	// };
 
-	$scope.nextSong = function() {
-		if ($scope.playem != null) {
-			$scope.playem.next();
-		}
-	};
+	// $scope.nextSong = function() {
+	// 	if ($scope.playem != null) {
+	// 		$scope.playem.next();
+	// 	}
+	// };
 
-	$scope.currentState = 0;	//1 for play, 0 for pause
-	$scope.playPause = function() {
-		console.log("play pause btn pressed");
-		console.log($scope.currentState);
-		if ($scope.playem != null) {
-			if ($scope.currentState == 1) {
-				$scope.playem.pause();
-			}
-			else if ($scope.currentState == 0) {
-				$scope.playem.resume();
-			}
-		}
-		// $scope.currentState = ~$scope.currentState;	//handled by events below
-	};
+	$scope.playDatashare = playDatashare;
+	$scope.previousSong = playDatashare.previousSong;
+	$scope.nextSong = playDatashare.nextSong;
+	$scope.playPause = playDatashare.playPause;
 
-	$scope.playem.on("onPlay", function() {
-		console.log("playing!");
-		$scope.currentState = 1;
-		if (!$scope.$$phase) {
-			$scope.$apply();
-		}
-	});
+	// $scope.currentState = 0;	//1 for play, 0 for pause
+	// $scope.playPause = function() {
+	// 	console.log("play pause btn pressed");
+	// 	console.log($scope.currentState);
+	// 	if (playDatashare.playem != null) {
+	// 	// if ($scope.playem != null) {
+	// 		if ($scope.currentState == 1) {
+	// 			playDatashare.playem.pause();
+	// 			// $scope.playem.pause();
+	// 		}
+	// 		else if ($scope.currentState == 0) {
+	// 			playDatashare.playem.resume();
+	// 			// $scope.playem.resume();
+	// 		}
+	// 	}
+	// 	// $scope.currentState = ~$scope.currentState;	//handled by events below
+	// };
 
-	$scope.playem.on("onPause", function() {
-		console.log("paused!");
-		$scope.currentState = 0;
-		if (!$scope.$$phase) {
-			$scope.$apply();
-		}
-	});
+	// $(function() {
+	// 	//inject into the nav bar playlist controls
+	// 	$("#globalPlayCtrl").html('\
+	// 		<button class="btn" ng-click="previousSong()"><img class="icon-l icon-prev"></img></button>\
+	//         <button class="btn" ng-click="playPause()"><img class="icon-l icon-play"></img></button>\
+	//         <button class="btn" ng-click="nextSong()"><img class="icon-l icon-next"></img></button>\
+ //        ');
+	// })
+
+	// playDatashare.playem.on("onPlay", function() {
+	// // $scope.playem.on("onPlay", function() {
+	// 	console.log("playing!");
+	// 	$scope.currentState = 1;
+	// 	if (!$scope.$$phase) {
+	// 		$scope.$apply();
+	// 	}
+	// });
+
+	// playDatashare.playem.on("onPause", function() {
+	// // $scope.playem.on("onPause", function() {
+	// 	console.log("paused!");
+	// 	$scope.currentState = 0;
+	// 	if (!$scope.$$phase) {
+	// 		$scope.$apply();
+	// 	}
+	// });
 
 	$scope.repeatOn = false;
 	$scope.toggleRepeat = function() {
-		$scope.repeatOn = $scope.playem.toggleRepeat();
+		$scope.repeatOn = playDatashare.playem.toggleRepeat();
+		// $scope.repeatOn = $scope.playem.toggleRepeat();
 		$http.post("/setLast", {"loop": $scope.repeatOn}).then(undefined, function(err) {
 			alert("Failed to update last playlist");
 		});
@@ -422,7 +456,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		if (!$scope.shuffleOn) {
 			//rearrange to the original order
 			$scope.playlistData.contents.sort((a, b) => a.origOrder - b.origOrder);
-			setQueue();
+			setQueue(undefined, true);
 			$http.post("/setLast", {"shuffle": $scope.shuffleOn, "contents": $scope.playlistData.contents}).then(undefined, function(err) {
 				alert("Failed to update last playlist");
 			});
@@ -442,7 +476,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 			x = $scope.playlistData.contents[0];
 			$scope.playlistData.contents[0] = $scope.playlistData.contents[1];
 			$scope.playlistData.contents[1] = x;
-			setQueue();
+			setQueue(undefined, true);
 			$http.post("/setLast", {"shuffle": $scope.shuffleOn, "contents": $scope.playlistData.contents}).then(undefined, function(err) {
 				alert("Failed to update last playlist");
 			});
@@ -463,7 +497,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 			$scope.playlistData.contents[i] = $scope.playlistData.contents[j];
 			$scope.playlistData.contents[j] = x;
 		}
-		setQueue();
+		setQueue(undefined, true);
 		$http.post("/setLast", {"shuffle": $scope.shuffleOn, "contents": $scope.playlistData.contents}).then(undefined, function(err) {
 			alert("Failed to update last playlist");
 		});
@@ -488,13 +522,15 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 				}
 			}
 			if ($scope.playlistData.contents.length == 0) {
-				$scope.playem.clearQueue();
-				$scope.playem.stop();
+				playDatashare.playem.clearQueue();
+				// $scope.playem.clearQueue();
+				playDatashare.playem.stop();
+				// $scope.playem.stop();
 				$("#mainPlayerContainer").empty().append("Select a playlist first!");
 				$scope.songIndices = [];
 			}
 			else {
-				setQueue(Math.min(lastSelectedIndex, $scope.playlistData.contents.length - 1), true);
+				setQueue(Math.min(lastSelectedIndex, $scope.playlistData.contents.length - 1), true, false);
 			}
 			$http.post("/setLast", {"touched": true, "contents": $scope.playlistData.contents}).then(undefined, function(err) {
 				alert("Failed to update last playlist");
@@ -704,7 +740,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 	$scope.closeEditSongModal = function() {
 		edittingToAdd = [];
 		console.log("MY PLAYEM:");
-		console.log($scope.playem.getPlayers());
+		// console.log($scope.playem.getPlayers());
 		songDatashare.stopPlayem();
 		$("#nowPlayingEditMusicModal").hide();
 		//re-enable URL
@@ -718,7 +754,8 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		// if ($scope.noAutoplay) {
 		// 	console.log("disabling autoplay");
 		// }
-		$scope.playem.toggleAutoplay();
+		playDatashare.playem.toggleAutoplay();
+		// $scope.playem.toggleAutoplay();
 	};
 
 	//default load old playlist

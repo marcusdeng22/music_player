@@ -70,4 +70,7 @@ app.controller('NavCtrl', ['$scope', '$rootScope', '$timeout', '$location', '$wi
 		});
 	});
 
+	// $scope.previousSong = function() {
+	// 	console.log("prev song from nav clicked");
+	// };
 }]);

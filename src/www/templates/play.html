@@ -13,7 +13,7 @@
 				</div>
 				<div id="playerCtrlBtns">
 					<button id="prevSong" class="btn" ng-click="previousSong()"><img class="icon-l icon-prev"></img></button>
-					<button id="playPause" ng-show="focusMode==true" class="btn" ng-click="playPause()"><img class="icon-l" ng-class="(currentState==1) ? 'icon-pause' : 'icon-play'"></img></button>
+					<button id="playPause" ng-show="focusMode==true" class="btn" ng-click="playPause()"><img class="icon-l" ng-class="(playDatashare.currentState==1) ? 'icon-pause' : 'icon-play'"></img></button>
 					<button id="nextSong" class="btn" ng-click="nextSong()"><img class="icon-l icon-next"></img></button>
 					<div style="float: right;">
 						<input type="checkbox" id="autoplaySwitch" ng-model="noAutoplay" ng-change="pauseNext()" data-toggle="toggle" data-on="Pause Next" data-off="Autoplay" data-width="110">

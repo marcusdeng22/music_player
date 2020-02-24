@@ -18,9 +18,9 @@ console.log(window.location);
       0: "onEnded",
       1: "onPlaying",
       2: "onPaused",
-   // 3: "onBuffering", // youtube state: buffering
-   5: "onPlaying"
-   // 5: "onBuffering", // youtube state: cued
+   3: "onBuffering", // youtube state: buffering
+   // 5: "onPlaying"
+   5: "onBuffering", // youtube state: cued
     },
     // SDK_URL = 'https://apis.google.com/js/client.js?onload=initYT',
     // SDK_LOADED = false,
@@ -195,7 +195,7 @@ console.log(window.location);
       // }
       prevState = newState.data;
     }
-    if (Object.keys(that.player).length > 0) {
+    if (that.player.removeEventListener && typeof that.player.removeEventListener === "function" && Object.keys(that.player).length > 0) {
       that.player.removeEventListener("onStateChange", updateState);
     }
     that.player = new YT.Player(that.embedVars.playerId || 'ytplayer', DEFAULT_PARAMS);

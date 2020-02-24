@@ -114,6 +114,71 @@ app.factory("sortingFuncs", ["orderByFilter", function(orderBy) {
 	return sortingFuncs;
 }]);
 
+app.factory("playDatashare", ["$timeout", "$rootScope", function($timeout, $rootScope) {
+	var config = {
+		playerContainer: document.getElementById("mainPlayerContainer"),
+		playerId: "mainPlayer"
+	};
+	var data = {};
+	data.playem = new Playem();
+	data.currentState = 0;
+
+	data.loadPlayem = function() {
+		data.playem.stop();
+		data.playem.clearQueue();
+		data.playem.clearPlayers();
+		$("#mainPlayerContainer").empty();
+		data.playem.addPlayer(YoutubePlayer, config);	//TODO: add more players here
+	};
+	data.previousSong = function() {
+		if (data.playem != null) {
+			data.playem.prev();
+		}
+	};
+
+	data.nextSong = function() {
+		if (data.playem != null) {
+			data.playem.next();
+		}
+	};
+
+	data.playPause = function() {
+		if (data.playem != null) {
+			if (data.currentState == 1) {
+				data.playem.pause();
+			}
+			else if (data.currentState == 0) {
+				data.playem.resume();
+			}
+		}
+	};
+
+	data.playem.on("onPlay", function() {
+		console.log("playing!");
+		data.currentState = 1;
+		if (!$rootScope.$$phase) {
+			$rootScope.$apply();
+		}
+	});
+
+	data.playem.on("onPause", function() {
+		console.log("paused!");
+		data.currentState = 0;
+		if (!$rootScope.$$phase) {
+			$rootScope.$apply();
+		}
+	});
+
+	data.playem.on("onEnd", function() {
+		console.log("ended!");
+		data.currentState = 0;
+		if (!$rootScope.$$phase) {
+			$rootScope.$apply();
+		}
+	});
+	return data;
+}])
+
 app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sortingFuncs", "$rootScope", function($compile, $timeout, $http, $window, sortingFuncs, $rootScope) {
 	var VARIES = "<varies>";
 	var data = {};
