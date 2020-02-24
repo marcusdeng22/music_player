@@ -185,6 +185,7 @@ function Playem (playemPrefs) {
     playemPrefs = playemPrefs || {}
     playemPrefs.loop = playemPrefs.hasOwnProperty('loop') ? playemPrefs.loop : false
     playemPrefs.playTimeoutMs = playemPrefs.playTimeoutMs || DEFAULT_PLAY_TIMEOUT
+    playemPrefs.autoplay = playemPrefs.hasOwnProperty("autoplay") ? playemPrefs.autoplay : true;
 
     var players = [] // instanciated Player classes, added by client
     var i
@@ -315,8 +316,9 @@ function Playem (playemPrefs) {
         console.log("calling player function")
         console.log(fctName)
         console.log(param)
+        console.log(playemPrefs.autoplay);
         // console.log(currentTrack.player)
-        return currentTrack.player[fctName](param)
+        return currentTrack.player[fctName](param, playemPrefs.autoplay)
       } catch (e) {
         console.warn('Player call error', fctName, e, e.stack)
       }
@@ -486,6 +488,10 @@ function Playem (playemPrefs) {
       toggleRepeat: function() {
         playemPrefs.loop = !playemPrefs.loop;
         return playemPrefs.loop;
+      },
+      toggleAutoplay: function() {
+        playemPrefs.autoplay = !playemPrefs.autoplay;
+        return playemPrefs.autoplay;
       }
       // jumpToTrack: function(index) {
       //   if (index < trackList.length) {

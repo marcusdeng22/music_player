@@ -580,47 +580,6 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 					//then make save
 					doSavePlaylist();
 				});
-				// //add multiple with their default values
-				// //then make save playlist
-				// var songsToAddMap = {};
-				// for (var i = 0; i < songsToAdd.length; i ++) {
-				// 	songsToAddMap[songsToAdd[i]["url"]] = songsToAdd[i];
-				// }
-				// songsToAdd = Object.values(songsToAddMap);
-				// console.log(songsToAdd);
-
-				// $http.post("/addManyMusic", songsToAdd).then(function(resp) {
-				// 	console.log(resp);
-				// 	//clear songsToAdd, and copy in new info
-				// 	for (var j = 0; j < resp.data.length; j ++) {
-				// 		for (var i = songsToAdd.length - 1; i >= 0; i --) {
-				// 			if (songsToAdd[i]["url"] == resp.data[j]["url"]) {
-				// 				songsToAdd.splice(i, 1);
-				// 				break;
-				// 			}
-				// 		}
-				// 		//add info to current playlist
-				// 		for (var i = 0; i < $scope.playlistData.contents.length; i ++) {
-				// 			if ($scope.playlistData.contents[i]["url"] == resp.data[j]["url"]) {
-				// 				//save the origOrder
-				// 				var origOrder = $scope.playlistData.contents[i]["origOrder"];
-				// 				$scope.playlistData.contents[i] = resp.data[j];
-				// 				$scope.playlistData.contents[i]["origOrder"] = origOrder;
-				// 			}
-				// 		}
-				// 	}
-				// 	//then make save
-				// 	doSavePlaylist();
-				// }, function(err) {
-				// 	console.log(err);
-				// 	if (err.status == 403) {
-				// 		alert("Session timed out");
-				// 		$window.location.href = "/";
-				// 	}
-				// 	else {
-				// 		alert("Error adding songs");
-				// 	}
-				// });
 			}
 			else {
 				return;
@@ -753,6 +712,15 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		autoSelect = true;
 	};
 
+	$scope.noAutoplay = false;
+	$scope.pauseNext = function() {
+		console.log("autoplay switch");
+		// if ($scope.noAutoplay) {
+		// 	console.log("disabling autoplay");
+		// }
+		$scope.playem.toggleAutoplay();
+	};
+
 	//default load old playlist
 	$http.post("/getLast").then(function(resp) {
 		console.log("GETTING LAST");
@@ -771,6 +739,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 				// $timeout(function() {
 				// 	loadAndStart(resp.data.playlist, $window.location.hash == "#!#play")
 				// }, 1000);
+				console.log("loading and starting");
 				loadAndStart(resp.data.playlist, $window.location.hash == "#!#play", 500);
 			});
 		}
