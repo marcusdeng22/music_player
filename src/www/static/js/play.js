@@ -5,7 +5,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 	$scope.songIndices = [];
 	$scope.focusMode = false;
 	$scope.reccMode = true;
-	$scope.nowPlaying = null;
+	// $scope.nowPlaying = null;
 	$scope.nowPlayingIndex = 0;
 	var userSet = false;	//used to handle user playing a song; true if action is from user or simulates user, false if normal progression of tracks
 	var songsToAdd = [];	//keep track of songs added through reccommended link
@@ -26,7 +26,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 	// };
 
 	//https://stackoverflow.com/questions/34883555/how-to-scroll-text-within-a-div-to-left-when-hovering-the-div/43889818#43889818
-	$("#nowPlaying").on("mouseover", function() {
+	$(".nowPlaying").on("mouseover", function() {
 		var maxScroll = $(this).width();
 		$(this).removeClass("ellipsis").animate({
 			scrollLeft: maxScroll
@@ -109,7 +109,8 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		}
 		// console.log($scope.playem.getQueue());
 		//select the current playing
-		$scope.nowPlayingIndex = $scope.playlistData.contents.findIndex(function(song) { return song["origOrder"] == $scope.nowPlaying["origOrder"]; });
+		$scope.nowPlayingIndex = $scope.playlistData.contents.findIndex(function(song) { return song["origOrder"] == playDatashare.nowPlaying["origOrder"]; });
+		// $scope.nowPlayingIndex = $scope.playlistData.contents.findIndex(function(song) { return song["origOrder"] == $scope.nowPlaying["origOrder"]; });
 		if ($scope.nowPlayingIndex == -1) {
 			//can't find the index, so it must have been removed. select the next index and play
 			$scope.selectIndex(nextIndex);	//track changes -> scrolls
@@ -173,7 +174,8 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 			$scope.selectIndex($scope.nowPlayingIndex, false);
 			scrollSelected();
 		}
-		$scope.nowPlaying = $scope.playlistData.contents[data.index];
+		playDatashare.nowPlaying = $scope.playlistData.contents[data.index];
+		// $scope.nowPlaying = $scope.playlistData.contents[data.index];
 		$scope.nowPlayingIndex = data.index;
 		//set media navigator; TODO: does not work
 		if ("mediaSession" in navigator) {
@@ -191,7 +193,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		console.log(data);
 		//set the reccs here
 		console.log("TRACK CHANGED");
-		console.log($scope.nowPlaying);
+		// console.log($scope.nowPlaying);
 		// console.log($scope.playem.getQueue());
 		// console.log($scope.playem.getCurrentTrack());
 		//update last played playlist
@@ -199,7 +201,8 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 			alert("Failed to update last playlist");
 		});
 		//from: http://www.whateverorigin.org/
-		$.getJSON('http://www.whateverorigin.org/get?url=' + encodeURIComponent($scope.nowPlaying["url"]) + '&callback=?', function(data){
+		$.getJSON('http://www.whateverorigin.org/get?url=' + encodeURIComponent(playDatashare.nowPlaying["url"]) + '&callback=?', function(data){
+		// $.getJSON('http://www.whateverorigin.org/get?url=' + encodeURIComponent($scope.nowPlaying["url"]) + '&callback=?', function(data){
 			// alert(data.contents);
 			console.log("RECEIVED recommended data!");
 			if (data && data != null && typeof data == "object" && data.contents && data.contents != null && typeof data.contents == "string") {
@@ -289,7 +292,8 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 						songsToAdd.push(tempData);
 					}
 					//add to contents and set origOrder and add to playem
-					var curOrigOrder = $scope.nowPlaying.origOrder;
+					var curOrigOrder = playDatashare.nowPlaying.origOrder;
+					// var curOrigOrder = $scope.nowPlaying.origOrder;
 					for (var i = 0; i < $scope.playlistData.contents.length; i ++) {
 						if ($scope.playlistData.contents[i].origOrder > curOrigOrder) {
 							$scope.playlistData.contents[i].origOrder ++;

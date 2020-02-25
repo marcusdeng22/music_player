@@ -1,5 +1,5 @@
-app.controller('NavCtrl', ['$scope', '$rootScope', '$timeout', '$location', '$window', '$http', '$compile', 'songDatashare',
-	function($scope, $rootScope, $timeout, $location, $window, $http, $compile, songDatashare) {
+app.controller('NavCtrl', ['$scope', '$rootScope', '$timeout', '$location', '$window', '$http', '$compile', 'songDatashare', 'playDatashare',
+	function($scope, $rootScope, $timeout, $location, $window, $http, $compile, songDatashare, playDatashare) {
 
 	$scope.activeTab = "";
 	$scope.activeId = "";
@@ -70,7 +70,16 @@ app.controller('NavCtrl', ['$scope', '$rootScope', '$timeout', '$location', '$wi
 		});
 	});
 
-	// $scope.previousSong = function() {
-	// 	console.log("prev song from nav clicked");
-	// };
+	$scope.playDatashare = playDatashare;
+	$scope.previousSong = playDatashare.previousSong;
+	$scope.nextSong = playDatashare.nextSong;
+	$scope.playPause = playDatashare.playPause;
+
+	$(function() {
+		$("#navNowPlaying").width($("#navContainer").outerWidth(true) - $("#navBrand").outerWidth(true) - $("#logoutNav").outerWidth(true) - 48*3 - 220);
+	});
+
+	$(window).on("resize", function() {
+		$("#navNowPlaying").width($("#navContainer").outerWidth() - $("#navBrand").outerWidth() - $("#logoutNav").outerWidth() - 48*3 - 220);
+	});
 }]);

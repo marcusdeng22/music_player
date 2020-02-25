@@ -2,24 +2,25 @@
 	<div class="playRow">
 		<div id="playerDiv" class="playCol" style="width: calc(100% - 350px);">
 			<div style="width: 100%;">
-				<div id="mainPlayerContainer" style="width: 100%;" ng-show="focusMode == false || nowPlaying == null">
+				<div id="mainPlayerContainer" style="width: 100%;" ng-show="focusMode == false || playDatashare.nowPlaying == null">
 					Select a playlist first!
 					<!-- player here -->
 				</div>
 			</div>
 			<div id="playerCtrlDiv" style="padding-top: 10px;">
-				<div id="nowPlaying" ng-show="focusMode == true && nowPlaying" ng-model="nowPlaying" class="ellipsis" style="overflow: hidden; white-space: nowrap;">
-					<span>Now playing: {{nowPlaying.name}} - {{nowPlaying.artistStr}}</span>
+				<div ng-show="focusMode == true && playDatashare.nowPlaying" class="nowPlaying ellipsis" style="overflow: hidden; white-space: nowrap;">
+					<span>Now playing: {{playDatashare.nowPlaying.name}} - {{playDatashare.nowPlaying.artistStr}}</span>
 				</div>
 				<div id="playerCtrlBtns">
-					<button id="prevSong" class="btn" ng-click="previousSong()"><img class="icon-l icon-prev"></img></button>
+					<!-- <button class="btn">qwer</button> -->
+					<!-- <button id="prevSong" class="btn" ng-click="previousSong()"><img class="icon-l icon-prev"></img></button>
 					<button id="playPause" ng-show="focusMode==true" class="btn" ng-click="playPause()"><img class="icon-l" ng-class="(playDatashare.currentState==1) ? 'icon-pause' : 'icon-play'"></img></button>
-					<button id="nextSong" class="btn" ng-click="nextSong()"><img class="icon-l icon-next"></img></button>
-					<div style="float: right;">
+					<button id="nextSong" class="btn" ng-click="nextSong()"><img class="icon-l icon-next"></img></button> -->
+					<!-- <div style="float: right;"> -->
 						<input type="checkbox" id="autoplaySwitch" ng-model="noAutoplay" ng-change="pauseNext()" data-toggle="toggle" data-on="Pause Next" data-off="Autoplay" data-width="110">
 						<input type="checkbox" id="focusSwitch" ng-model="focusMode" ng-change="updatePlayView()" data-toggle="toggle" data-on="Focus Mode" data-off="Watch Mode" data-width="110">
 						<input type="checkbox" id="reccSwitch" ng-model="reccMode" ng-change="updatePlayView()" checked data-toggle="toggle" data-on="Show similar" data-off="Hide similar" data-width="110">
-					</div>
+					<!-- </div> -->
 				</div>
 				<div id="recommended" ng-show="reccMode" style="overflow: auto;">
 					<!-- add recommended list here -->

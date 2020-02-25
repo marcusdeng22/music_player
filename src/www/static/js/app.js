@@ -122,6 +122,7 @@ app.factory("playDatashare", ["$timeout", "$rootScope", function($timeout, $root
 	var data = {};
 	data.playem = new Playem();
 	data.currentState = 0;
+	data.nowPlaying = null;
 
 	data.loadPlayem = function() {
 		data.playem.stop();
