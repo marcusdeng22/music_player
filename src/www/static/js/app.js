@@ -2,6 +2,30 @@
 
 var app = angular.module('MusicApp', ['ui.sortable', 'ui.sortable.multiselection', 'infinite-scroll', 'darthwade.loading']);
 
+app.factory("authIntercept", ["$q", "$window", function($q, $window) {
+	var handled = false;
+	var responseError = function(err) {
+		if (handled) {
+			return $q.resolve();
+		}
+		if (err.status == 403) {
+			//set location
+			$window.location.href = "/";
+			handled = true;
+			alert("Global Session timed out");
+		}
+		return $q.reject(err);
+	};
+
+	return {
+		responseError: responseError
+	};
+}]);
+
+app.config(["$httpProvider", function($httpProvider) {
+	$httpProvider.interceptors.push("authIntercept");
+}]);
+
 app.directive("ngEnter", function() {
 	return {
 		restrict: "A",
@@ -324,13 +348,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 			$timeout(data.loadDisplayedSongData(), 20);
 		}, function(err) {
 			console.log(err);
-			if (err.status == 403) {
-				alert("Session timed out");
-				$window.location.href = "/";
-			}
-			else {
-				alert("Failed to get song data");
-			}
+			alert("Failed to get song data");
 		});
 	};
 	data.displayedSongData = [];
@@ -604,13 +622,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 			data.resetEdit();
 		}, function(err) {
 			console.log(err);
-			if (err.status == 403) {
-				alert("Session timed out");
-				$window.location.href = "/";
-			}
-			else {
-				alert("Failed to add music; does it exist already?");
-			}
+			alert("Failed to add music; does it exist already?");
 		});
 	};
 	data.addMultipleSongs = function(toAddList, toCall=null) {
@@ -670,13 +682,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 			//don't reset data: will be reset on next load
 		}, function(err) {
 			console.log(err);
-			if (err.status == 403) {
-				alert("Session timed out");
-				$window.location.href = "/";
-			}
-			else {
-				alert("Failed to add music; perhaps it already exists?");
-			}
+			alert("Failed to add music; perhaps it already exists?");
 		});
 	};
 	data.editSong = function(toCall=null, fromList=false) {
@@ -744,14 +750,8 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 			});
 		}, function(err) {
 			console.log(err);
-			if (err.status == 403) {
-				alert("Session timed out");
-				$window.location.href = "/";
-			}
-			else {
-				alert("Failed to edit music");
-			}
-		})
+			alert("Failed to edit music");
+		});
 	};
 	data.removeSongs = function() {
 		var idList = [];
@@ -772,14 +772,8 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 			data.clearSelected();
 		}, function(err) {
 			console.log(err);
-			if (err.status == 403) {
-				alert("Session timed out");
-				$window.location.href = "/";
-			}
-			else {
-				alert("Failed to remove music");
-			}
+			alert("Failed to remove music");
 		});
-	}
+	};
 	return data;
 }]);

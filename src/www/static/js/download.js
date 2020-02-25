@@ -131,10 +131,6 @@ app.controller('downloadCtrl', ['$scope', '$http', '$location', '$window', '$tim
 			console.log(err);
 			alert("Failed to download");
 			$loading.finish("downloadCtrl");
-			if (err.status == 403) {
-				alert("Session timed out");
-				$window.location.href = "/";
-			}
 		});
 	};
 }]);
