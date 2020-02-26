@@ -409,6 +409,14 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 		});
 	};
 
+	$(function() {
+		$("#songContainer").width($("#playlistDiv").outerWidth() / 2 - 22);	//include margins and border
+	});
+
+	$(window).on("resize", function() {
+		$("#songContainer").width($("#playlistDiv").outerWidth() / 2 - 22);
+	});
+
 	$(window).on("load", function() {
 		initiatilizeDrop();
 
@@ -487,6 +495,8 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 			$http.post("/editPlaylist", {"_id": $scope.playlistData[$scope.playlistIndices]["_id"], "name": $scope.newPlaylistName}).then(function(resp) {
 				$scope.playlistData[$scope.playlistIndices] = resp["data"];
 				updatePlaylistSortable(undefined);
+				//emit to play view that playlist name changed
+				$rootScope.$emit("playlistChanged", resp["data"]);
 			}, function(err) {
 				console.log("failed to update playlist data");
 				console.log(err);

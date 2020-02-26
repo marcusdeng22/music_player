@@ -717,6 +717,7 @@ class ApiGateway(object):
 
 		Expected input:
 			{
+				"unset": (boolean, optional),
 				"_id": (_id, optional),
 				"name": (string, optional),
 				"contents": [(dict)] (optional),	#order is important; will store the shuffled order
@@ -737,6 +738,10 @@ class ApiGateway(object):
 			"user": self.getUser(),
 			# "playlist": {}
 		}
+		unset = {}
+
+		if "unset" in data:
+			unset = {"playlist._id": ""}
 		if "_id" in data:
 			myQuery["playlist._id"] = m_utils.checkValidID(data, False)		#don't store as ObjectId
 		if "name" in data:
@@ -752,8 +757,13 @@ class ApiGateway(object):
 		if "shuffle" in data:
 			myQuery["shuffle"] = m_utils.checkValidData("shuffle", data, bool)
 
+		updateQ = {}
+		if len(unset) > 0:
+			updateQ["$unset"] = unset
 		if len(myQuery) > 1:
-			self.colLast.update_one({"user": self.getUser()}, {"$set": myQuery}, upsert=True)
+			updateQ["$set"] = myQuery
+		if len(updateQ) > 0:
+			self.colLast.update_one({"user": self.getUser()}, updateQ, upsert=True)
 
 	@cherrypy.expose
 	@authUser

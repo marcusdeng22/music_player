@@ -10,6 +10,14 @@
   display: none !important;
 }
 
+#navNowPlaying {
+	overflow: hidden;
+	white-space: nowrap;
+	color: #fff;
+	font-size: 15px;
+	padding-left: 5px;
+}
+
 .ellipsis {
 	text-overflow: ellipsis;
 }
@@ -35,12 +43,6 @@
 	float: left;
 	width: 50%;
 	padding: 5px;
-}
-
-.playRow:after {
-	content: "";
-	display: table;
-	clear: both;
 }
 
 .playlist-selectable-container {
@@ -70,33 +72,30 @@
 	text-align: right;
 }
 
-.item-contents {
-	float: left;
+.playRow2 {
+	display: flex;
+}
+
+.item-contents2 {
+	flex: 0 0 auto;
 	padding: 0px 5px;
 }
 
-.item-contents.number {
+.item-contents2.number {
 	text-align: right;
-	width: 30px;
+	flex-basis: 50px;
 }
 
-.item-contents.attr {
-	width: calc(100% - 30px - 74px);
-}
-
-.item-contents.song-attr {
-	width: calc(100% - 74px - 85px);
-}
-
-.item-contents.song-date {
-	width: 85px;
-	text-align: right;
-}
-
-.item-contents-attr {
+.item-contents2.attr {
 	overflow: hidden;
-	white-space: nowrap;
 	text-overflow: ellipsis;
+	white-space: nowrap;
+	flex: 1 1 auto;
+}
+
+.item-contents2.date {
+	flex-basis: 90px;
+	text-align: right;
 }
 
 #nowPlayingListTitle {

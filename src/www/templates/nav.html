@@ -17,8 +17,8 @@
 		<button class="btn" ng-click="previousSong()"><img class="icon-l icon-prev"></img></button>
 		<button class="btn" ng-click="playPause()"><img class="icon-l" ng-class="(playDatashare.currentState==1) ? 'icon-pause' : 'icon-play'"></img></button>
 		<button class="btn" ng-click="nextSong()"><img class="icon-l icon-next"></img></button>
-		<div id="navNowPlaying" ng-show="playDatashare.nowPlaying" class="nowPlaying ellipsis" style="overflow: hidden; white-space: nowrap; color: #fff; font-size: 15px;">
-			<span>{{playDatashare.nowPlaying.name}} - {{playDatashare.nowPlaying.artistStr}}</span>
+		<div id="navNowPlaying" ng-show="playDatashare.nowPlaying" class="nowPlaying ellipsis">
+			{{playDatashare.nowPlaying.name}} - {{playDatashare.nowPlaying.artistStr}}
 		</div>
 	</div>
 	<ul id="logoutNav" class="navbar-nav" style="padding: 12px;">

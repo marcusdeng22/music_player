@@ -57,21 +57,20 @@
 			<div>
 				<button type="button" ng-click="changeSort('name')">Name<img ng-class="sortGlyph('name')" style="left: 2px;"></img></button>
 				<button type="button" ng-click="changeSort('relev')">Relevance<img ng-class="sortGlyph('relev')" style="left: 2px;"></img></button>
-				<span id="songSearchCount" ng-model="songDatashare">{{songDatashare.songData.length}} of {{songDatashare.totalResults}} Results</span>
+				<span id="songSearchCount" ng-model="songDatashare">{{songDatashare.displayedSongData.length}} of {{songDatashare.totalResults}} Results</span>
 				<button type="button" ng-click="changeSort('date')" style="float: right;">Date<img ng-class="sortGlyph('date')" style="left: 2px;"></img></button>
 			</div>
 			<div class="joinCollapseContainer sortableDataContainer songCollapse collapse show" style="height: calc(100% - 85px);">
 				<div infinite-scroll="songDatashare.loadDisplayedSongData()" infinite-scroll-disabled="songDatashare.dataNotReady" infinite-scroll-distance="0.75" infinite-scroll-parent>
-				<!-- <div infinite-scroll="songDatashare.getSongData()" infinite-scroll-disbled="songDatashare.scrollBusy" infinite-scroll-distance="0.75" infinite-scroll-parent> -->
 					<div ui-sortable="sortableSongs" ng-model="songDatashare.displayedSongData" id="editSongSelect" class="ng-cloak list" style="width: 100%; min-height: 100%;">
 						<div ui-sortable-selectable ng-repeat="song in songDatashare.displayedSongData track by $index" class="item songItem" ng-init="$last && addSelectClass()">
-							<div ng-dblclick="submitDblClk()" class="playRow">
-								<div class="item-contents"><img ng-src="{{getThumbnail(song)}}" width="64px"/></div>
-								<div class="item-contents song-attr">
-									<div class="item-contents-attr">{{song.name}}</div>
-									<div class="item-contents-attr">{{song.artistStr}}</div>
+							<div ng-dblclick="submitDblClk()" class="playRow2">
+								<div class="item-contents2"><img ng-src="{{getThumbnail(song)}}" width="64px"/></div>
+								<div class="item-contents2 attr">
+									<div class="item-contents2 attr">{{song.name}}</div>
+									<div class="item-contents2 attr">{{song.artistStr}}</div>
 								</div>
-								<div class="item-contents song-date">{{song.dateStr}}</div>
+								<div class="item-contents2 date">{{song.dateStr}}</div>
 							</div>
 						</div>
 					</div>

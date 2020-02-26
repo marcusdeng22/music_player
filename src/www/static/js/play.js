@@ -93,6 +93,9 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		if ($scope.playlistData["_id"] != null) {
 			myQuery["_id"] = $scope.playlistData["_id"];
 		}
+		else {
+			myQuery["unset"] = true
+		}
 		$http.post("/setLast", myQuery).then(undefined ,function(err) {
 			alert("Failed to update last playlist");
 		});
@@ -364,12 +367,13 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 				//trigger save
 				$scope.savePlaylist();
 			}
-			if (playDatashare.playem != null && playDatashare.playem.getPlayers().length > 0 && playDatashare.playem.getCurrentTrack() != null) {
-			// if ($scope.playem != null && $scope.playem.getPlayers().length > 0 && $scope.playem.getCurrentTrack() != null) {
-				// console.log($scope.playem.getPlayers());
-				playDatashare.playem.pause();
-				// $scope.playem.pause();
-			}
+			//with global ctrl, don't pause
+			// if (playDatashare.playem != null && playDatashare.playem.getPlayers().length > 0 && playDatashare.playem.getCurrentTrack() != null) {
+			// // if ($scope.playem != null && $scope.playem.getPlayers().length > 0 && $scope.playem.getCurrentTrack() != null) {
+			// 	// console.log($scope.playem.getPlayers());
+			// 	playDatashare.playem.pause();
+			// 	// $scope.playem.pause();
+			// }
 		}
 		if (next.split("#")[2] == "play") {
 			console.log("switched to play");
@@ -380,67 +384,10 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		}
 	});
 
-	// $scope.previousSong = function() {
-	// 	if ($scope.playem != null) {
-	// 		$scope.playem.prev();
-	// 	}
-	// };
-
-	// $scope.nextSong = function() {
-	// 	if ($scope.playem != null) {
-	// 		$scope.playem.next();
-	// 	}
-	// };
-
 	$scope.playDatashare = playDatashare;
 	$scope.previousSong = playDatashare.previousSong;
 	$scope.nextSong = playDatashare.nextSong;
 	$scope.playPause = playDatashare.playPause;
-
-	// $scope.currentState = 0;	//1 for play, 0 for pause
-	// $scope.playPause = function() {
-	// 	console.log("play pause btn pressed");
-	// 	console.log($scope.currentState);
-	// 	if (playDatashare.playem != null) {
-	// 	// if ($scope.playem != null) {
-	// 		if ($scope.currentState == 1) {
-	// 			playDatashare.playem.pause();
-	// 			// $scope.playem.pause();
-	// 		}
-	// 		else if ($scope.currentState == 0) {
-	// 			playDatashare.playem.resume();
-	// 			// $scope.playem.resume();
-	// 		}
-	// 	}
-	// 	// $scope.currentState = ~$scope.currentState;	//handled by events below
-	// };
-
-	// $(function() {
-	// 	//inject into the nav bar playlist controls
-	// 	$("#globalPlayCtrl").html('\
-	// 		<button class="btn" ng-click="previousSong()"><img class="icon-l icon-prev"></img></button>\
-	//         <button class="btn" ng-click="playPause()"><img class="icon-l icon-play"></img></button>\
-	//         <button class="btn" ng-click="nextSong()"><img class="icon-l icon-next"></img></button>\
- //        ');
-	// })
-
-	// playDatashare.playem.on("onPlay", function() {
-	// // $scope.playem.on("onPlay", function() {
-	// 	console.log("playing!");
-	// 	$scope.currentState = 1;
-	// 	if (!$scope.$$phase) {
-	// 		$scope.$apply();
-	// 	}
-	// });
-
-	// playDatashare.playem.on("onPause", function() {
-	// // $scope.playem.on("onPause", function() {
-	// 	console.log("paused!");
-	// 	$scope.currentState = 0;
-	// 	if (!$scope.$$phase) {
-	// 		$scope.$apply();
-	// 	}
-	// });
 
 	$scope.repeatOn = false;
 	$scope.toggleRepeat = function() {
@@ -545,7 +492,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 	function doSavePlaylistCallback() {
 		$rootScope.$emit("songsRemoved");
 		$scope.playlistData.touched = false;
-		$http.post("/setLast", {"touched": false, "name": $scope.playlistData.name, "contents": $scope.playlistData.contents}).then(undefined, function(err) {
+		$http.post("/setLast", {"touched": false, "_id": $scope.playlistData["_id"], "name": $scope.playlistData.name, "contents": $scope.playlistData.contents}).then(undefined, function(err) {
 			alert("Failed to update last playlist");
 		});
 	}
@@ -573,6 +520,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 			console.log("adding playlist");
 			$http.post("/addPlaylist", submission).then(function(resp) {
 				console.log("adding playlist ok");
+				$scope.playlistData["_id"] = resp.data["_id"];
 				doSavePlaylistCallback();
 				alert("Playlist added!");
 			}, function(err) {
@@ -739,6 +687,14 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		$("#newSongUrlInput").prop("disabled", false);
 		autoSelect = true;
 	};
+
+	$rootScope.$on("playlistChanged", function(e, updatedData) {
+		//only for name changes; doesn't support updating the song info yet
+		$scope.playlistData.name = updatedData.name;
+		$http.post("/setLast", {"name": $scope.playlistData.name}).then(undefined, function(err) {
+			alert("Failed to update last playlist");
+		});
+	});
 
 	$scope.noAutoplay = false;
 	$scope.pauseNext = function() {
