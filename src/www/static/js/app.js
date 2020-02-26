@@ -201,6 +201,14 @@ app.factory("playDatashare", ["$timeout", "$rootScope", function($timeout, $root
 			$rootScope.$apply();
 		}
 	});
+
+	data.playem.on("onBuffering", function() {
+		console.log("buffering!");
+		data.currentState = 0;
+		if (!$rootScope.$$phase) {
+			$rootScope.$apply();
+		}
+	});
 	return data;
 }])
 

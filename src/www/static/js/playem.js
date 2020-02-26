@@ -278,7 +278,7 @@ function Playem (playemPrefs) {
       }
     }
 
-    function playTrack (track) {
+    function playTrack (track, autoplay=true) {
       console.log("playTrack", track);
       stopTrack()
       currentTrack = track
@@ -288,7 +288,7 @@ function Playem (playemPrefs) {
       if (!track.player) { return that.emit('onError', {code: 'unrecognized_track', source: 'Playem', track: track}) }
       doWhenReady(track.player, function () {
         // console.log("playTrack #" + track.index + " (" + track.playerName+ ")", track);
-        callPlayerFct('play', track.trackId)
+        callPlayerFct('play', track.trackId, autoplay)
         setVolume(volume)
         if (currentTrack.index == trackList.length - 1) { that.emit('loadMore') }
         // if the track does not start playing within 7 seconds, skip to next track
@@ -311,14 +311,14 @@ function Playem (playemPrefs) {
       // console.log(playTimeout)
     }
 
-    function callPlayerFct (fctName, param) {
+    function callPlayerFct (fctName, param, autoplay=playemPrefs.autoplay) {
       try {
         console.log("calling player function")
         console.log(fctName)
         console.log(param)
         console.log(playemPrefs.autoplay);
         // console.log(currentTrack.player)
-        return currentTrack.player[fctName](param, playemPrefs.autoplay)
+        return currentTrack.player[fctName](param, autoplay)
       } catch (e) {
         console.warn('Player call error', fctName, e, e.stack)
       }
@@ -458,6 +458,9 @@ function Playem (playemPrefs) {
         console.log("play list:", trackList);
         console.log("cur track:", currentTrack);
         playTrack(i != undefined ? trackList[i] : currentTrack || trackList[0])
+      },
+      cue: function(i) {
+        playTrack(i != undefined ? trackList[i] : currentTrack || trackList[0], false);
       },
       pause: function () {
         callPlayerFct('pause')

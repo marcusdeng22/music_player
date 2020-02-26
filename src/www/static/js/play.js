@@ -75,7 +75,12 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		// console.log($scope.playem);
 		console.log(songsToAdd);
 		$timeout(function() {
+			var loadIndex = data["startIndex"] || 0;
 			$scope.selectIndex(data["startIndex"] || 0, play);	//triggers play
+			if (!play) {
+				//cue; nowPlaying is set on trackchange
+				playDatashare.playem.cue(data["startIndex"] || 0);
+			}
 			// $(window).on("load", scrollSelected);
 			$timeout(scrollSelected, delay);
 		}, delay);
@@ -331,11 +336,11 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		$scope.$apply();
 	});
 
-	$scope.startPlay = function(index) {
-		console.log("playing now!");
-		playDatashare.playem.play(index);
-		// $scope.playem.play(index);
-	};
+	// $scope.startPlay = function(index) {
+	// 	console.log("playing now!");
+	// 	playDatashare.playem.play(index);
+	// 	// $scope.playem.play(index);
+	// };
 
 	$scope.selectIndex = function(index, play=true) {
 		$scope.nowPlayingIndex = index;
@@ -347,7 +352,8 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 			$(".playItem").eq($scope.songIndices).click();
 			if (play) {
 				userSet = true;
-				$scope.startPlay(index);
+				// $scope.startPlay(index);
+				playDatashare.playem.play(index);
 			}
 			else {
 				userSet = false;
@@ -729,7 +735,8 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 				//set the shuffle mode only; the content is already shuffled
 				$scope.shuffleOn = resp.data.shuffle;
 			}
-			$(window).on("load", function() {
+			// $(window).on("load", function() {
+			$timeout(function() {
 				// $timeout(function() {
 				// 	loadAndStart(resp.data.playlist, $window.location.hash == "#!#play")
 				// }, 1000);
