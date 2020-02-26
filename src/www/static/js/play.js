@@ -668,6 +668,15 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 					$scope.playlistData.contents[i]["origOrder"] = origOrder;
 				}
 			}
+			//update now playing
+			if (playDatashare.nowPlaying["_id"] == insertedData[j]["_id"]) {
+				//iterate through keys of inserted and add to now playing
+				for (const [key, value] of Object.entries(insertedData[j])) {
+					if (!(key in playDatashare.nowPlaying) || value != playDatashare.nowPlaying[key]) {
+						playDatashare.nowPlaying[key] = value;
+					}
+				}
+			}
 		}
 		setQueue();
 		console.log("SONG CHANGED CALLBACK:");
