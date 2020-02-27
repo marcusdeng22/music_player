@@ -81,13 +81,14 @@
 			<p>Songs</p>
 			<!--- search filter here; disable ordering when searching?-->
 			<input type="text" ng-model="songFilter" style="width: 100%;" placeholder="Search for song name, artist, album, genre, ...">
-			<div id="songContainer" class="sortableDataContainer" style="height: calc(100% - 69px);">
+			<div lazy-img-container id="songContainer" class="sortableDataContainer" style="height: calc(100% - 69px);">
 				<div ui-sortable="sortableSongs" ng-model="songData" id="songSelect" class="list" style="width: 100%; min-height: 100%;">
 					<div ui-sortable-selectable ng-repeat="song in songData | filter:songFilter track by $index" class="item songItem">
-						<!-- TODO: make this use infinite scroll -->
+						<!-- lazy loads -->
 						<div ng-dblclick="triggerPlay($index)" class="playRow2">
 							<div class="item-contents2 number">{{$index + 1}}</div>
-							<div class="item-contents2"><img ng-src="{{getThumbnail(song)}}" width="64px"/></div>
+							<div class="item-contents2"><img lazy-img="song" width="64px"/></div>
+							<!-- <div class="item-contents2"><img ng-src="{{getThumbnail(song)}}" width="64px"/></div> -->
 							<div class="item-contents2 attr">
 								<div class="item-contents2 attr">{{song.name}}</div>
 								<div class="item-contents2 attr">{{song.artistStr}}</div>

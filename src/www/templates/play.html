@@ -12,15 +12,9 @@
 					<span>Now playing: {{playDatashare.nowPlaying.name}} - {{playDatashare.nowPlaying.artistStr}}</span>
 				</div>
 				<div id="playerCtrlBtns">
-					<!-- <button class="btn">qwer</button> -->
-					<!-- <button id="prevSong" class="btn" ng-click="previousSong()"><img class="icon-l icon-prev"></img></button>
-					<button id="playPause" ng-show="focusMode==true" class="btn" ng-click="playPause()"><img class="icon-l" ng-class="(playDatashare.currentState==1) ? 'icon-pause' : 'icon-play'"></img></button>
-					<button id="nextSong" class="btn" ng-click="nextSong()"><img class="icon-l icon-next"></img></button> -->
-					<!-- <div style="float: right;"> -->
-						<input type="checkbox" id="autoplaySwitch" ng-model="noAutoplay" ng-change="pauseNext()" data-toggle="toggle" data-on="Pause Next" data-off="Autoplay" data-width="110">
-						<input type="checkbox" id="focusSwitch" ng-model="focusMode" ng-change="updatePlayView()" data-toggle="toggle" data-on="Focus Mode" data-off="Watch Mode" data-width="110">
-						<input type="checkbox" id="reccSwitch" ng-model="reccMode" ng-change="updatePlayView()" checked data-toggle="toggle" data-on="Show similar" data-off="Hide similar" data-width="110">
-					<!-- </div> -->
+					<input type="checkbox" id="autoplaySwitch" ng-model="noAutoplay" ng-change="pauseNext()" data-toggle="toggle" data-on="Pause Next" data-off="Autoplay" data-width="110">
+					<input type="checkbox" id="focusSwitch" ng-model="focusMode" ng-change="updatePlayView()" data-toggle="toggle" data-on="Focus Mode" data-off="Watch Mode" data-width="110">
+					<input type="checkbox" id="reccSwitch" ng-model="reccMode" ng-change="updatePlayView()" checked data-toggle="toggle" data-on="Show similar" data-off="Hide similar" data-width="110">
 				</div>
 				<div id="recommended" ng-show="reccMode" style="overflow: auto;">
 					<!-- add recommended list here -->
@@ -39,7 +33,8 @@
 						<div ng-dblclick="selectIndex($index)" style="width: 100%">
 							<div class="playRow2" ng-class="$index==nowPlayingIndex ? 'playingSong' : ''">
 								<div class="item-contents2 number">{{$index + 1}}</div>
-								<div class="item-contents2"><img ng-src="{{getThumbnail(item)}}" width="64px"/></div>
+								<div class="item-contents2"><img lazy-img="item" width="64px"/></div>
+								<!-- <div class="item-contents2"><img ng-src="{{getThumbnail(item)}}" width="64px"/></div> -->
 								<div class="item-contents2 attr">
 									<div class="item-contents2 attr">{{item.name}}</div>
 									<div class="item-contents2 attr">{{item.artistStr}}</div>

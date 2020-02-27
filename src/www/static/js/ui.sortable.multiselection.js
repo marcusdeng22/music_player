@@ -139,7 +139,7 @@ angular.module('ui.sortable.multiselection', [])
           e.data.sortUI.item.sortable.cancel();
           $(".playlistItem").droppable({accept: ''});
           $(this).mouseup();
-          $(".playlistItem").droppable({accept: "#songSelect > .songItem"});
+          $(".playlistItem").droppable({accept: "#songSelect > .songItem, #playlistSelect > .playlistItem"});
           $(".playlistItem").removeClass("over");
           // e.preventDefault();
           // e.stopImmediatePropagation();

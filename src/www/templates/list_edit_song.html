@@ -65,7 +65,8 @@
 					<div ui-sortable="sortableSongs" ng-model="songDatashare.displayedSongData" id="editSongSelect" class="ng-cloak list" style="width: 100%; min-height: 100%;">
 						<div ui-sortable-selectable ng-repeat="song in songDatashare.displayedSongData track by $index" class="item songItem" ng-init="$last && addSelectClass()">
 							<div ng-dblclick="submitDblClk()" class="playRow2">
-								<div class="item-contents2"><img ng-src="{{getThumbnail(song)}}" width="64px"/></div>
+								<div class="item-contents2"><img lazy-img="song" width="64px"/></div>
+								<!-- <div class="item-contents2"><img ng-src="{{getThumbnail(song)}}" width="64px"/></div> -->
 								<div class="item-contents2 attr">
 									<div class="item-contents2 attr">{{song.name}}</div>
 									<div class="item-contents2 attr">{{song.artistStr}}</div>

@@ -1,6 +1,6 @@
 // import {Spinner} from "spin.js";
 
-var app = angular.module('MusicApp', ['ui.sortable', 'ui.sortable.multiselection', 'infinite-scroll', 'darthwade.loading']);
+var app = angular.module('MusicApp', ['ui.sortable', 'ui.sortable.multiselection', 'infinite-scroll', 'darthwade.loading', 'angularLazyImg']);
 
 app.factory("authIntercept", ["$q", "$window", function($q, $window) {
 	var handled = false;

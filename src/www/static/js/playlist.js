@@ -405,7 +405,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 			drop: dropAction,
 			over: overAction,
 			out: outAction,
-			accept: "#songSelect > .songItem"
+			accept: "#songSelect > .songItem, #playlistSelect > .playlistItem"
 		});
 	};
 
