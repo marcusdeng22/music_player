@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import cherrypy, os
+import cherrypy, os, shutil
 
 from music_player.server import Root
 
@@ -8,6 +8,10 @@ def main():
     #create the download folder if it does not exist
     downloadDir = os.path.join(os.path.dirname(os.path.realpath(__file__)), os.path.join('..', 'download'))
     if not os.path.exists(downloadDir):
+        os.makedirs(downloadDir)
+    else:
+        #remove everything in the downloads folder
+        shutil.rmtree(downloadDir, ignore_errors=True)
         os.makedirs(downloadDir)
 
     #configure the cherrypy server

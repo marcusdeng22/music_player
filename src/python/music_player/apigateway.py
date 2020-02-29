@@ -29,9 +29,28 @@ musicFields = ["_id", "url", "type", "vol", "name", "artist", "start", "end"]
 
 DOWNLOAD_FOLDER = "download"
 downloadThreads = {}
-avgDelay = 75	#expect about 75 ms to execute per second of the video
-alpha = 0.05
-networkDelay = 500	#expect 500ms between client and server
+avgDelay = 75					#expect about 75 ms to execute per second of the video
+alpha = 0.5						#alpha for exponential moving average; closer to 1 means recent observations have more weight
+networkDelay = 500				#expect 500ms between client and server
+downloadUIDFolders = {}			#holds UID: time served
+downloadCleanupDelay = 5 * 60	#wait 5 minutes before attempting to cleanup
+
+# interrupted = False
+# def signal_handler(signal, frame):
+# 	global interrupted
+# 	interrupted = True
+# import signal
+# signal.signal(signal.SIGINT, signal_handler)
+
+import signal
+
+exit = threading.Event()
+def quit(signo, _frame):
+	print("Interrupt caught, shutting down")
+	exit.set()
+
+for sig in ("TERM", "HUP", "INT"):
+	signal.signal(getattr(signal, "SIG" + sig), quit)
 
 def authUser(func):
 	'''
@@ -62,6 +81,8 @@ class ApiGateway(object):
 		# self.colPlaylists = db['playlists']
 		self.colUsers = self.db['users']
 		self.colLast = self.db["lastPlay"]
+		cleanupDownloadThread = threading.Thread(target=self.cleanupDownloads)
+		cleanupDownloadThread.start()
 
 	@authUser
 	def getUser(self):
@@ -790,6 +811,19 @@ class ApiGateway(object):
 		else:
 			raise cherrypy.HTTPError(400, "Missing download data")
 
+	def cleanupDownloads(self):
+		print("Started download cleanup thread")
+		# while True:
+			# time.sleep(downloadCleanupDelay)
+		global exit
+		while not exit.is_set():
+			print("cleaning downloads")
+			for f_name in list(downloadUIDFolders.keys()):
+				if (time.perf_counter() - downloadUIDFolders[f_name]) > downloadCleanupDelay:	#can cleanup
+					shutil.rmtree(os.path.join(DOWNLOAD_FOLDER, f_name), ignore_errors=True)
+					del downloadUIDFolders[f_name]
+			exit.wait(downloadCleanupDelay)	#equivalent of sleep, but interruptible
+
 	@cherrypy.expose
 	@authUser
 	def download(self, *argv):
@@ -798,7 +832,8 @@ class ApiGateway(object):
 		if argv[0] != DOWNLOAD_FOLDER or not os.path.exists(targetPath) or len(argv) != 3:	#(DOWNLOAD_FOLDER, uuid, file name)
 			raise cherrypy.HTTPError(404, "File not found")
 		res = cherrypy.lib.static.serve_download(os.path.join(absDir, targetPath), os.path.basename(targetPath))
-		shutil.rmtree(os.path.join(argv[0], argv[1]), ignore_errors=True)
+		downloadUIDFolders[argv[1]] = time.perf_counter()
+		# shutil.rmtree(os.path.join(argv[0], argv[1]), ignore_errors=True)	#this removes after serving, but may remove prematurely
 		return res
 
 	@cherrypy.expose

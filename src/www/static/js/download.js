@@ -14,19 +14,9 @@ app.controller('downloadCtrl', ['$scope', '$http', '$location', '$window', '$tim
 	$scope.closeDownload = function() {
 		$scope.callDone = null;
 		$scope.readyDownload = false;
+		$loading.finish("downloadCtrl");
 		$("#downloadPlaylistModal").hide();
 	};
-
-	// $("body").on("click", function(evt) {
-	// 	if ($(".modal").toArray().includes(evt.target)) {
-	// 		$scope.closeDownload();
-	// 	}
-	// })
-	// .keyup(function(evt) {
-	// 	if (evt.keyCode == 27) {	//escape key
-	// 		$scope.closeDownload();
-	// 	}
-	// });
 
 	$rootScope.$on("loadDownload", function(e, data, callback) {
 		$("#downloadPlaylistModal").css("display", "flex");
@@ -118,6 +108,7 @@ app.controller('downloadCtrl', ['$scope', '$http', '$location', '$window', '$tim
 	async function testDone(delay, path) {
 		await sleep(delay);
 		$http.post("/checkStatus", {"name": path}).then(function(resp) {
+			console.log("status response:");
 			console.log(resp);
 			if (resp.data.completed) {
 				//file is ready to download!
@@ -130,7 +121,6 @@ app.controller('downloadCtrl', ['$scope', '$http', '$location', '$window', '$tim
 			}
 			else {
 				//sleep and try again
-				// await sleep(1000);
 				testDone(1000, path);
 			}
 		}, function(err) {
@@ -144,21 +134,9 @@ app.controller('downloadCtrl', ['$scope', '$http', '$location', '$window', '$tim
 		var query = $scope.cleanData();
 		console.log("DOWNLOAD");
 		$http.post("/generate", {"name": query.name, "songs": query.songs, "type": query.format}).then(function(resp) {
+			console.log("generated response:");
 			console.log(resp);
-			// await sleep(resp.data.expected);
 			testDone(resp.data.expected, resp.data.path);
-			// $loading.finish("downloadCtrl");
-			//below doesn't work
-			// var link = $('<a href="' + resp.data.path + '" download="' + resp.data.name + '">download</a>').appendTo("#downloadPathDiv");
-			// link[0].click()
-			// link.remove();
-
-			//rework below
-			// $("<form></form>").attr("action", "download/" + resp.data.path).appendTo("#downloadPathDiv").submit().remove();
-			// if ($scope.callDone != null) {
-			// 	$scope.callDone();
-			// }
-			// $scope.closeDownload();
 		}, function(err) {
 			console.log(err);
 			alert("Failed to download");
