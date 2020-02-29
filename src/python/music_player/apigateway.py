@@ -48,6 +48,7 @@ exit = threading.Event()
 def quit(signo, _frame):
 	print("Interrupt caught, shutting down")
 	exit.set()
+	cherrypy.engine.exit()
 
 for sig in ("TERM", "HUP", "INT"):
 	signal.signal(getattr(signal, "SIG" + sig), quit)
