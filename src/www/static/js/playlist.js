@@ -138,7 +138,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 		query = {"content": songDict};
 		// console.log("playlist query songDict:", $scope.playlistData[$scope.playlistIndices]);
 		// console.log("playlist query: ", query);
-		$http.post("/findMusicList", {"content": songDict}).then(function(resp) {
+		return $http.post("/findMusicList", {"content": songDict}).then(function(resp) {
 			// console.log("success");
 			$scope.songData = resp.data;
 			console.log("playlist query songs returned: ", $scope.songData);
@@ -206,7 +206,9 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 		else if ($scope.playlistIndices.length == 1) {
 			console.log("ARGS");
 			console.log(selectedSongs);
-			$scope.getSongData($scope.playlistData[$scope.playlistIndices[0]]["contents"], selectedSongs);
+			$scope.getSongData($scope.playlistData[$scope.playlistIndices[0]]["contents"], selectedSongs).then(function() {
+				scrollToSelected("#songSelect > .songItem", 0);
+			});
 		}
 	});
 

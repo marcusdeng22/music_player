@@ -10,6 +10,7 @@ import zipfile
 import shutil
 import pymongo as pm
 import functools
+import time
 
 from bson.objectid import ObjectId
 from io import BytesIO
@@ -27,6 +28,10 @@ playlistFields = ["_id", "date", "dateStr", "contents", "name"]
 musicFields = ["_id", "url", "type", "vol", "name", "artist", "start", "end"]
 
 DOWNLOAD_FOLDER = "download"
+downloadThreads = {}
+avgDelay = 75	#expect about 75 ms to execute per second of the video
+alpha = 0.05
+networkDelay = 500	#expect 500ms between client and server
 
 def authUser(func):
 	'''
@@ -596,8 +601,44 @@ class ApiGateway(object):
 		else:
 			raise cherrypy.HTTPError(400, "No data given")
 
+	@cherrypy.expose
+	@cherrypy.tools.json_in()
+	@cherrypy.tools.json_out()
+	def checkStatus(self):
+		"""
+		Checks if the download thread is complete
+
+		Expected input:
+			{
+				"name": (string)
+			}
+
+		Output:
+			{
+				"completed": (boolean)
+			}
+		"""
+		# check that we actually have json
+		if hasattr(cherrypy.request, 'json'):
+			data = cherrypy.request.json
+		else:
+			raise cherrypy.HTTPError(400, 'No data was given')
+
+		threadName = m_utils.checkValidData("name", data, str)
+
+		if threadName not in downloadThreads:
+			return {"completed": True}	#is this correct?
+		if downloadThreads[threadName].isAlive():
+			return {"completed": False}
+		#else thread is done, remove it and return true
+		downloadThreads[threadName].join()
+		del downloadThreads[threadName]
+		return {"completed": True}
+
 	def downloadTag(self, ytdl, dest, song, fmt):
 		ytdl.download([song["url"]])
+		# songInfo = ytdl.extract_info(song["url"], download=True)
+		# print("SONG DURATION:", songInfo["duration"])
 		targFile = os.path.join(dest, "{}.{}".format(song["name"], fmt))
 		os.rename(os.path.join(dest, "{}.{}".format(song["id"], fmt)), targFile)
 		toTag = eyed3.load(targFile)
@@ -618,6 +659,38 @@ class ApiGateway(object):
 			t.start()
 		for t in threads:
 			t.join()
+
+	def setupDownload(self, randDir, name, songs, type, totalDuration):
+		#start measuring for time to download, convert, and package
+		start = time.perf_counter()
+		downloadDir = os.path.join(DOWNLOAD_FOLDER, randDir)
+		if not os.path.exists(downloadDir):
+			os.makedirs(downloadDir)
+		yt_opts = {
+			"format": "bestaudio",
+			"postprocessors": [{
+				"key": "FFmpegExtractAudio",
+				"preferredcodec": type,
+				"preferredquality": "0"
+			}],
+			"outtmpl": os.path.join(downloadDir, "%(id)s.%(ext)s")
+		}
+		#download
+		with youtube_dl.YoutubeDL(yt_opts) as ydl:
+			self.multiDownloadTag(ydl, downloadDir, songs, type)
+		# now zip if multiple
+		if len(songs) > 1:
+			retName = os.path.join(downloadDir, "{}.zip".format(name))
+			with zipfile.ZipFile(retName, "w", zipfile.ZIP_DEFLATED) as myZip:
+				for f in glob.glob(os.path.join(downloadDir, "*.{}".format(type))):
+					myZip.write(f, os.path.basename(f))
+					os.remove(f)
+		#calculate exponential moving average
+		exec_time = round((time.perf_counter() - start) * 1000 / totalDuration)
+		print("Average time of execution per second of video:", exec_time)
+		global avgDelay
+		avgDelay = round(alpha * exec_time + (1 - alpha) * avgDelay)
+		print("New average delay:", avgDelay)
 
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
@@ -665,35 +738,55 @@ class ApiGateway(object):
 								raise cherrypy.HTTPError(400, "Missing {} key".format(k))
 					else:
 						raise cherrypy.HTTPError(400, "Invalid data download")
-		if "songs" in data and "type" in data and data["type"] in ["mp3", "mp4"]:
+		if data["type"] in ["mp3", "mp4"]:
 			randDir = str(uuid4())
+			#precompute the return paths
 			downloadDir = os.path.join(DOWNLOAD_FOLDER, randDir)
-			if not os.path.exists(downloadDir):
-				os.makedirs(downloadDir)
-			yt_opts = {
-				"format": "bestaudio",
-				"postprocessors": [{
-					"key": "FFmpegExtractAudio",
-					"preferredcodec": data["type"],
-					"preferredquality": "0"
-				}],
-				"outtmpl": os.path.join(downloadDir, "%(id)s.%(ext)s")
-			}
-			#download
-			with youtube_dl.YoutubeDL(yt_opts) as ydl:
-				self.multiDownloadTag(ydl, downloadDir, data["songs"], data["type"])
-			# now zip if multiple
-			retName = ""
 			if len(data["songs"]) > 1:
-				retName = os.path.join(downloadDir, "{}.zip".format(data["name"]))
-				with zipfile.ZipFile(retName, "w", zipfile.ZIP_DEFLATED) as myZip:
-					for f in glob.glob(os.path.join(downloadDir, "*.{}".format(data["type"]))):
-						myZip.write(f, os.path.basename(f))
-						os.remove(f)
+				fileName = os.path.join(downloadDir, "{}.zip".format(data["name"]))
 			else:
-				retName = os.path.join(downloadDir, "{}.{}".format(data["name"], data["type"]))
-			return {"path": retName}
-			# return cherrypy.lib.static.serve_download(os.path.join(absDir, retName), os.path.basename(retName))
+				fileName = os.path.join(downloadDir, "{}.{}".format(data["name"], data["type"]))
+			#get the total song duration
+			totalDuration = 0	#in seconds
+			for s in data["songs"]:
+				songInfo = youtube_dl.YoutubeDL({"format": "worst"}).extract_info(s["url"], process=False, download=False)
+				print("SONG DURATION:", songInfo["duration"])
+				totalDuration += songInfo["duration"]
+			#start the download process
+			t = threading.Thread(target=self.setupDownload, args=(randDir, data["name"], data["songs"], data["type"], totalDuration))
+			downloadThreads[fileName] = t
+			t.start()
+			#return the info
+			return {"path": fileName, "expected": totalDuration * avgDelay + networkDelay}
+		# if "songs" in data and "type" in data and data["type"] in ["mp3", "mp4"]:
+		# 	randDir = str(uuid4())
+		# 	downloadDir = os.path.join(DOWNLOAD_FOLDER, randDir)
+		# 	if not os.path.exists(downloadDir):
+		# 		os.makedirs(downloadDir)
+		# 	yt_opts = {
+		# 		"format": "bestaudio",
+		# 		"postprocessors": [{
+		# 			"key": "FFmpegExtractAudio",
+		# 			"preferredcodec": data["type"],
+		# 			"preferredquality": "0"
+		# 		}],
+		# 		"outtmpl": os.path.join(downloadDir, "%(id)s.%(ext)s")
+		# 	}
+		# 	#download
+		# 	with youtube_dl.YoutubeDL(yt_opts) as ydl:
+		# 		self.multiDownloadTag(ydl, downloadDir, data["songs"], data["type"])
+		# 	# now zip if multiple
+		# 	retName = ""
+		# 	if len(data["songs"]) > 1:
+		# 		retName = os.path.join(downloadDir, "{}.zip".format(data["name"]))
+		# 		with zipfile.ZipFile(retName, "w", zipfile.ZIP_DEFLATED) as myZip:
+		# 			for f in glob.glob(os.path.join(downloadDir, "*.{}".format(data["type"]))):
+		# 				myZip.write(f, os.path.basename(f))
+		# 				os.remove(f)
+		# 	else:
+		# 		retName = os.path.join(downloadDir, "{}.{}".format(data["name"], data["type"]))
+		# 	return {"path": retName}
+		# 	# return cherrypy.lib.static.serve_download(os.path.join(absDir, retName), os.path.basename(retName))
 		else:
 			raise cherrypy.HTTPError(400, "Missing download data")
 

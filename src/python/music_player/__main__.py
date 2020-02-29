@@ -5,6 +5,11 @@ import cherrypy, os
 from music_player.server import Root
 
 def main():
+    #create the download folder if it does not exist
+    downloadDir = os.path.join(os.path.dirname(os.path.realpath(__file__)), os.path.join('..', 'download'))
+    if not os.path.exists(downloadDir):
+        os.makedirs(downloadDir)
+
     #configure the cherrypy server
     cherrypy.Application.wwwDir = os.path.join(os.path.dirname(os.path.realpath(__file__)),
         os.path.join('..', '..', 'www'))

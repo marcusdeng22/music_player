@@ -12,7 +12,8 @@ app.factory("authIntercept", ["$q", "$window", function($q, $window) {
 			//set location
 			$window.location.href = "/";
 			handled = true;
-			alert("Global Session timed out");
+			alert("Session timed out");
+			return $q.resolve();
 		}
 		return $q.reject(err);
 	};
