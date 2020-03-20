@@ -237,6 +237,8 @@ console.log(window.location);
       that.safeClientCall("onEmbedReady");
       // that.player.loadVideoById(that.embedVars.videoId);
       that.player.cueVideoById(that.embedVars.videoId);
+      console.log("embed ready and cued");
+      console.log(that.embedVars.autoplay);
       if (that.embedVars.autoplay) {
         that.player.playVideo();
       }

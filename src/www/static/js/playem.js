@@ -278,7 +278,7 @@ function Playem (playemPrefs) {
       }
     }
 
-    function playTrack (track, autoplay=true) {
+    function playTrack (track, autoplay=playemPrefs.autoplay) {
       console.log("playTrack", track);
       stopTrack()
       currentTrack = track
@@ -288,6 +288,8 @@ function Playem (playemPrefs) {
       if (!track.player) { return that.emit('onError', {code: 'unrecognized_track', source: 'Playem', track: track}) }
       doWhenReady(track.player, function () {
         // console.log("playTrack #" + track.index + " (" + track.playerName+ ")", track);
+        console.log("calling play function");
+        console.log(autoplay);
         callPlayerFct('play', track.trackId, autoplay)
         // setVolume(volume)
         if (currentTrack.index == trackList.length - 1) { that.emit('loadMore') }
