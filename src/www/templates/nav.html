@@ -14,9 +14,9 @@
 		</li>
 	</ul>
 	<div id="globalPlayCtrl" class="navbar-nav ng-cloak" style="flex-grow: 100; align-items: center;">
-		<button class="btn" ng-click="previousSong()"><img class="icon-l icon-prev"></img></button>
-		<button class="btn" ng-click="playPause()"><img class="icon-l" ng-class="(playDatashare.currentState==1) ? 'icon-pause' : 'icon-play'"></img></button>
-		<button class="btn" ng-click="nextSong()"><img class="icon-l icon-next"></img></button>
+		<button class="btn" ng-click="previousSong()"><i class="icon-l fas fa-step-backward"></i></button>
+		<button class="btn" ng-click="playPause()"><i class="icon-l fas" ng-class="(playDatashare.currentState==1) ? 'fa-pause' : 'fa-play'"></i></button>
+		<button class="btn" ng-click="nextSong()"><i class="icon-l fas fa-step-forward"></i></button>
 		<div id="navNowPlaying" ng-show="playDatashare.nowPlaying" class="nowPlaying ellipsis">
 			{{playDatashare.nowPlaying.name}} - {{playDatashare.nowPlaying.artistStr}}
 		</div>

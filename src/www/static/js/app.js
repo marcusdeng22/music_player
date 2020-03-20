@@ -106,7 +106,7 @@ app.factory("youtubeFuncs", ["$http", function($http) {
 app.factory("sortingFuncs", ["orderByFilter", function(orderBy) {
 	var sortingFuncs = {};
 	sortingFuncs.sortGlyph = function(reverse, orderVar, type) {
-		ret = "icon icon-arrow-" + (reverse ? "down" : "up");
+		ret = "icon fas fa-chevron-" + (reverse ? "down" : "up");
 		if (orderVar == "date" && orderVar == type) {
 			return ret;
 		}

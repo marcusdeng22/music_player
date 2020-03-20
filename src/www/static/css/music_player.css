@@ -106,52 +106,15 @@
 .icon,.icon-l{
 	position: relative;
 	top: 0px;
-	height: 14px;
-	width: 14px;
+	font-size: 14px;
 	display: inline-block;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+	color: black;
 }
 
 .icon-l {
-	height: 22px;
-	width: 22px;
-}
-
-.icon-refresh {
-	content: url("../images/refresh.svg");
-}
-
-.icon-arrow-up {
-	content: url("../images/arrow-up.svg");
-}
-
-.icon-arrow-down {
-	content: url("../images/arrow-down.svg");
-}
-
-.icon-next {
-	content: url("../images/next.svg");
-}
-
-.icon-prev {
-	content: url("../images/previous.svg");
-}
-
-.icon-play {
-	content: url("../images/play.svg");
-}
-
-.icon-pause {
-	content: url("../images/pause.svg");
-}
-
-.icon-shuffle {
-	content: url("../images/shuffle.svg");
-}
-
-.icon-repeat {
-	content: url("../images/repeat.svg");
+	font-size: 22px;
 }
 
 .icon-toggled {
