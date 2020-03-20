@@ -289,7 +289,7 @@ function Playem (playemPrefs) {
       doWhenReady(track.player, function () {
         // console.log("playTrack #" + track.index + " (" + track.playerName+ ")", track);
         callPlayerFct('play', track.trackId, autoplay)
-        setVolume(volume)
+        // setVolume(volume)
         if (currentTrack.index == trackList.length - 1) { that.emit('loadMore') }
         // if the track does not start playing within 7 seconds, skip to next track
         setPlayTimeout(function () {
@@ -334,7 +334,7 @@ function Playem (playemPrefs) {
         },
         onEmbedReady: function (player) {
           // console.log("embed ready");
-          setVolume(volume)
+          // setVolume(volume)
         },
         onBuffering: function (player) {
           setTimeout(function () {
@@ -345,7 +345,7 @@ function Playem (playemPrefs) {
         onPlaying: function (player) {
           // console.log(player.label + ".onPlaying");
           // setPlayTimeout(); // removed because soundcloud sends a "onPlaying" event, even for not authorized tracks
-          setVolume(volume)
+          // setVolume(volume)
           setTimeout(function () {
             that.emit('onPlay')
           }, 1)

@@ -468,8 +468,15 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 			$scope.playlistData.touched = true;
 			var lastSelectedIndex = $scope.nowPlayingIndex;
 			var reduce = false;
-			$scope.songIndices.sort((a, b) => a-b);
+			$scope.songIndices.sort((a, b) => a-b);		//start at end of song indices when removing
 			for (var i = $scope.songIndices.length - 1; i >= 0; i--) {
+				//check if in to add; if so, remove it
+				for (var j = songsToAdd.length - 1; j >= 0; j--) {
+					if ($scope.playlistData.contents[$scope.songIndices[i]]["url"] == songsToAdd[j]["url"]) {
+						songsToAdd.splice(j, 1);
+						break;
+					}
+				}
 				$scope.playlistData.contents.splice($scope.songIndices[i], 1);
 				if (lastSelectedIndex == $scope.songIndices[i]) {
 					reduce = true;

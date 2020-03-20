@@ -635,6 +635,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 		});
 	};
 	data.addMultipleSongs = function(toAddList, toCall=null) {
+		data.setEditData(toAddList);
 		if (data.checkSongFields()) {
 			return;
 		}
