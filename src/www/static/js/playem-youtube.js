@@ -230,7 +230,7 @@ console.log(window.location);
     // that.player.addEventListener("onError", "onYoutubeError");
     that.player.addEventListener("onError", function(error) {
       //console.log(that.embedVars.playerId + " error:", error);
-      eventHandlers.onError && eventHandlers.onError(that, {source:"YoutubePlayer", code: error});
+      that.eventHandlers.onError && that.eventHandlers.onError(that, {source:"YoutubePlayer", code: error});
     });
     that.element = that.player.getIframe();
     that.player.addEventListener('onReady', function(event) {

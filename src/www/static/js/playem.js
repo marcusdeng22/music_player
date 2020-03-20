@@ -297,7 +297,7 @@ function Playem (playemPrefs) {
         setPlayTimeout(function () {
           console.warn('PLAYEM TIMEOUT') // => skipping to next song
           that.emit('onError', {code: 'timeout', source: 'Playem'})
-          // exportedMethods.next();
+          exportedMethods.next();
         })
       })
     }
@@ -400,7 +400,7 @@ function Playem (playemPrefs) {
         },
         onError: function (player, error) {
           console.error(player.label + ' error:', ((error || {}).exception || error || {}).stack || error)
-          setPlayTimeout()
+          setPlayTimeout(playemFunctions.next);
           that.emit('onError', error)
         }
       };
