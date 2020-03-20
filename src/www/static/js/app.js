@@ -354,7 +354,10 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 			curIndex = 0;
 			data.displayedSongData = [];
 			data.dataNotReady = false;
-			$timeout(data.loadDisplayedSongData(), 20);
+			$timeout(function() {
+				$("#editSongSelect").scrollTop(0);
+				data.loadDisplayedSongData();
+			}, 20);
 		}, function(err) {
 			console.log(err);
 			alert("Failed to get song data");

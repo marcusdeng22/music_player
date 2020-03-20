@@ -318,6 +318,8 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 					});
 				});
 			}
+		}).fail(function() {
+			$("#recommended").html('<p>Failed to get recommended data</p>');
 		});
 	});
 

@@ -89,7 +89,7 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 		else {
 			songDatashare.orderVar = sortBy;
 		}
-		songDatashare.getSongData();
+		songDatashare.getSongData(undefined, undefined, undefined, true);
 	}
 
 	$rootScope.$on("clearSongSearch", function() {
