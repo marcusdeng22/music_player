@@ -944,6 +944,7 @@ class ApiGateway(object):
 				#filter out only the recommended
 				ret = ""
 				urlSet = set()
+				failed = False
 				for node in HTMLParser(resp).css("li.video-list-item.related-list-item.show-video-time.related-list-item-compact-video"):
 					#only add if URL not in the set
 					curUrl = node.css_first("a").attributes["href"]
@@ -966,13 +967,12 @@ class ApiGateway(object):
 					#replace the li with a container div
 					ret += '<div class="recc-container">'
 					for n in node.iter():
+						if n.html == "":
+							failed = True
+							break
 						ret += n.html
 					ret += "</div>"
-					# if True:
-					# 	break
-				print('-----------------------------------------')
-				print(ret)
-				if ret != "":
+				if not failed:
 					break
 				attempts += 1
 			if attempts == 3:
