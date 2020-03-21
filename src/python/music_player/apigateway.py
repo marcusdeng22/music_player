@@ -975,6 +975,8 @@ class ApiGateway(object):
 				if ret != "":
 					break
 				attempts += 1
+			if attempts == 3:
+				ret = '<p>No recommended data</p>'
 			return {"contents": ret}
 		else:
 			return {"contents": "'<p>No recommended data</p>'"}
