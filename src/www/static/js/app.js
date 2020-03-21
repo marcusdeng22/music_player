@@ -638,7 +638,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 		});
 	};
 	data.addMultipleSongs = function(toAddList, toCall=null) {
-		data.setEditData(toAddList);
+		// data.setEditData(toAddList);	//this replaces the editted fields: not good! but still need to check if fields are valid
 		if (data.checkSongFields()) {
 			return;
 		}
@@ -747,12 +747,15 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 						}
 					}
 					console.log("trigger song change");
-					$("#editSongSelect > .songItem.ui-sortable-selected").first()[0].scrollIntoView({	//scroll first element into view
-						behavior: "smooth",
-						block: "start",
-						inline: "nearest"
-					});
-					$("#editSongSelect").trigger('ui-sortable-selectionschanged');
+					var newSelection = $("#editSongSelect > .songItem.ui-sortable-selected");
+					if (newSelection.length > 0) {
+						newSelection.first()[0].scrollIntoView({	//scroll first element into view
+							behavior: "smooth",
+							block: "start",
+							inline: "nearest"
+						});
+						$("#editSongSelect").trigger('ui-sortable-selectionschanged');
+					}
 				});
 				$rootScope.$emit("songChanged", insertedData);
 				//now do callback

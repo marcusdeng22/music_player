@@ -208,6 +208,103 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		$http.post("/setLast", {"startIndex": $scope.nowPlayingIndex}).then(undefined, function(err) {
 			alert("Failed to update last playlist");
 		});
+		getRecommended();
+	});
+
+	function getRecommended() {
+		$http.post("/getRecc", {"type": playDatashare.nowPlaying["type"], "vid": youtubeFuncs.cleanUrl(playDatashare.nowPlaying["url"])}).then(function(resp) {
+			console.log("RECOMMENDED DATA");
+			console.log(resp);
+			$("#recommended").html(resp.data.contents);
+
+			$("#recommended").find("a").on("click", function(e) {
+					e.preventDefault();
+					//insert link data as the next song
+					var tempData = {};
+					var parentA;
+					var curParent = $(this).parent();
+					if (curParent.is(".thumb-wrapper")) {
+						console.log("thumb clicked");
+						parentA = $(this).parent().siblings(".content-wrapper").find("a");
+					}
+					else if (curParent.is(".content-wrapper")) {
+						console.log("span clicked");
+						parentA = $(this);
+					}
+					else {
+						return;
+					}
+					tempData["type"] = "youtube";
+					tempData["url"] = parentA.attr("href");
+					//search for this url in song data; if it exists copy the info instead of adding
+					//TODO: make this a query?
+					var matched = false;
+					// for (var i = 0; i < songDatashare.songData.length; i ++) {
+					// 	if (songDatashare.songData[i]["url"] == tempData["url"]) {
+					// 		console.log("MATCHED URL");
+					// 		tempData = songDatashare.songData[i];
+					// 		matched = true;
+					// 		break;
+					// 	}
+					// }
+					$http.post("/findMusic", {"url": [tempData["url"]]}).then(function(m_resp) {
+						console.log(m_resp);
+						if (m_resp.data.results.length == 1) {
+							tempData = m_resp.data.results[0];
+						}
+						else {
+							console.log("FAILED TO FIND URL: MUST BE NEW SONG");
+							tempData["name"] = parentA.children(".title").text().trim();
+							tempData["artistStr"] = parentA.children(".stat.attribution").text().trim();
+							tempData["artist"] = [tempData["artistStr"]];
+							tempData["album"] = "";
+							tempData["genre"] = "";
+							tempData["vol"] = 100;
+							tempData["start"] = 0;
+							tempData["end"] = 0;
+							console.log(tempData);
+							songsToAdd.push(tempData);
+						}
+					// if (!matched) {
+					// 	console.log("FAILED TO FIND URL: MUST BE NEW SONG");
+					// 	tempData["name"] = parentA.children(".title").text().trim();
+					// 	tempData["artistStr"] = parentA.children(".stat.attribution").text().trim();
+					// 	tempData["artist"] = [tempData["artistStr"]];
+					// 	tempData["album"] = "";
+					// 	tempData["genre"] = "";
+					// 	tempData["vol"] = 100;
+					// 	tempData["start"] = 0;
+					// 	tempData["end"] = 0;
+					// 	console.log(tempData);
+					// 	songsToAdd.push(tempData);
+					// }
+					//add to contents and set origOrder and add to playem
+					var curOrigOrder = playDatashare.nowPlaying.origOrder;
+					// var curOrigOrder = $scope.nowPlaying.origOrder;
+					for (var i = 0; i < $scope.playlistData.contents.length; i ++) {
+						if ($scope.playlistData.contents[i].origOrder > curOrigOrder) {
+							$scope.playlistData.contents[i].origOrder ++;
+						}
+					}
+					tempData["origOrder"] = curOrigOrder + 1;
+					$scope.playlistData.contents.splice($scope.nowPlayingIndex + 1, 0, tempData);
+					if (!$scope.$$phase) {
+						$scope.$apply();
+					}
+					setQueue();
+					$scope.playlistData.touched = true;
+					$http.post("/setLast", {"touched": true, "contents": $scope.playlistData.contents}).then(undefined, function(err) {
+						console.log(err);
+						alert("Failed to update last playlist");
+					});
+				});
+				});
+		}, function(err) {
+			console.log(err);
+		});
+	}
+
+	function oldRecommended() {
 		//from: http://www.whateverorigin.org/
 		$.getJSON('http://www.whateverorigin.org/get?url=' + encodeURIComponent(playDatashare.nowPlaying["url"]) + '&callback=?', function(data){
 		// $.getJSON('http://www.whateverorigin.org/get?url=' + encodeURIComponent($scope.nowPlaying["url"]) + '&callback=?', function(data){
@@ -322,7 +419,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		}).fail(function() {
 			$("#recommended").html('<p>Failed to get recommended data</p>');
 		});
-	});
+	}
 
 
 	$("#playingSelect").on('ui-sortable-selectionschanged', function (e, args) {
@@ -652,6 +749,8 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 							$scope.playlistData.contents[i]["origOrder"] = origOrder;
 						}
 					}
+					//add info to edit data
+					songDatashare.editDataID.add(insertedData[j]["_id"]);
 				}
 				edittingToAdd = [];
 				//data is now coerced and ready to push

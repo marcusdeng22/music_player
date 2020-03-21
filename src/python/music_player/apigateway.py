@@ -23,6 +23,15 @@ from datetime import datetime, timedelta
 import youtube_dl
 import eyed3
 
+from http import cookiejar
+import requests
+from selectolax.parser import HTMLParser
+#from stackoverflow.com/questions/17037668/how-to-disable-cookie-handling-with-the-python-requests-library
+class BlockAll(cookiejar.CookiePolicy):
+	return_ok = set_ok = domain_return_ok = path_return_ok = lambda self, *args, **kwargs: False
+	netscape = True
+	rfc2965 = hide_cookie2 = False
+
 absDir = os.getcwd()
 playlistFields = ["_id", "date", "dateStr", "contents", "name"]
 musicFields = ["_id", "url", "type", "vol", "name", "artist", "start", "end"]
@@ -910,3 +919,62 @@ class ApiGateway(object):
 
 		del result["_id"]
 		return result
+
+	@cherrypy.expose
+	@authUser
+	@cherrypy.tools.json_in()
+	@cherrypy.tools.json_out()
+	def getRecc(self):
+		"""
+		Gets the HTML page for a requested video ID
+		"""
+		# check that we actually have json
+		if hasattr(cherrypy.request, 'json'):
+			data = cherrypy.request.json
+		else:
+			raise cherrypy.HTTPError(400, 'No data was given')
+
+		urlType = m_utils.checkValidData("type", data, str)
+		if urlType == "youtube":
+			attempts = 0
+			while (attempts < 3):
+				s = requests.Session()
+				s.cookies.set_policy(BlockAll())
+				resp = s.get(m_utils.ytBaseWatch + m_utils.checkValidData("vid", data, str)).text
+				#filter out only the recommended
+				ret = ""
+				urlSet = set()
+				for node in HTMLParser(resp).css("li.video-list-item.related-list-item.show-video-time.related-list-item-compact-video"):
+					#only add if URL not in the set
+					curUrl = node.css_first("a").attributes["href"]
+					if curUrl in urlSet:
+						continue
+					urlSet.add(curUrl)
+					for n in node.css("a, img"):
+						n.attrs["href"] = m_utils.ytBase + curUrl
+					#remove the .gif src in the img tag
+					thumbnail = node.css_first("img")
+					thumbnail.attrs["src"] = thumbnail.attributes["data-thumb"]
+					#remove the duration span
+					durSpan = node.css_first(".content-wrapper > a > span:contains(Duration)")
+					if durSpan:
+						durSpan.decompose()
+					#remove the view count
+					viewSpan = node.css_first(".content-wrapper > a > span.stat.view-count")
+					if viewSpan:
+						viewSpan.decompose()
+					#replace the li with a container div
+					ret += '<div class="recc-container">'
+					for n in node.iter():
+						ret += n.html
+					ret += "</div>"
+					# if True:
+					# 	break
+				print('-----------------------------------------')
+				print(ret)
+				if ret != "":
+					break
+				attempts += 1
+			return {"contents": ret}
+		else:
+			return {"contents": "'<p>No recommended data</p>'"}

@@ -8,6 +8,7 @@ import math
 import functools
 import datetime
 import operator
+import re
 
 from bson.objectid import ObjectId
 from bson.regex import Regex
@@ -17,6 +18,16 @@ from pymongo import ASCENDING, DESCENDING
 supportedTypes = ["youtube", "mp3"]
 SONG_PAGE_SIZE = 25
 PLAYLIST_PAGE_SIZE = 50
+
+# extract the video ID from a youtube URL
+ytRe = re.compile(r"^.*(?:(?:youtu\.be\|v\|vi\|u\|w\|embed)|(?:(?:watch)?\?v(?:i)?=|\\&v(?:i)?=))([^#\&\?]*)")
+ytBase = "https://www.youtube.com"
+ytBaseWatch = ytBase + "/watch?v="
+def extractYT(url):
+	ret = ytRe.search(url)
+	if ret:
+		return ret.group(1)
+	return None
 
 # checks if key value exists and is the right type
 def checkValidData(key, data, dataType, optional=False, default="", coerce=False):
@@ -136,6 +147,8 @@ def createMusic(data, musicDB):
 			# check if url already exists; deny if true
 			if musicDB.find_one({"url": myMusic[key]}) != None:
 				raise cherrypy.HTTPError(400, "Song URL already exists")
+			# coerce the url to be https://www.youtube.com/watch?v=<video ID>
+			myMusic["url"] = ytBaseWatch + extractYT(myMusic["url"])
 	if data["type"] in supportedTypes:
 		myMusic["type"] = checkValidData("type", data, str)
 	else:
@@ -169,7 +182,7 @@ def makeMusicQuery(data, musicDB, fast=False):
 				myUrls = []
 				for u in checkValidData(key, data, list):
 					if isinstance(u, str):
-						myUrls.append(u)
+						myUrls.append(ytBaseWatch + extractYT(u))
 					else:
 						raise cherrypy.HTTPError(400, "Bad url given")
 				myMusic[key] = {"$in": myUrls}
