@@ -197,7 +197,10 @@ function Playem (playemPrefs) {
     var progress = null
     var that = this
     var playTimeout = null
-    var volume = 1
+    // var volume = 100
+
+    var prevVolState = {muted: false, vol: 100};
+    var volPoll = null;
 
     /**
    * @memberof Playem.prototype
@@ -219,6 +222,11 @@ function Playem (playemPrefs) {
         }
       }
       if (player.isReady) { setTimeout(fct) } else { interval = setInterval(poll, 1000) }
+    }
+
+    function pollVolume() {
+      prevVolState = callPlayerFct("getVolume");
+      console.log(prevVolState);
     }
 
     function addTrack (metadata, url) {
@@ -261,9 +269,36 @@ function Playem (playemPrefs) {
       };
     };
 
-    function setVolume (vol) {
-      volume = vol
+    function limitVol(vol) {
+      if (vol < 0) {
+        vol = 0;
+      }
+      if (vol > 100) {
+        vol = 100;
+      }
+      return vol;
+    }
+
+    /*
+    *sets the volume of the player as a percentage of the current volume (0-100)
+    *this should be used by clients
+    */
+    function setVolumePer (vol) {
+      // volume = vol
+      vol = limitVol(vol);
+      vol = prevVolState.vol * vol / 100;
+      prevVolState.vol = vol;
       callPlayerFct('setVolume', vol)
+    }
+
+    /*
+    *sets the volume of the player to be the exact volume (0- 100)
+    *this should be used by playem
+    */
+    function setVolume(vol=prevVolState.vol) {
+      vol = limitVol(vol);
+      prevVolState.vol = vol;
+      callPlayerFct('setVolume', vol);
     }
 
     function stopTrack () {
@@ -292,6 +327,7 @@ function Playem (playemPrefs) {
         console.log(autoplay);
         callPlayerFct('play', track.trackId, autoplay)
         // setVolume(volume)
+        setVolume()
         if (currentTrack.index == trackList.length - 1) { that.emit('loadMore') }
         // if the track does not start playing within 7 seconds, skip to next track
         setPlayTimeout(function () {
@@ -315,10 +351,10 @@ function Playem (playemPrefs) {
 
     function callPlayerFct (fctName, param, autoplay=playemPrefs.autoplay) {
       try {
-        console.log("calling player function")
-        console.log(fctName)
-        console.log(param)
-        console.log(playemPrefs.autoplay);
+        // console.log("calling player function")
+        // console.log(fctName)
+        // console.log(param)
+        // console.log(playemPrefs.autoplay);
         // console.log(currentTrack.player)
         return currentTrack.player[fctName](param, autoplay)
       } catch (e) {
@@ -337,6 +373,10 @@ function Playem (playemPrefs) {
         onEmbedReady: function (player) {
           // console.log("embed ready");
           // setVolume(volume)
+          //set the volume to the previous state, and start polling for volume
+          console.log("EMBED READY");
+          setVolume()
+          volPoll = setInterval(pollVolume, 200);
         },
         onBuffering: function (player) {
           setTimeout(function () {
@@ -348,6 +388,7 @@ function Playem (playemPrefs) {
           // console.log(player.label + ".onPlaying");
           // setPlayTimeout(); // removed because soundcloud sends a "onPlaying" event, even for not authorized tracks
           // setVolume(volume)
+          setVolume()
           setTimeout(function () {
             that.emit('onPlay')
           }, 1)
@@ -395,20 +436,36 @@ function Playem (playemPrefs) {
         onEnded: function (player) {
           // console.log(player.label + ".onEnded");
           stopTrack()
+          if (volPoll != null) {
+            clearInterval(volPoll);
+            volPoll = null;
+          }
           that.emit('onEnd')
           playemFunctions.next()
         },
         onError: function (player, error) {
           console.error(player.label + ' error:', ((error || {}).exception || error || {}).stack || error)
+          if (volPoll != null) {
+            clearInterval(volPoll);
+            volPoll = null;
+          }
           setPlayTimeout(playemFunctions.next);
           that.emit('onError', error)
         }
       };
       // handlers will only be triggered is their associated player is currently active
       ['onEmbedReady', 'onBuffering', 'onPlaying', 'onPaused', 'onEnded', 'onError'].map(function (evt) {
+        console.log("EVENT HANDLER MAP");
         var fct = eventHandlers[evt]
+        console.log(fct);
         eventHandlers[evt] = function (player, x) {
-          if (currentTrack && player == currentTrack.player) { return fct(player, x) }
+          console.log("INNER EVENT HANDLER");
+          console.log(currentTrack);
+          console.log(player);
+          if (currentTrack && player == currentTrack.player) {
+            console.log("MATCHED INNER");
+            return fct(player, x)
+          }
           /*
           else if (evt != "onEmbedReady")
             console.warn("ignore event:", evt, "from", player, "instead of:", currentTrack.player);

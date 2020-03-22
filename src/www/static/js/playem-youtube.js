@@ -144,6 +144,10 @@ console.log(window.location);
   }
 
   Player.prototype.safeClientCall = function(fctName, param) {
+    console.log("SAFE CLIENT CALL: " + fctName);
+    console.log(this.eventHandlers);
+    console.log(this.eventHandlers[fctName]);
+    console.log(param);
     try {
       if (this.eventHandlers[fctName])
         this.eventHandlers[fctName](param);
@@ -234,7 +238,7 @@ console.log(window.location);
     });
     that.element = that.player.getIframe();
     that.player.addEventListener('onReady', function(event) {
-      that.safeClientCall("onEmbedReady");
+      that.safeClientCall("onEmbedReady", that);                          //this calls the function in playem.js
       // that.player.loadVideoById(that.embedVars.videoId);
       that.player.cueVideoById(that.embedVars.videoId);
       console.log("embed ready and cued");
@@ -356,8 +360,13 @@ console.log(window.location);
 
   Player.prototype.setVolume = function(vol) {
     if (this.player && this.player.setVolume)
-      this.player.setVolume(vol * 100);
+      this.player.setVolume(vol);
   };
+
+  Player.prototype.getVolume = function() {
+    // console.log("YT player get vol")
+    return {muted: this.player.isMuted(), vol: this.player.getVolume()};
+  }
 
   //return Player;
   //inherits(YoutubePlayer, Player);

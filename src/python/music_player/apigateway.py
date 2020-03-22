@@ -937,7 +937,9 @@ class ApiGateway(object):
 		urlType = m_utils.checkValidData("type", data, str)
 		if urlType == "youtube":
 			attempts = 0
+			failed = False
 			while (attempts < 3):
+				print("ATTEMPT:", attempts)
 				s = requests.Session()
 				s.cookies.set_policy(BlockAll())
 				resp = s.get(m_utils.ytBaseWatch + m_utils.checkValidData("vid", data, str)).text
@@ -972,11 +974,14 @@ class ApiGateway(object):
 							break
 						ret += n.html
 					ret += "</div>"
-				if not failed:
-					break
+					if failed:
+						print("FAILED TO GET RECC")
+						ret = ""
+						break
 				attempts += 1
-			if attempts == 3:
+			if failed:
 				ret = '<p>No recommended data</p>'
+			print(ret)
 			return {"contents": ret}
 		else:
 			return {"contents": "'<p>No recommended data</p>'"}
