@@ -18,13 +18,28 @@
 	padding-left: 5px;
 }
 
+.volFade {
+	transition: all linear 300ms;
+	opacity: 1;
+}
+
+.volFade.ng-hide {
+	opacity: 0;
+}
+
+/*.ng-hide {
+	display: none;
+	opacity: 0;
+	transition: none 0s;
+}*/
+
 #volumeContainer {
 	position: absolute;
 }
 
 #volumeBk {
 	position: absolute;
-	top: -6px;
+	/*top: -6px;*/
 	left: 15px;
 	width: 20px;
 	height: 95px;
@@ -37,7 +52,8 @@
 #volumeSlider {
 	position: absolute;
 	left: 22px;
-	margin-top: 5px;
+	margin-top: 11px;
+	/*margin-top: 5px;*/
 	width: 6px;
 	height: 72px;
 	border-radius: 10px;

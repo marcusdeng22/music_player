@@ -18,10 +18,10 @@
 		<button class="btn" ng-click="playPause()"><i class="icon-l fas" ng-class="(playDatashare.currentState==1) ? 'fa-pause' : 'fa-play'"></i></button>
 		<button class="btn" ng-click="nextSong()"><i class="icon-l fas fa-step-forward"></i></button>
 		<div style="position: relative;">
-			<button class="btn" ng-click="toggleMute()"><i class="icon-l fas fa-volume-up"></i></button>
-			<div id="volumeContainer">
-				<div id="volumeBk"></div>
-				<div id="volumeSlider"></div>
+			<button id="volMute" class="btn" ng-click="toggleMute()" ng-mouseover="audioHover=true" ng-mouseleave="audioHover=false"><i class="icon-l fas fa-volume-up"></i></button>
+			<div id="volumeContainer" class="ng-hide-animate volFade hidden" ng-show="audioHover">
+				<div id="volumeBk" ng-mouseover="audioHover=true" ng-mouseleave="!audioDown ? audioHover=false : ''"></div>
+				<div id="volumeSlider" ng-mouseover="audioHover=true" ng-mouseleave="!audioDown ? audioHover=false : ''"></div>
 			</div>
 		</div>
 		<div id="navVolumeSliderCtrl">{{volState}}</div>

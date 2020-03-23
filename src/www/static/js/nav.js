@@ -76,6 +76,11 @@ app.controller('NavCtrl', ['$scope', '$rootScope', '$timeout', '$location', '$wi
 	$scope.playPause = playDatashare.playPause;
 
 	$scope.volState = playDatashare.playem.getVol();
+	$scope.audioHover = false;
+	$scope.audioDown = false;
+	$timeout(function() {
+		$("#volumeContainer").removeClass("hidden");
+	});
 
 	playDatashare.playem.on("volChanged", function(volState) {
 		console.log("VOL CHANGED");
@@ -94,8 +99,29 @@ app.controller('NavCtrl', ['$scope', '$rootScope', '$timeout', '$location', '$wi
 		slide: function(event, ui) {
 			console.log("SLIDE");
 			console.log(100 - ui.value);
+			$scope.volState.vol = 100 - ui.value;
+		},
+		start: function(event, ui) {
+			$scope.audioDown = true;
+		},
+		stop: function(event, ui) {
+			$scope.audioDown = false;
+			console.log("STOP");
+			console.log($("#volumeContainer:hover").length);
+			console.log($("#volMute:hover").length);
+			if ($("#volumeContainer:hover").length == 0 && $("#volMute:hover").length == 0) {
+				console.log("MOUSE NOT OVER");
+				$scope.audioHover = false;
+				if (!$scope.$$phase) {
+					$scope.$digest();
+				}
+			}
 		}
 	});
+
+	// $scope.$watch("volState", function(newVal, oldVal) {
+	// 	$scope.
+	// })
 
 	//TODO: change the widths below to accomodate the volume control
 	$(function() {

@@ -278,7 +278,7 @@ function Playem (playemPrefs) {
     //only adjusts global volume if player's volume is greater than the current global volume or muted
     function pollVolume() {
       var polledVol = callPlayerFct("getVolume");   //{muted: <bool>, vol: <0-100>}
-      console.log(polledVol);
+      // console.log(polledVol);
       if ("muted" in polledVol) {
         if (prevVolState.muted != polledVol.muted) {
           prevVolState.muted = polledVol.muted;
@@ -472,15 +472,15 @@ function Playem (playemPrefs) {
       };
       // handlers will only be triggered is their associated player is currently active
       ['onEmbedReady', 'onBuffering', 'onPlaying', 'onPaused', 'onEnded', 'onError'].map(function (evt) {
-        console.log("EVENT HANDLER MAP");
+        // console.log("EVENT HANDLER MAP");
         var fct = eventHandlers[evt]
-        console.log(fct);
+        // console.log(fct);
         eventHandlers[evt] = function (player, x) {
-          console.log("INNER EVENT HANDLER");
-          console.log(currentTrack);
-          console.log(player);
+          // console.log("INNER EVENT HANDLER");
+          // console.log(currentTrack);
+          // console.log(player);
           if (currentTrack && player == currentTrack.player) {
-            console.log("MATCHED INNER");
+            // console.log("MATCHED INNER");
             return fct(player, x)
           }
           /*
