@@ -178,6 +178,7 @@ class ApiGateway(object):
 		"""
 		Logs user out of system
 		"""
+		print("LOGGING OUT");
 		cherrypy.lib.sessions.expire()
 
 	@cherrypy.expose

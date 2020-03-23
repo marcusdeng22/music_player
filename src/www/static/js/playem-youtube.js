@@ -372,12 +372,18 @@ console.log(window.location);
   }
 
   Player.prototype.mute = function() {
+    // if (this.player && this.player.setVolume) {  //for SoundCloud
+    //   this.player.setVolume(0);
+    // }
     if (this.player && this.player.mute) {
       this.player.mute();
     }
   }
 
-  Player.prototype.unMute = function() {
+  Player.prototype.unMute = function(vol) {
+    // if (this.player && this.player.setVolume) {  //for SoundCloud
+    //   this.player.setVolume(vol);
+    // }
     if (this.player && this.player.unMute) {
       this.player.unMute();
     }

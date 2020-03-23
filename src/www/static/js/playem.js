@@ -199,7 +199,7 @@ function Playem (playemPrefs) {
     var playTimeout = null
     // var volume = 100
 
-    var prevVolState = {muted: false, vol: 100, mult: 1};
+    var prevVolState = {muted: false, unmutedVol: 100, vol: 100, mult: 1, local: 100};
     var volPoll = null;
 
     /**
@@ -274,27 +274,46 @@ function Playem (playemPrefs) {
       return vol;
     }
 
+    var playerVolRatio = null;
     //get the volume from the current track's player
     //only adjusts global volume if player's volume is greater than the current global volume or muted
     function pollVolume() {
       var polledVol = callPlayerFct("getVolume");   //{muted: <bool>, vol: <0-100>}
+      // console.log("POLL");
       // console.log(polledVol);
       if ("muted" in polledVol) {
         if (prevVolState.muted != polledVol.muted) {
+          console.log("MUTED CHANGED");
+          console.log(polledVol);
           prevVolState.muted = polledVol.muted;
-          that.emit("volChanged", prevVolState);
+          that.emit("volChanged", extractVol());
         }
       }
       if ("vol" in polledVol && (!("muted" in polledVol) || !polledVol.muted)) {
-        var curVol = Math.round(polledVol.vol / prevVolState.mult);
-        var diff = curVol - prevVolState.vol;
-        if (diff > 0) {
-          prevVolState.vol = limitVol(prevVolState.vol + diff);
-          setVolume();
-          that.emit("volChanged", prevVolState);
+        if (polledVol.vol != prevVolState.local) {  //player vol has changed; need to wait for it to settle
+          prevVolState.local = polledVol.vol;
         }
-        // prevVolState.vol += prevVolState.vol - polledVol.vol;
+        else {
+          playerVolRatio = (prevVolState.vol != 0 ? polledVol.vol / prevVolState.vol : 0);
+        }
+        var curVol = Math.round(polledVol.vol / prevVolState.mult); //calculated global vol
+        var diff = curVol - prevVolState.vol;
+        if (diff > 0) { //if player volume is greater than the global volume
+          console.log("POLLED VOL CHANGED");
+          console.log(curVol);
+          console.log(diff);
+          console.log(prevVolState);
+          prevVolState.vol = limitVol(prevVolState.vol + diff); //update the global volume
+          prevVolState.unmutedVol = prevVolState.vol;
+          console.log(prevVolState);
+          that.emit("volChanged", extractVol());
+        }
       }
+    }
+
+    function extractVol() {
+      // return {muted: prevVolState.muted, vol: prevVolState.vol / prevVolState.mult};
+      return {muted: prevVolState.muted, vol: Math.round(prevVolState.unmutedVol / prevVolState.mult)};
     }
 
     /*
@@ -302,24 +321,42 @@ function Playem (playemPrefs) {
     *this should be used by clients
     */
     function setVolumePer (percentage) {
-      // volume = vol
       percentage = limitVol(percentage) / 100;
       prevVolState.mult = percentage;
-      callPlayerFct('setVolume', Math.round(prevVolState.vol * percentage));
+      prevVolState.local = Math.round(prevVolState.vol * percentage);
+      callPlayerFct('setVolume', prevVolState.local);
     }
 
     /*
-    *sets the volume of the player to be the exact volume (0-100)
-    *this should be used by playem
+    *sets the volume of the player to be relative to the exact volume (0-100)
+    *this should be used by playem: this is the global volume
     */
     function setVolume(vol=prevVolState.vol) {
       vol = limitVol(vol);
+
       prevVolState.vol = vol;
-      callPlayerFct('setVolume', vol);
+      prevVolState.unmutedVol = vol;
+      //use the latest but stable ratio of player to global volume
+      var newPlayerVol = null;
+      if (playerVolRatio) {
+        newPlayerVol = vol * playerVolRatio;
+      }
+      else {
+        newPlayerVol = vol * prevVolState.mult;
+      }
+      prevVolState.local = Math.round(newPlayerVol);
+      if (prevVolState.local > 0) {
+        callPlayerFct("unMute");
+      }
+      callPlayerFct("setVolume", Math.round(prevVolState.local));
     }
 
     function stopTrack () {
       if (progress) { clearInterval(progress) }
+      if (volPoll != null) {
+          clearInterval(volPoll);
+          volPoll = null;
+        }
       for (var i in players) {
         if (players[i].stop) { players[i].stop() } else { players[i].pause() }
       }
@@ -345,7 +382,7 @@ function Playem (playemPrefs) {
         callPlayerFct('play', track.trackId, autoplay)
         // setVolume(volume)
         setVolume()
-        if (currentTrack.index == trackList.length - 1) { that.emit('loadMore') }
+        if (currentTrack && currentTrack.index == trackList.length - 1) { that.emit('loadMore') }
         // if the track does not start playing within 7 seconds, skip to next track
         setPlayTimeout(function () {
           console.warn('PLAYEM TIMEOUT') // => skipping to next song
@@ -373,7 +410,9 @@ function Playem (playemPrefs) {
         // console.log(param)
         // console.log(playemPrefs.autoplay);
         // console.log(currentTrack.player)
-        return currentTrack.player[fctName](param, autoplay)
+        if (currentTrack) {
+          return currentTrack.player[fctName](param, autoplay)
+        }
       } catch (e) {
         console.warn('Player call error', fctName, e, e.stack)
       }
@@ -548,7 +587,9 @@ function Playem (playemPrefs) {
       },
       next: function () {
         console.log("next");
-        if (playemPrefs.loop || currentTrack.index + 1 < trackList.length) { playTrack(trackList[(currentTrack.index + 1) % trackList.length]) }
+        if (currentTrack) {
+          if (playemPrefs.loop || currentTrack.index + 1 < trackList.length) { playTrack(trackList[(currentTrack.index + 1) % trackList.length]) }
+        }
       },
       prev: function () {
         playTrack(trackList[(trackList.length + currentTrack.index - 1) % trackList.length])
@@ -557,6 +598,7 @@ function Playem (playemPrefs) {
         if ((currentTrack || {}).trackDuration) { callPlayerFct('setTrackPosition', pos * currentTrack.trackDuration) }
       },
       setVolume: setVolume,
+      setVolumePer: setVolumePer,
       searchTracks: searchTracks,
       setCurrentTrack: function(index) {
         currentTrack = trackList[index];
@@ -573,8 +615,19 @@ function Playem (playemPrefs) {
         playemPrefs.autoplay = !playemPrefs.autoplay;
         return playemPrefs.autoplay;
       },
+      toggleMute: function() {
+        prevVolState.muted = !prevVolState.muted;
+        if (prevVolState.muted) {
+          callPlayerFct("mute");
+        }
+        else {
+          callPlayerFct("unMute", prevVolState.unmutedVol);
+        }
+        return extractVol();
+      },
       getVol: function() {
-        return prevVolState;
+        // return prevVolState;
+        return extractVol();
       }
       // jumpToTrack: function(index) {
       //   if (index < trackList.length) {

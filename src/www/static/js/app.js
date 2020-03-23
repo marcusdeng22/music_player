@@ -126,7 +126,7 @@ app.factory("sortingFuncs", ["orderByFilter", function(orderBy) {
 	//TODO: deprecate this and use server DB sort
 	sortingFuncs.sortBy = function(data, reverse, orderVar, propertyName, preserveOrder=false) {
 		if (!preserveOrder) {
-			reverse = (propertyName !== null && orderVar === propertyName) ? !reverse : false;
+			reverse = (propertyName && orderVar === propertyName) ? !reverse : false;
 		}
 		orderVar = propertyName;
 		data = orderBy(data, orderVar, reverse);
@@ -275,7 +275,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 		//confirm if query is new
 		if (!force) {
 			var diff = false;
-			if (data.curQuery == null) {
+			if (!data.curQuery) {
 				diff = true;
 			}
 			else {

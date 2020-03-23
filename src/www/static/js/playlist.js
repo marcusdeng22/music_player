@@ -283,7 +283,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 			$scope.playlistIndices = [$scope.playlistData.findIndex(function(p) { return p["_id"] == modifiedID; })];
 		}
 		else {
-			if (oldID == null) {
+			if (!oldID) {
 				console.log("multi or none selected");
 				console.log($scope.playlistIndices);
 				clearPlaylistSelected();

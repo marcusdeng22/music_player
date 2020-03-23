@@ -46,7 +46,7 @@ app.controller('downloadCtrl', ['$scope', '$http', '$location', '$window', '$tim
 		myQuery["format"] = $scope.outputFormat;
 
 		//clean data itself
-		if ($scope.data.length == 0 || $scope.data.songs == null || $scope.data.songs.length == 0) {
+		if ($scope.data.length == 0 || !$scope.data.songs || $scope.data.songs.length == 0) {
 			$scope.readyDownload = false;
 			return;
 		}
@@ -58,13 +58,13 @@ app.controller('downloadCtrl', ['$scope', '$http', '$location', '$window', '$tim
 			}
 			mySongIDs.add($scope.data.songs[i]["_id"]);
 			var mySong = {};
-			if ($scope.data.songs[i]["url"] == null) {
+			if (!$scope.data.songs[i]["url"]) {
 				$scope.readyDownload = false;
 				return;
 			}
 			mySong["url"] = $scope.data.songs[i]["url"];
 			mySong["id"] = youtubeFuncs.cleanUrl(mySong["url"]);
-			if ($scope.data.songs[i]["name"] == null) {
+			if (!$scope.data.songs[i]["name"]) {
 				$scope.readyDownload = false;
 				return;
 			}

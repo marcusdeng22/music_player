@@ -67,7 +67,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 			// $scope.playem.addTrackByUrl(data["contents"][i]["url"]);
 			playDatashare.playem.addTrackByUrl(data["contents"][i]["url"]);
 			//add to songsToAdd if no _id
-			if (data["contents"][i]["_id"] == null) {
+			if (!data["contents"][i]["_id"]) {
 				console.log("load adding song to add queue");
 				songsToAdd.push(data["contents"][i]);
 			}
@@ -689,7 +689,9 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 			$("#recommended").height("300px");
 		}
 		else if ($scope.focusMode && $scope.reccMode) {	//show only reccs
-			$("#recommended").height("calc(100% - 20px)");
+			if ($scope.nowPlaying) {
+				$("#recommended").height("calc(100% - 20px)");
+			}
 		}
 		else if (!$scope.focusMode && !$scope.reccMode) {	//show only player
 			$("#mainPlayerContainer").height("100%");

@@ -2,7 +2,7 @@
 	<div class="playRow">
 		<div id="playerDiv" class="playCol" style="width: calc(100% - 350px);">
 			<div style="width: 100%;">
-				<div id="mainPlayerContainer" style="width: 100%;" ng-show="focusMode == false || playDatashare.nowPlaying == null">
+				<div id="mainPlayerContainer" style="width: 100%;" ng-show="focusMode == false || !playDatashare.nowPlaying">
 					Select a playlist first!
 					<!-- player here -->
 				</div>
@@ -49,7 +49,7 @@
 				<button id="saveNewPlaylist" class="btn btn-primary" ng-disabled="!playlistData.touched" ng-click="savePlaylist()">Save</button>
 				<button id="playEditSong" class="btn btn-primary" ng-disabled="songIndices.length == 0" ng-click="editSelected()">Edit</button>
 				<button id="removeFromPlaying" class="btn btn-danger" ng-disabled="songIndices.length == 0" ng-click="removeSelected()">Remove</button>
-				<button class="btn btn-success" ng-click="downloadPlaylist()" ng-disabled="playlistData.contents == null || playlistData.contents.length == 0">Download</button>
+				<button class="btn btn-success" ng-click="downloadPlaylist()" ng-disabled="!playlistData.contents || playlistData.contents.length == 0">Download</button>
 			</div>
 		</div>
 	</div>

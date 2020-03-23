@@ -35,7 +35,9 @@ app.controller('NavCtrl', ['$scope', '$rootScope', '$timeout', '$location', '$wi
 		else if (hash == "logout") {
 			console.log("logging out");
 			$http.post("/logout").then(function(resp) {
-				$window.location.href = '/';
+				$timeout(function () {
+					$window.location.href = '/';
+				});
 			}, function(err) {
 				alert("Session expired");
 				$window.location.href = '/';
@@ -84,11 +86,22 @@ app.controller('NavCtrl', ['$scope', '$rootScope', '$timeout', '$location', '$wi
 
 	playDatashare.playem.on("volChanged", function(volState) {
 		console.log("VOL CHANGED");
-		$scope.volState = volState;
-		if (!$scope.$$phase) {
-			$scope.$digest();
+		if (!$scope.audioDown) {
+			console.log("ACCEPTED CHANGE");
+			console.log(volState);
+			$scope.volState = volState;
+			$("#volumeSlider").slider("value", 100 - $scope.volState.vol);
+			if (!$scope.$$phase) {
+				$scope.$digest();
+			}
 		}
 	});
+
+	$scope.toggleMute = function() {
+		var resVol = playDatashare.playem.toggleMute();
+		$scope.volState.muted = resVol.muted;
+		$("#volumeSlider").slider("value", resVol.muted ? 100 : 100 - resVol.vol);
+	}
 
 	$("#volumeSlider").slider({
 		min: 0,
@@ -100,6 +113,11 @@ app.controller('NavCtrl', ['$scope', '$rootScope', '$timeout', '$location', '$wi
 			console.log("SLIDE");
 			console.log(100 - ui.value);
 			$scope.volState.vol = 100 - ui.value;
+			$scope.volState.muted = (100 - ui.value > 0 ? false : true);
+			playDatashare.playem.setVolume($scope.volState.vol);
+			if (!$scope.$$phase) {
+				$scope.$digest();
+			}
 		},
 		start: function(event, ui) {
 			$scope.audioDown = true;
@@ -119,9 +137,18 @@ app.controller('NavCtrl', ['$scope', '$rootScope', '$timeout', '$location', '$wi
 		}
 	});
 
-	// $scope.$watch("volState", function(newVal, oldVal) {
-	// 	$scope.
-	// })
+	$scope.volIconClass = "fa-volume-up";
+	$scope.$watch("volState", function(newVal) {
+		if (newVal.muted || newVal.vol == 0) {
+			$scope.volIconClass = "fa-volume-mute";
+		}
+		else if (newVal.vol < 50) {
+			$scope.volIconClass = "fa-volume-down";
+		}
+		else {
+			$scope.volIconClass = "fa-volume-up";
+		}
+	}, true);
 
 	//TODO: change the widths below to accomodate the volume control
 	$(function() {
