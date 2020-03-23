@@ -75,6 +75,29 @@ app.controller('NavCtrl', ['$scope', '$rootScope', '$timeout', '$location', '$wi
 	$scope.nextSong = playDatashare.nextSong;
 	$scope.playPause = playDatashare.playPause;
 
+	$scope.volState = playDatashare.playem.getVol();
+
+	playDatashare.playem.on("volChanged", function(volState) {
+		console.log("VOL CHANGED");
+		$scope.volState = volState;
+		if (!$scope.$$phase) {
+			$scope.$digest();
+		}
+	});
+
+	$("#volumeSlider").slider({
+		min: 0,
+		max: 100,
+		value: 100 - $scope.volState.vol,
+		range: "max",
+		orientation: "vertical",
+		slide: function(event, ui) {
+			console.log("SLIDE");
+			console.log(100 - ui.value);
+		}
+	});
+
+	//TODO: change the widths below to accomodate the volume control
 	$(function() {
 		$("#navNowPlaying").width($("#navContainer").outerWidth(true) - $("#navBrand").outerWidth(true) - $("#logoutNav").outerWidth(true) - 48*3 - 220);
 	});

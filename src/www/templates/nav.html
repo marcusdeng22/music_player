@@ -17,6 +17,14 @@
 		<button class="btn" ng-click="previousSong()"><i class="icon-l fas fa-step-backward"></i></button>
 		<button class="btn" ng-click="playPause()"><i class="icon-l fas" ng-class="(playDatashare.currentState==1) ? 'fa-pause' : 'fa-play'"></i></button>
 		<button class="btn" ng-click="nextSong()"><i class="icon-l fas fa-step-forward"></i></button>
+		<div style="position: relative;">
+			<button class="btn" ng-click="toggleMute()"><i class="icon-l fas fa-volume-up"></i></button>
+			<div id="volumeContainer">
+				<div id="volumeBk"></div>
+				<div id="volumeSlider"></div>
+			</div>
+		</div>
+		<div id="navVolumeSliderCtrl">{{volState}}</div>
 		<div id="navNowPlaying" ng-show="playDatashare.nowPlaying" class="nowPlaying ellipsis">
 			{{playDatashare.nowPlaying.name}} - {{playDatashare.nowPlaying.artistStr}}
 		</div>

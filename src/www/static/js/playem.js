@@ -199,7 +199,7 @@ function Playem (playemPrefs) {
     var playTimeout = null
     // var volume = 100
 
-    var prevVolState = {muted: false, vol: 100};
+    var prevVolState = {muted: false, vol: 100, mult: 1};
     var volPoll = null;
 
     /**
@@ -222,11 +222,6 @@ function Playem (playemPrefs) {
         }
       }
       if (player.isReady) { setTimeout(fct) } else { interval = setInterval(poll, 1000) }
-    }
-
-    function pollVolume() {
-      prevVolState = callPlayerFct("getVolume");
-      console.log(prevVolState);
     }
 
     function addTrack (metadata, url) {
@@ -279,20 +274,42 @@ function Playem (playemPrefs) {
       return vol;
     }
 
-    /*
-    *sets the volume of the player as a percentage of the current volume (0-100)
-    *this should be used by clients
-    */
-    function setVolumePer (vol) {
-      // volume = vol
-      vol = limitVol(vol);
-      vol = prevVolState.vol * vol / 100;
-      prevVolState.vol = vol;
-      callPlayerFct('setVolume', vol)
+    //get the volume from the current track's player
+    //only adjusts global volume if player's volume is greater than the current global volume or muted
+    function pollVolume() {
+      var polledVol = callPlayerFct("getVolume");   //{muted: <bool>, vol: <0-100>}
+      console.log(polledVol);
+      if ("muted" in polledVol) {
+        if (prevVolState.muted != polledVol.muted) {
+          prevVolState.muted = polledVol.muted;
+          that.emit("volChanged", prevVolState);
+        }
+      }
+      if ("vol" in polledVol && (!("muted" in polledVol) || !polledVol.muted)) {
+        var curVol = Math.round(polledVol.vol / prevVolState.mult);
+        var diff = curVol - prevVolState.vol;
+        if (diff > 0) {
+          prevVolState.vol = limitVol(prevVolState.vol + diff);
+          setVolume();
+          that.emit("volChanged", prevVolState);
+        }
+        // prevVolState.vol += prevVolState.vol - polledVol.vol;
+      }
     }
 
     /*
-    *sets the volume of the player to be the exact volume (0- 100)
+    *sets the volume of the player as a percentage of the global volume (0-100)
+    *this should be used by clients
+    */
+    function setVolumePer (percentage) {
+      // volume = vol
+      percentage = limitVol(percentage) / 100;
+      prevVolState.mult = percentage;
+      callPlayerFct('setVolume', Math.round(prevVolState.vol * percentage));
+    }
+
+    /*
+    *sets the volume of the player to be the exact volume (0-100)
     *this should be used by playem
     */
     function setVolume(vol=prevVolState.vol) {
@@ -555,6 +572,9 @@ function Playem (playemPrefs) {
       toggleAutoplay: function() {
         playemPrefs.autoplay = !playemPrefs.autoplay;
         return playemPrefs.autoplay;
+      },
+      getVol: function() {
+        return prevVolState;
       }
       // jumpToTrack: function(index) {
       //   if (index < trackList.length) {

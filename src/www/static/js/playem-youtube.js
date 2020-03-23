@@ -365,7 +365,22 @@ console.log(window.location);
 
   Player.prototype.getVolume = function() {
     // console.log("YT player get vol")
-    return {muted: this.player.isMuted(), vol: this.player.getVolume()};
+    if (this.player && this.player.isMuted && this.player.getVolume) {
+      return {muted: this.player.isMuted(), vol: Math.round(this.player.getVolume())};
+    }
+    return {};
+  }
+
+  Player.prototype.mute = function() {
+    if (this.player && this.player.mute) {
+      this.player.mute();
+    }
+  }
+
+  Player.prototype.unMute = function() {
+    if (this.player && this.player.unMute) {
+      this.player.unMute();
+    }
   }
 
   //return Player;
