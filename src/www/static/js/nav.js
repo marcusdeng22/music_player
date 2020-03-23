@@ -152,10 +152,10 @@ app.controller('NavCtrl', ['$scope', '$rootScope', '$timeout', '$location', '$wi
 
 	//TODO: change the widths below to accomodate the volume control
 	$(function() {
-		$("#navNowPlaying").width($("#navContainer").outerWidth(true) - $("#navBrand").outerWidth(true) - $("#logoutNav").outerWidth(true) - 48*3 - 220);
+		$("#navNowPlaying").width($("#navContainer").outerWidth(true) - $("#navBrand").outerWidth(true) - $("#logoutNav").outerWidth(true) - 48*4 - 220);
 	});
 
 	$(window).on("resize", function() {
-		$("#navNowPlaying").width($("#navContainer").outerWidth() - $("#navBrand").outerWidth() - $("#logoutNav").outerWidth() - 48*3 - 220);
+		$("#navNowPlaying").width($("#navContainer").outerWidth() - $("#navBrand").outerWidth() - $("#logoutNav").outerWidth() - 48*4 - 220);
 	});
 }]);
