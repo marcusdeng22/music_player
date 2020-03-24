@@ -528,92 +528,92 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 			}
 		}
 	};
-	data.checkSongFields = function() {	//check fields of editted data before pushing; returns true if a field is bad
-		// console.log("checking edit song fields");
-		// console.log(data.editData);
+	data.checkSongFields = function(df=data.editData) {	//check fields of editted data before pushing; returns true if a field is bad
+		console.log("checking edit song fields");
+		console.log(df);
 		var reqKeys = ["url", "type", "name", "artist"];
 		var mediaTypes = ["youtube"];
 		for (var i = 0; i < reqKeys.length; i ++) {
 			var key = reqKeys[i];
-			if (data.editData[key] == undefined || data.editData[key] == "") {
-				// console.log(key + " is bad");
+			if (df[key] == undefined || df[key] == "") {
+				console.log(key + " is bad");
 				return true;
 			}
 			if (key == "type") {
 				//force to lowercase
-				data.editData[key] = data.editData[key].toLowerCase();
-				if (!mediaTypes.includes(data.editData[key])) {
+				df[key] = df[key].toLowerCase();
+				if (!mediaTypes.includes(df[key])) {
 					return true;
 				}
 			}
 			if (key == "artist") {
 				//force to array if str
-				if (typeof data.editData[key] === "string" || data.editData[key] instanceof String) {
-					var tempArtistStr = data.editData[key].trim();
+				if (typeof df[key] === "string" || df[key] instanceof String) {
+					var tempArtistStr = df[key].trim();
 					if (tempArtistStr.charAt(tempArtistStr.length - 1) == ",") {
 						return true;
 					}
-					data.editData[key] = data.editData[key].split(",").filter(function(el) {return el;});
+					df[key] = df[key].split(",").filter(function(el) {return el;});
 				}
 			}
 		}
 		//unrequired keys
-		if (data.editData["album"] != undefined) {
-			data.editData["album"] = String(data.editData["album"]);
+		if (df["album"] != undefined) {
+			df["album"] = String(df["album"]);
 		}
 		else {
-			data.editData["album"] = "";
+			df["album"] = "";
 		}
-		if (data.editData["genre"] != undefined) {
-			data.editData["genre"] = String(data.editData["genre"]);
+		if (df["genre"] != undefined) {
+			df["genre"] = String(df["genre"]);
 		}
 		else {
-			data.editData["genre"] = "";
+			df["genre"] = "";
 		}
-		if (data.editData["vol"] != undefined) {
-			if (isNaN(parseInt(data.editData["vol"]))) {
-				data.editData["vol"] = 100;
+		if (df["vol"] != undefined) {
+			if (isNaN(parseInt(df["vol"]))) {
+				df["vol"] = 100;
 			}
 			else {
-				data.editData["vol"] = parseInt(data.editData["vol"]);
+				df["vol"] = parseInt(df["vol"]);
 			}
-			if (data.editData["vol"] < 0) {
-				data.editData["vol"] = 0;
+			if (df["vol"] < 0) {
+				df["vol"] = 0;
 			}
-			if (data.editData["vol"] > 100) {
-				data.editData["vol"] = 100;
+			if (df["vol"] > 100) {
+				df["vol"] = 100;
 			}
 		}
 		else {
-			data.editData["vol"] = 100;	//default
+			df["vol"] = 100;	//default
 		}
-		if (data.editData["start"] != undefined) {
-			if (isNaN(parseInt(data.editData["start"]))) {
-				data.editData["start"] = 0;
+		if (df["start"] != undefined) {
+			if (isNaN(parseInt(df["start"]))) {
+				df["start"] = 0;
 			}
 			else {
-				data.editData["start"] = parseInt(data.editData["start"]);
+				df["start"] = parseInt(df["start"]);
 			}
-			if (data.editData["start"] < 0) {
-				data.editData["start"] = 0;
+			if (df["start"] < 0) {
+				df["start"] = 0;
 			}
 		}
 		else {
-			data.editData["start"] = 0;
+			df["start"] = 0;
 		}
-		if (data.editData["end"] != undefined) {
-			if (isNaN(parseInt(data.editData["end"]))) {
-				data.editData["end"] = 0;
+		if (df["end"] != undefined) {
+			if (isNaN(parseInt(df["end"]))) {
+				df["end"] = 0;
 			}
 			else {
-				data.editData["end"] = parseInt(data.editData["end"]);
+				df["end"] = parseInt(df["end"]);
 			}
-			if (data.editData["end"] < 0) {
-				data.editData["end"] = 0;
+			if (df["end"] < 0) {
+				df["end"] = 0;
 			}
 		}
 		else {
-			data.editData["end"] = 0;
+			df["end"] = 0;
 		}
 		// console.log("edit data ok");
 		return false;
@@ -637,52 +637,74 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 			alert("Failed to add music; does it exist already?");
 		});
 	};
-	data.addMultipleSongs = function(toAddList, toCall=null) {
+	data.addMultipleSongs = function(toAddList, editMode, toCall=null) {
+		console.log("ADDING MULTIPLE SONGS");
 		// data.setEditData(toAddList);	//this replaces the editted fields: not good! but still need to check if fields are valid
-		if (data.checkSongFields()) {
-			return;
-		}
-		//merge data from edit fields to toAddList
-		//if multiple edit urls, check if toAddList url is present
-		//if single edit url, check if toAddList url is it
-		//if both false, then return (can't match)
-		//for all other fields, if VARIES then skip
-		//else apply
-		if (toAddList.length == 1 && data.editDataURL.size == 1) {
-			if (!data.editDataURL.has(toAddList[0]["url"])) {
+		if (editMode) {
+			if (data.checkSongFields()) {
+				alert("Invalid edit song data");
 				return;
 			}
-		}
-		else if (toAddList.length > data.editDataURL.size) {
-			return;	//impossible to occur; must have duplicate urls and thus is invalid
-		}
-		else if (data.editData["url"] != VARIES) {
-			return;	//can't have duplicate urls
+
+			//merge data from edit fields to toAddList
+			//if multiple edit urls, check if toAddList url is present
+			//if single edit url, check if toAddList url is it
+			//if both false, then return (can't match)
+			//for all other fields, if VARIES then skip
+			//else apply
+			if (toAddList.length == 1 && data.editDataURL.size == 1) {
+				if (!data.editDataURL.has(toAddList[0]["url"])) {
+					return;
+				}
+			}
+			else if (toAddList.length > data.editDataURL.size) {
+				return;	//impossible to occur; must have duplicate urls and thus is invalid
+			}
+			else if (data.editData["url"] != VARIES) {
+				return;	//can't have duplicate urls
+			}
+			else {
+				//multiple urls; check if all toAddList urls are present
+				for (var j = 0; j < toAddList.length; j ++) {
+					if (!data.editDataURL.has(toAddList[j]["url"])) {
+						return;
+					}
+				}
+			}
+			console.log("passed url check");
 		}
 		else {
-			//multiple urls; check if all toAddList urls are present
-			for (var j = 0; j < toAddList.length; j ++) {
-				if (!data.editDataURL.has(toAddList[j]["url"])) {
+			for (var x = 0; x < toAddList.length; x ++) {
+				if (data.checkSongFields(toAddList[x])) {
+					alert("Invalid song data");
 					return;
 				}
 			}
 		}
-		console.log("passed url check");
+		console.log("PASSED MULT SONG FIELD CHECK");
+		
 		//now we have verified we have valid urls; time to collect editted fields
 		var myQuery = [];
-		for (var i = 0; i < toAddList.length; i ++) {
-			var mySong = {};
-			mySong["url"] = toAddList[i]["url"];	//guaranteed by above check to be valid
-			for (var key in data.editData) {
-				if (data.editData[key] != VARIES) {
-					mySong[key] = data.editData[key];
-				}	
-				else {
-					mySong[key] = toAddList[i][key];
+		if (editMode) {
+			for (var i = 0; i < toAddList.length; i ++) {
+				var mySong = {};
+				mySong["url"] = toAddList[i]["url"];	//guaranteed by above check to be valid
+				for (var key in data.editData) {
+					if (data.editData[key] != VARIES) {
+						mySong[key] = data.editData[key];
+					}	
+					else {
+						mySong[key] = toAddList[i][key];
+					}
 				}
+				myQuery.push(mySong);
 			}
-			myQuery.push(mySong);
 		}
+		else {
+			myQuery = toAddList;
+		}
+		console.log("ADDING MULT SONGS:");
+		console.log(myQuery);
 		$http.post("/addManyMusic", myQuery).then(function(resp) {
 			console.log("add many music ok");
 			console.log(resp.data);

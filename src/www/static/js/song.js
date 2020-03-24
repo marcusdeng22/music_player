@@ -25,7 +25,8 @@ app.controller('songCtrl', ['$scope', '$http', '$location', '$timeout', '$rootSc
 			"name": "Unnamed playlist",
 			//date now
 			"contents": [],
-			"touched": true
+			"touched": true,
+			"renamed": ""
 		};
 		songDatashare.songIndices.sort((a, b) => a-b);
 		for (var i = 0; i < songDatashare.songIndices.length; i ++) {

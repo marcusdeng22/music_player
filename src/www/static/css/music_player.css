@@ -69,6 +69,7 @@
 	position: absolute;
 	left: 0px;
 	width: 100%;
+	cursor: pointer;
 }
 
 #volumeSlider > .ui-slider-handle {
@@ -83,6 +84,7 @@
 	margin-left: 0px;
 	margin-bottom: -8px;
 	outline: none;
+	cursor: pointer;
 }
 
 .ellipsis {
@@ -168,6 +170,12 @@
 #nowPlayingListTitle {
 	font-size: 22px;
 	width: calc(100% - 48px - 48px);
+}
+
+#nowPlaylistListTitleNotif {
+	position: absolute;
+	color: red;
+	cursor: pointer;
 }
 
 .icon,.icon-l{

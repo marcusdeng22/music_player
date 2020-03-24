@@ -1,7 +1,7 @@
 app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http", "uiSortableMultiSelectionMethods", "$rootScope", "youtubeFuncs", "songDatashare", "playDatashare",
 		function ($scope, $timeout, $location, $window, $http, uiSortableMultiSelectionMethods, $rootScope, youtubeFuncs, songDatashare, playDatashare) {
 	$scope.songDatashare = songDatashare;
-	$scope.playlistData = {touched: false};
+	$scope.playlistData = {touched: false, renamed: "", name:""};
 	$scope.songIndices = [];
 	$scope.focusMode = false;
 	$scope.reccMode = true;
@@ -59,6 +59,9 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		// loadPlayem();
 		playDatashare.loadPlayem();
 		$scope.playlistData = data;
+		if (! ("renamed" in data)) {
+			$scope.playlistData.renamed = "";
+		}
 		for (var i = 0; i < data["contents"].length; i ++) {
 			// $scope.playlistData["contents"][i]["artistStr"] = data["contents"][i]["artist"].join(", ");
 			if (!$scope.shuffleOn) {
@@ -92,6 +95,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		var myQuery = {
 			"touched": data.touched,
 			"name": $scope.playlistData.name,
+			"renamed": $scope.playlistData.renamed,
 			"contents": $scope.playlistData.contents,
 			"shuffle": false
 		};
@@ -237,16 +241,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 					tempData["type"] = "youtube";
 					tempData["url"] = parentA.attr("href");
 					//search for this url in song data; if it exists copy the info instead of adding
-					//TODO: make this a query?
 					var matched = false;
-					// for (var i = 0; i < songDatashare.songData.length; i ++) {
-					// 	if (songDatashare.songData[i]["url"] == tempData["url"]) {
-					// 		console.log("MATCHED URL");
-					// 		tempData = songDatashare.songData[i];
-					// 		matched = true;
-					// 		break;
-					// 	}
-					// }
 					$http.post("/findMusic", {"url": [tempData["url"]]}).then(function(m_resp) {
 						console.log(m_resp);
 						if (m_resp.data.results.length == 1) {
@@ -265,162 +260,30 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 							console.log(tempData);
 							songsToAdd.push(tempData);
 						}
-					// if (!matched) {
-					// 	console.log("FAILED TO FIND URL: MUST BE NEW SONG");
-					// 	tempData["name"] = parentA.children(".title").text().trim();
-					// 	tempData["artistStr"] = parentA.children(".stat.attribution").text().trim();
-					// 	tempData["artist"] = [tempData["artistStr"]];
-					// 	tempData["album"] = "";
-					// 	tempData["genre"] = "";
-					// 	tempData["vol"] = 100;
-					// 	tempData["start"] = 0;
-					// 	tempData["end"] = 0;
-					// 	console.log(tempData);
-					// 	songsToAdd.push(tempData);
-					// }
-					//add to contents and set origOrder and add to playem
-					var curOrigOrder = playDatashare.nowPlaying.origOrder;
-					// var curOrigOrder = $scope.nowPlaying.origOrder;
-					for (var i = 0; i < $scope.playlistData.contents.length; i ++) {
-						if ($scope.playlistData.contents[i].origOrder > curOrigOrder) {
-							$scope.playlistData.contents[i].origOrder ++;
+						//add to contents and set origOrder and add to playem
+						var curOrigOrder = playDatashare.nowPlaying.origOrder;
+						for (var i = 0; i < $scope.playlistData.contents.length; i ++) {
+							if ($scope.playlistData.contents[i].origOrder > curOrigOrder) {
+								$scope.playlistData.contents[i].origOrder ++;
+							}
 						}
-					}
-					tempData["origOrder"] = curOrigOrder + 1;
-					$scope.playlistData.contents.splice($scope.nowPlayingIndex + 1, 0, tempData);
-					if (!$scope.$$phase) {
-						$scope.$apply();
-					}
-					setQueue();
-					$scope.playlistData.touched = true;
-					$http.post("/setLast", {"touched": true, "contents": $scope.playlistData.contents}).then(undefined, function(err) {
-						console.log(err);
-						alert("Failed to update last playlist");
+						tempData["origOrder"] = curOrigOrder + 1;
+						$scope.playlistData.contents.splice($scope.nowPlayingIndex + 1, 0, tempData);
+						if (!$scope.$$phase) {
+							$scope.$apply();
+						}
+						setQueue();
+						$scope.playlistData.touched = true;
+						$http.post("/setLast", {"touched": true, "contents": $scope.playlistData.contents}).then(undefined, function(err) {
+							console.log(err);
+							alert("Failed to update last playlist");
+						});
 					});
-				});
 				});
 		}, function(err) {
 			console.log(err);
 		});
 	}
-
-	function oldRecommended() {
-		//from: http://www.whateverorigin.org/
-		$.getJSON('http://www.whateverorigin.org/get?url=' + encodeURIComponent(playDatashare.nowPlaying["url"]) + '&callback=?', function(data){
-		// $.getJSON('http://www.whateverorigin.org/get?url=' + encodeURIComponent($scope.nowPlaying["url"]) + '&callback=?', function(data){
-			// alert(data.contents);
-			console.log("RECEIVED recommended data!");
-			console.log(data);
-			if (data && data != null && typeof data == "object" && data.contents && data.contents != null && typeof data.contents == "string") {
-				//from: https://stackoverflow.com/questions/6659351/removing-all-script-tags-from-html-with-js-regular-expression
-				var reccHtml = data.contents.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "");
-				// console.log(reccHtml);
-				$("#recommended").html($("li.video-list-item.related-list-item.show-video-time.related-list-item-compact-video", reccHtml));
-				$("#recommended > li").wrap('<div class="recc-container"/>').contents().unwrap();
-				//modify links
-				var duplicateLinks = [];
-				var addingLinks = new Set();
-				$("#recommended").find("a, img").attr("href", function(i, attr) {
-					if (typeof attr != "undefined") {
-						let key = $(this).parent().attr("class") + attr;
-						if (addingLinks.has(key)) {
-							duplicateLinks.push(i);
-						}
-						else {
-							addingLinks.add(key);
-						}
-						return "https://youtube.com" + attr;
-					}
-				});
-				//remove duplicate links
-				console.log("REMOVING DUPS");
-				console.log(duplicateLinks);
-				console.log(addingLinks);
-				duplicateLinks.sort(function(a, b) { return b - a; });
-				for (var i = 0; i < duplicateLinks.length; i ++) {
-					console.log("removing duplicate");
-					$("#recommended").find("a, img").eq(duplicateLinks[i]).parents(".recc-container").remove();
-				}
-				//modify images
-				$("#recommended").find("img").attr("src", function(i, src) {
-					return $(this).attr("data-thumb");
-				});
-				//remove duation span
-				$(".content-wrapper > a > span:contains(Duration)").remove();
-				//remove view count
-				$(".content-wrapper").find(".stat.view-count").remove();
-				//attach a click event handler to the links
-				$("#recommended").find("a").on("click", function(e) {
-					console.log("clicked recc link");
-					console.log(this);
-					e.preventDefault();
-					//insert link data as the next song
-					var tempData = {};
-					var parentA;
-					var curParent = $(this).parent();
-					if (curParent.is(".thumb-wrapper")) {
-						console.log("thumb clicked");
-						parentA = $(this).parent().siblings(".content-wrapper").find("a");
-					}
-					else if (curParent.is(".content-wrapper")) {
-						console.log("span clicked");
-						parentA = $(this);
-					}
-					else {
-						return;
-					}
-					console.log("found parent A");
-					console.log(parentA);
-					tempData["type"] = "youtube";
-					tempData["url"] = parentA.attr("href");
-					//search for this url in song data; if it exists copy the info instead of adding
-					//TODO: make this a query?
-					var matched = false;
-					for (var i = 0; i < songDatashare.songData.length; i ++) {
-						if (songDatashare.songData[i]["url"] == tempData["url"]) {
-							console.log("MATCHED URL");
-							tempData = songDatashare.songData[i];
-							matched = true;
-							break;
-						}
-					}
-					if (!matched) {
-						console.log("FAILED TO FIND URL: MUST BE NEW SONG");
-						tempData["name"] = parentA.children(".title").text().trim();
-						tempData["artistStr"] = parentA.children(".stat.attribution").text().trim();
-						tempData["artist"] = [tempData["artistStr"]];
-						tempData["album"] = "";
-						tempData["genre"] = "";
-						tempData["vol"] = 100;
-						tempData["start"] = 0;
-						tempData["end"] = 0;
-						console.log(tempData);
-						songsToAdd.push(tempData);
-					}
-					//add to contents and set origOrder and add to playem
-					var curOrigOrder = playDatashare.nowPlaying.origOrder;
-					// var curOrigOrder = $scope.nowPlaying.origOrder;
-					for (var i = 0; i < $scope.playlistData.contents.length; i ++) {
-						if ($scope.playlistData.contents[i].origOrder > curOrigOrder) {
-							$scope.playlistData.contents[i].origOrder ++;
-						}
-					}
-					tempData["origOrder"] = curOrigOrder + 1;
-					$scope.playlistData.contents.splice($scope.nowPlayingIndex + 1, 0, tempData);
-					$scope.$apply();
-					setQueue();
-					$scope.playlistData.touched = true;
-					$http.post("/setLast", {"touched": true, "contents": $scope.playlistData.contents}).then(undefined, function(err) {
-						console.log(err);
-						alert("Failed to update last playlist");
-					});
-				});
-			}
-		}).fail(function() {
-			$("#recommended").html('<p>Failed to get recommended data</p>');
-		});
-	}
-
 
 	$("#playingSelect").on('ui-sortable-selectionschanged', function (e, args) {
 		//updates new indices; track ordering handled by stop
@@ -602,10 +465,16 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		}
 	};
 
+	$scope.revertName = function() {
+		$scope.playlistData.name = $scope.playlistData.renamed;
+	}
+
 	function doSavePlaylistCallback() {
 		$rootScope.$emit("songsRemoved");
 		$scope.playlistData.touched = false;
-		$http.post("/setLast", {"touched": false, "_id": $scope.playlistData["_id"], "name": $scope.playlistData.name, "contents": $scope.playlistData.contents}).then(undefined, function(err) {
+		$scope.playlistData.renamed = $scope.playlistData.name;
+		$http.post("/setLast", {"touched": false, "_id": $scope.playlistData["_id"], "name": $scope.playlistData.name,
+				"renamed": $scope.playlistData.renamed, "contents": $scope.playlistData.contents}).then(undefined, function(err) {
 			alert("Failed to update last playlist");
 		});
 	}
@@ -613,11 +482,15 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 	function doSavePlaylist() {
 		var submission = {};
 		submission["name"] = $scope.playlistData["name"];
+		if (submission["name"].length == 0) {
+			alert("Invalid playlist name");
+			return;
+		}
 		submission["contents"] = [];
 		for (var i = 0; i < $scope.playlistData.contents.length; i ++) {
 			submission["contents"].push($scope.playlistData.contents[i]["_id"]);
 		}
-		if ($scope.playlistData["_id"]) {
+		if ($scope.playlistData.renamed == $scope.playlistData.name && $scope.playlistData["_id"]) {
 			console.log("saving playlist");
 			submission["_id"] = $scope.playlistData["_id"];
 			$http.post("/editPlaylist", submission).then(function(resp) {
@@ -631,15 +504,18 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		}
 		else {
 			console.log("adding playlist");
-			$http.post("/addPlaylist", submission).then(function(resp) {
-				console.log("adding playlist ok");
-				$scope.playlistData["_id"] = resp.data["_id"];
-				doSavePlaylistCallback();
-				alert("Playlist added!");
-			}, function(err) {
-				console.log(err);
-				alert("Failed to add playlist");
-			});
+			if (confirm("Create new playlist?")) {
+				$http.post("/addPlaylist", submission).then(function(resp) {
+					console.log("adding playlist ok");
+					$scope.playlistData["_id"] = resp.data["_id"];
+					$scope.playlistData.renamed = $scope.playlistData.name;
+					doSavePlaylistCallback();
+					alert("Playlist added!");
+				}, function(err) {
+					console.log(err);
+					alert("Failed to add playlist");
+				});
+			}
 		}
 	};
 
@@ -647,7 +523,9 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		//check if need to write songs first
 		if (songsToAdd.length > 0) {
 			if (confirm("There are new songs to add; continue?")) {
-				songDatashare.addMultipleSongs(songsToAdd, function(insertedData) {
+				console.log("SAVING PLAYLIST WITH NEW SONGS");
+				console.log(songsToAdd);
+				songDatashare.addMultipleSongs(songsToAdd, false, function(insertedData) {
 					//clear songsToAdd, and copy in new info
 					for (var j = 0; j < insertedData.length; j ++) {
 						for (var i = songsToAdd.length - 1; i >= 0; i --) {
@@ -733,7 +611,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		if (edittingToAdd.length > 0) {
 			//add these songs!
 			console.log("adding mult songs");
-			songDatashare.addMultipleSongs(edittingToAdd, function(insertedData) {
+			songDatashare.addMultipleSongs(edittingToAdd, true, function(insertedData) {
 				//remove songs that were added via edit
 				for (var j = 0; j < insertedData.length; j ++) {
 					for (var i = songsToAdd.length - 1; i >= 0; i --) {
@@ -817,7 +695,8 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 	$rootScope.$on("playlistChanged", function(e, updatedData) {
 		//only for name changes; doesn't support updating the song info yet
 		$scope.playlistData.name = updatedData.name;
-		$http.post("/setLast", {"name": $scope.playlistData.name}).then(undefined, function(err) {
+		$scope.playlistData.renamed = updatedData.name;
+		$http.post("/setLast", {"name": $scope.playlistData.name, "renamed": $scope.playlistData.renamed}).then(undefined, function(err) {
 			alert("Failed to update last playlist");
 		});
 	});

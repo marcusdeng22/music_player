@@ -23,7 +23,8 @@
 		</div>
 		<div id="playerContentsDiv" class="playCol" style="width: 350px;">
 			<div>
-				<input type=text ng-model="playlistData.name" ng-change="(playlistData.contents) ? playlistData.touched = true : playlistData" id="nowPlayingListTitle">
+				<input type=text ng-model="playlistData.name" ng-change="(playlistData.contents) ? playlistData.touched = true : ''" id="nowPlayingListTitle">
+				<i id="nowPlaylistListTitleNotif" class="fas fa-exclamation-circle" ng-show="playlistData.renamed != playlistData.name" ng-click="revertName()"></i>
 				<button style="float: right;" class="btn" ng-click="toggleShuffle()"><i class="icon-l fas fa-random" ng-class="shuffleOn ? 'icon-toggled' : ''"></i></button>
 				<button style="float: right;" class="btn" ng-click="toggleRepeat()"><i class="icon-l fas fa-sync-alt" ng-class="repeatOn ? 'icon-toggled' : ''"></i></button>
 			</div>

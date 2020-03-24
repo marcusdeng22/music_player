@@ -513,6 +513,8 @@ class ApiGateway(object):
 		myPlaylist = dict()
 
 		myPlaylist["name"] = m_utils.checkValidData("name", data, str)
+		if len(myPlaylist["name"]) == 0:
+			raise cherrypy.HTTPError(400, "Invalid playlist name")
 		myPlaylist["date"] = datetime.now()
 		contentList = m_utils.checkValidData("contents", data, list)
 		myContent = []
@@ -862,6 +864,7 @@ class ApiGateway(object):
 				"contents": [(dict)] (optional),	#order is important; will store the shuffled order
 				"startIndex": (int, optional),
 				"touched": (boolean, optional),
+				"renamed": (str, optional),
 				"loop": (boolean, optional),
 				"shuffle": (boolean, optional)
 			}
@@ -891,6 +894,8 @@ class ApiGateway(object):
 			myQuery["playlist.startIndex"] = m_utils.checkValidData("startIndex", data, int)
 		if "touched" in data:
 			myQuery["playlist.touched"] = m_utils.checkValidData("touched", data, bool)
+		if "renamed" in data:
+			myQuery["playlist.renamed"] = m_utils.checkValidData("renamed", data, str)
 		if "loop" in data:
 			myQuery["loop"] = m_utils.checkValidData("loop", data, bool)
 		if "shuffle" in data:

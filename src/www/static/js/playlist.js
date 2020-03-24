@@ -442,11 +442,13 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 			"name": "Unnamed playlist",
 			//date now
 			"contents": [],
-			"touched": false
+			"touched": false,
+			"renamed": ""
 		};
 		if ($scope.playlistIndices.length == 1) {
 			passedList = angular.copy($scope.playlistData[$scope.playlistIndices]);
 			passedList["touched"] = false;
+			passedList["renamed"] = passedList.name;
 		}
 		else {
 			$scope.playlistIndices.sort((a, b) => a-b);
