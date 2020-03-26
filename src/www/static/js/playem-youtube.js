@@ -238,6 +238,7 @@ console.log(window.location);
     });
     that.element = that.player.getIframe();
     that.player.addEventListener('onReady', function(event) {
+      that.player.setVolume(that.embedVars.vol);
       that.safeClientCall("onEmbedReady", that);                          //this calls the function in playem.js
       // that.player.loadVideoById(that.embedVars.videoId);
       that.player.cueVideoById(that.embedVars.videoId);
@@ -318,12 +319,13 @@ console.log(window.location);
     return /([a-zA-Z0-9_\-]+)/.test(id) && RegExp.lastParen;
   }
 
-  Player.prototype.play = function(id, autoplay) {
+  Player.prototype.play = function(id, vol=50, autoplay) {
     id = cleanId(id);
     console.log("PLAY -> YoutubePlayer", this.currentId, id);
     console.log(autoplay);
     if (!this.currentId || this.currentId != id) {
       this.embedVars.videoId = id;
+      this.embedVars.vol = vol;
       this.embedVars.autoplay = autoplay;
       this.embed(this.embedVars);
     }

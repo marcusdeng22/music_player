@@ -17,7 +17,7 @@ app.controller('editSongCtrl', ['$scope', '$rootScope', '$http', '$location', '$
 		songDatashare.playem.stop();
 		songDatashare.playem.clearQueue();
 		$timeout(function() {
-			songDatashare.playem.addTrackByUrl($scope.songDatashare.editData["url"]);
+			songDatashare.playem.addTrackByUrl($scope.songDatashare.editData["url"], $scope.songDatashare.editData["vol"]);
 			songDatashare.playem.play();
 		});
 	}

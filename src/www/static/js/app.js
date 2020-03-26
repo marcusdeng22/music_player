@@ -222,30 +222,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 	var oldListTemplate = null;
 	data.loadListTemplate = function(targetId, $scope) {
 		console.log("loading list template");
-		// if (oldListTemplate != null && oldListTemplate["childScope"]) {
-		// 	console.log("destroying old list template");
-		// 	oldListTemplate["childScope"].$destroy();
-		// }
-		// oldListTemplate = $scope;
-		// $scope["listTemplateDiv"] = targetId;
-		// console.log("LIST TEMPLATE SCOPE SET");
-		// console.log($scope);
-		// // if (data.listTemplateId != "" && data.listTemplateId != targetId){	//always empty
-		// if (data.listTemplateId != "") {
-		// 	$(data.listTemplateId).empty();
-		// }
-		// // if (data.listTemplateId != targetId) {		//or should it always recompile?
-		// 	//load template
-			data.listTemplateId = targetId;
-		// 	data.songIndices = [];
-		// 	data.tab = "#existingSongSearch";
-		// 	$(targetId).load("/shared/list_edit_song.html", function() {
-		// 		console.log("compiling template");
-		// 		console.log($scope.$id);
-		// 		$compile($(targetId).contents())($scope);
-		// 	});
-		// // }
-		// //$templateRequest does not work for some reason; fails to bind properly
+		data.listTemplateId = targetId;
 		data.songIndices = [];
 		$("#listEditSongDiv").detach().appendTo($(targetId));
 		$rootScope.$emit("clearSongSearch");
@@ -322,20 +299,6 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 		data.curQuery = query;
 		data.orderVar = sortBy;
 		data.reverse = descending;
-		// data.curPage = page;
-		// if (data.curPage == 0) {
-		// 	data.songData = [];	//clear old data, since loading page 0
-		// }
-		// else if (page * SONG_PAGE_SIZE > data.totalResults) {
-		// 	console.log("requested page more than limit");
-		// 	return;
-		// }
-		// if (data.scrollBusy) {
-		// 	console.log("busy");
-		// 	return;
-		// }
-		//set busy, and set the new defaults
-		// data.scrollBusy = true;
 		
 		query["sortby"] = sortBy;
 		query["descend"] = descending;
@@ -343,14 +306,8 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 		return $http.post("/findMusic", query).then(function(resp) {
 			console.log("got song data");
 			console.log(resp);
-			// data.songData = data.songData.concat(resp.data.results);
 			data.songData = resp.data.results;
 			data.totalResults = resp.data.count;
-			// if (data.curPage == 0) {
-				// data.clearSelected();
-			// }
-			// data.curPage ++;
-			// data.scrollBusy = false;
 			curIndex = 0;
 			data.displayedSongData = [];
 			data.dataNotReady = false;
@@ -365,10 +322,6 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 	};
 	data.displayedSongData = [];
 	data.loadDisplayedSongData = function() {
-		// if (scrollBusy) {
-		// 	return;
-		// }
-		// scrollBusy = true;
 		console.log("DISPLAYING");
 		console.log(data.songData[0]);
 		for (var x = 0; x < SONG_PAGE_SIZE && curIndex < data.songData.length; x ++) {
@@ -399,43 +352,8 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 	data.editDataURL = new Set();	//store the edit song URLs here
 	// data.playem = null;	//store the preview player info here
 	data.playem = new Playem();
-	var oldEditTemplate = null;
 	data.loadEditTemplate = function(targetId, $scope, toAdd=null, callback=null) {
-		// if (oldEditTemplate != null && oldEditTemplate["childScope"]) {
-		// 	console.log("destroying old edit template");
-		// 	oldEditTemplate["childScope"].$destroy();
-		// }
-		// oldEditTemplate = $scope;
-		// $scope["editTemplateDiv"] = targetId;
-		// console.log("SETTING SCOPE");
-		// console.log($scope);
-		// // force = true;
-		// // if ((data.editTemplateId != "" && data.editTemplateId != targetId) || force) {
-		// if (data.editTemplateId != "") {
-		// 	$(data.editTemplateId).empty();
-		// }
-		// // if (data.editTemplateId != targetId || force) {
-		// 	console.log("loading edit template");
-			data.editTemplateId = targetId;
-		// 	//set new data
-		// 	if (toAdd != null) {
-		// 		data.setEditData(toAdd);
-		// 	}
-		// 	else {
-		// 		data.resetEdit();
-		// 	}
-		// 	//load and compile
-		// 	$(targetId).load("/shared/editSong.html", function() {
-		// 		//stop and load playem
-		// 		data.reloadPlayem();
-		// 		$timeout(function() {
-		// 			$compile($(targetId).contents())($scope);
-		// 			if (callback != null) {
-		// 				callback();
-		// 			}
-		// 		});
-		// 	});
-		// // }
+		data.editTemplateId = targetId;
 		if (toAdd != null) {
 			data.setEditData(toAdd);
 		}
@@ -470,7 +388,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 		console.log("DONE RELOADING PLAYEM PREVIEWER");
 	};
 	data.resetEdit = function() {
-		data.editData = {"url": "", "type": "youtube", "name": "", "artist": [], "album": "", "genre": "", "vol": 100, "start": 0, "end": 0};
+		data.editData = {"url": "", "type": "youtube", "name": "", "artist": [], "album": "", "genre": "", "vol": 50, "start": 0, "end": 0};
 		data.editDataID.clear();
 		data.editDataURL.clear();
 	};
@@ -529,14 +447,14 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 		}
 	};
 	data.checkSongFields = function(df=data.editData) {	//check fields of editted data before pushing; returns true if a field is bad
-		console.log("checking edit song fields");
-		console.log(df);
+		// console.log("checking edit song fields");
+		// console.log(df);
 		var reqKeys = ["url", "type", "name", "artist"];
 		var mediaTypes = ["youtube"];
 		for (var i = 0; i < reqKeys.length; i ++) {
 			var key = reqKeys[i];
 			if (df[key] == undefined || df[key] == "") {
-				console.log(key + " is bad");
+				// console.log(key + " is bad");
 				return true;
 			}
 			if (key == "type") {
@@ -572,7 +490,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 		}
 		if (df["vol"] != undefined) {
 			if (isNaN(parseInt(df["vol"]))) {
-				df["vol"] = 100;
+				df["vol"] = 50;
 			}
 			else {
 				df["vol"] = parseInt(df["vol"]);
@@ -585,7 +503,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 			}
 		}
 		else {
-			df["vol"] = 100;	//default
+			df["vol"] = 50;	//default
 		}
 		if (df["start"] != undefined) {
 			if (isNaN(parseInt(df["start"]))) {

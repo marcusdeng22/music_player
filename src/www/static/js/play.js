@@ -68,7 +68,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 				$scope.playlistData["contents"][i]["origOrder"] = i;
 			}
 			// $scope.playem.addTrackByUrl(data["contents"][i]["url"]);
-			playDatashare.playem.addTrackByUrl(data["contents"][i]["url"]);
+			playDatashare.playem.addTrackByUrl(data["contents"][i]["url"], data["contents"][i]["vol"]);
 			//add to songsToAdd if no _id
 			if (!data["contents"][i]["_id"]) {
 				console.log("load adding song to add queue");

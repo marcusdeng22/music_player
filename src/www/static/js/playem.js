@@ -224,19 +224,20 @@ function Playem (playemPrefs) {
       if (player.isReady) { setTimeout(fct) } else { interval = setInterval(poll, 1000) }
     }
 
-    function addTrack (metadata, url) {
+    function addTrack (metadata, volPer=50, url) {
       var track = {
         index: trackList.length,
-        metadata: metadata || {}
+        metadata: metadata || {},
+        volPer: volPer
       }
       if (url) { track.url = url }
       trackList.push(track)
       return track
     }
 
-    function addTrackById (id, player, metadata) {
+    function addTrackById (id, player, metadata, volPer) {
       if (id) {
-        var track = addTrack(metadata)
+        var track = addTrack(metadata, volPer)
         track.trackId = id
         track.player = player
         track.playerName = player.label.replace(/ /g, '_')
@@ -291,6 +292,7 @@ function Playem (playemPrefs) {
       }
       if ("vol" in polledVol && (!("muted" in polledVol) || !polledVol.muted)) {
         if (polledVol.vol != prevVolState.local) {  //player vol has changed; need to wait for it to settle
+          console.log("UPDATING LOCAL VOL: " + polledVol.vol);
           prevVolState.local = polledVol.vol;
         }
         else {
@@ -298,6 +300,7 @@ function Playem (playemPrefs) {
         }
         var curVol = Math.round(polledVol.vol / prevVolState.mult); //calculated global vol
         var diff = curVol - prevVolState.vol;
+        // var emit = false;
         if (diff > 0) { //if player volume is greater than the global volume
           console.log("POLLED VOL CHANGED");
           console.log(curVol);
@@ -308,23 +311,35 @@ function Playem (playemPrefs) {
           console.log(prevVolState);
           that.emit("volChanged", extractVol());
         }
+        if (diff != 0) {  //there is a difference, so update the multiplier
+          prevVolState.mult = polledVol.vol / prevVolState.vol;
+        }
       }
     }
 
     function extractVol() {
       // return {muted: prevVolState.muted, vol: prevVolState.vol / prevVolState.mult};
-      return {muted: prevVolState.muted, vol: Math.round(prevVolState.unmutedVol / prevVolState.mult)};
+      return {muted: prevVolState.muted, vol: prevVolState.unmutedVol};
+      // return {muted: prevVolState.muted, vol: Math.round(prevVolState.unmutedVol / prevVolState.mult)};
     }
 
     /*
     *sets the volume of the player as a percentage of the global volume (0-100)
     *this should be used by clients
     */
-    function setVolumePer (percentage) {
+    // function setVolumePer (percentage) {
+    //   percentage = limitVol(percentage) / 100;
+    //   prevVolState.mult = percentage;
+    //   prevVolState.local = Math.round(prevVolState.vol * percentage);
+    //   console.log("setting volume with percentage " + prevVolState.mult + " res: " + prevVolState.local);
+    //   callPlayerFct('setVolume', prevVolState.local);
+    // }
+
+    function setLocalVolume(percentage) {
       percentage = limitVol(percentage) / 100;
       prevVolState.mult = percentage;
       prevVolState.local = Math.round(prevVolState.vol * percentage);
-      callPlayerFct('setVolume', prevVolState.local);
+      return prevVolState.local;
     }
 
     /*
@@ -338,10 +353,13 @@ function Playem (playemPrefs) {
       prevVolState.unmutedVol = vol;
       //use the latest but stable ratio of player to global volume
       var newPlayerVol = null;
+      console.log("STABLE VOL RATIO: " + playerVolRatio);
       if (playerVolRatio) {
         newPlayerVol = vol * playerVolRatio;
       }
       else {
+        console.log("NO STABLE VOL RATIO: ");
+        console.log(prevVolState);
         newPlayerVol = vol * prevVolState.mult;
       }
       prevVolState.local = Math.round(newPlayerVol);
@@ -379,9 +397,9 @@ function Playem (playemPrefs) {
         // console.log("playTrack #" + track.index + " (" + track.playerName+ ")", track);
         console.log("calling play function");
         console.log(autoplay);
-        callPlayerFct('play', track.trackId, autoplay)
-        // setVolume(volume)
-        setVolume()
+        callPlayerFct('play', track.trackId, track.volPer, autoplay)
+        // setVolume()
+        // setVolumePer(track.vol);
         if (currentTrack && currentTrack.index == trackList.length - 1) { that.emit('loadMore') }
         // if the track does not start playing within 7 seconds, skip to next track
         setPlayTimeout(function () {
@@ -403,7 +421,7 @@ function Playem (playemPrefs) {
       // console.log(playTimeout)
     }
 
-    function callPlayerFct (fctName, param, autoplay=playemPrefs.autoplay) {
+    function callPlayerFct (fctName, param, volPer=null, autoplay=playemPrefs.autoplay) {
       try {
         // console.log("calling player function")
         // console.log(fctName)
@@ -411,7 +429,11 @@ function Playem (playemPrefs) {
         // console.log(playemPrefs.autoplay);
         // console.log(currentTrack.player)
         if (currentTrack) {
-          return currentTrack.player[fctName](param, autoplay)
+          var vol = null;
+          if (volPer) {
+            vol = setLocalVolume(volPer);
+          }
+          return currentTrack.player[fctName](param, vol, autoplay)
         }
       } catch (e) {
         console.warn('Player call error', fctName, e, e.stack)
@@ -427,11 +449,11 @@ function Playem (playemPrefs) {
           if (--playersToLoad == 0) { that.emit('onReady') }
         },
         onEmbedReady: function (player) {
-          // console.log("embed ready");
-          // setVolume(volume)
           //set the volume to the previous state, and start polling for volume
           console.log("EMBED READY");
-          setVolume()
+          console.log(player);
+          // setVolume()
+          //need to set the volume here with respect to local vol! MOVED TO INDIV PLAYER
           volPoll = setInterval(pollVolume, 200);
         },
         onBuffering: function (player) {
@@ -441,10 +463,8 @@ function Playem (playemPrefs) {
           })
         },
         onPlaying: function (player) {
-          // console.log(player.label + ".onPlaying");
           // setPlayTimeout(); // removed because soundcloud sends a "onPlaying" event, even for not authorized tracks
-          // setVolume(volume)
-          setVolume()
+          // setVolume()
           setTimeout(function () {
             that.emit('onPlay')
           }, 1)
@@ -552,21 +572,15 @@ function Playem (playemPrefs) {
         trackList = [];
         currentTrack = null;
       },
-      // clearQueue: function (clearCurrent=true) {
-      //   trackList = [];
-      //   if (clearCurrent) {
-      //     currentTrack = null;
-      //   }
-      // },
-      addTrackByUrl: function (url, metadata) {
+      addTrackByUrl: function (url, volPer=50, metadata) {
         var p, player, eid
         for (p = 0; p < players.length; ++p) {
           player = players[p]
           // console.log("test ", player.label, eid);
           eid = player.getEid(url)
-          if (eid) { return addTrackById(eid, player, metadata) }
+          if (eid) { return addTrackById(eid, player, metadata, volPer) }
         }
-        return addTrack(metadata, url)
+        return addTrack(metadata, volPer, url)
       },
       play: function (i) {
         console.log("triggering play:", i);
@@ -598,7 +612,7 @@ function Playem (playemPrefs) {
         if ((currentTrack || {}).trackDuration) { callPlayerFct('setTrackPosition', pos * currentTrack.trackDuration) }
       },
       setVolume: setVolume,
-      setVolumePer: setVolumePer,
+      // setVolumePer: setVolumePer,
       searchTracks: searchTracks,
       setCurrentTrack: function(index) {
         currentTrack = trackList[index];
@@ -626,16 +640,9 @@ function Playem (playemPrefs) {
         return extractVol();
       },
       getVol: function() {
-        // return prevVolState;
         return extractVol();
       }
-      // jumpToTrack: function(index) {
-      //   if (index < trackList.length) {
-      //     playTrack(trackList[index]);
-      //   }
-      // }
     }
-    // return exportedMethods;
     for (i in exportedMethods) { this[i] = exportedMethods[i] }
   }
 

@@ -125,8 +125,6 @@ app.controller('NavCtrl', ['$scope', '$rootScope', '$timeout', '$location', '$wi
 		stop: function(event, ui) {
 			$scope.audioDown = false;
 			console.log("STOP");
-			console.log($("#volumeContainer:hover").length);
-			console.log($("#volMute:hover").length);
 			if ($("#volumeContainer:hover").length == 0 && $("#volMute:hover").length == 0) {
 				console.log("MOUSE NOT OVER");
 				$scope.audioHover = false;
