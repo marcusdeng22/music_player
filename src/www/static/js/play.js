@@ -254,7 +254,7 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 							tempData["artist"] = [tempData["artistStr"]];
 							tempData["album"] = "";
 							tempData["genre"] = "";
-							tempData["vol"] = 100;
+							tempData["vol"] = 50;
 							tempData["start"] = 0;
 							tempData["end"] = 0;
 							console.log(tempData);
