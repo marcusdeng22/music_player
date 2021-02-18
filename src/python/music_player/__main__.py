@@ -21,9 +21,18 @@ def main():
     # cherrypy.Application.downloadDir = os.path.join(os.path.dirname(os.path.realpath(__file__)),
     #     os.path.join('..', 'download'))
 
+    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "..", "conf"), "r") as f:
+        a = f.readline().strip()
+        if a == "PRODUCTION":
+            confFile = "server-prod.conf"
+        elif a == "DEVELOPMENT":
+            confFile = "server-dev.conf"
+        else:
+            print("INVALID CONF: MUST BE 'PRODUCTION' or 'DEVELOPMENT'")
+            return
     server_config = os.path.abspath(os.path.join(
         os.path.dirname(os.path.realpath(__file__)),
-        '..', '..', 'etc', 'server.conf'))
+        '..', '..', 'etc', confFile))
 
     #cherrypy.config.update({"engine.autoreload_on": True})
     cherrypy.config.update(server_config)
