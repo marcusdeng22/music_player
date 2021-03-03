@@ -295,6 +295,10 @@
 	cursor: move;
 }
 
+.songItem {
+	height: 48px;
+}
+
 .item:not(:first-child) {
 	margin: -1px 0;
 }

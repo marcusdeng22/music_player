@@ -1,5 +1,5 @@
 src/python/download/*
-
+conf
 src/python/.notwindows
 
 # Development tool related things
