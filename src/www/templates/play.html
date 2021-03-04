@@ -34,7 +34,8 @@
 						<div ng-dblclick="selectIndex($index)" style="width: 100%">
 							<div class="playRow2" ng-class="$index==nowPlayingIndex ? 'playingSong' : ''">
 								<div class="item-contents2 number">{{$index + 1}}</div>
-								<div class="item-contents2"><img lazy-img="item" width="64px"/></div>
+								<!-- <div class="item-contents2"><img lazy-img="item" width="64px"/></div> -->
+								<div class="item-contents2"><img lazy-img="item" height="44px"/></div>
 								<!-- <div class="item-contents2"><img ng-src="{{getThumbnail(item)}}" width="64px"/></div> -->
 								<div class="item-contents2 attr">
 									<div title="{{item.name}}" class="item-contents2 attr">{{item.name}}</div>
