@@ -20,7 +20,8 @@ console.log(window.location);
     2: "onPaused",
     3: "onBuffering", // youtube state: buffering
     // 5: "onPlaying"
-    5: "onBuffering", // youtube state: cued
+    // 5: "onBuffering", // youtube state: cued
+    5: "onCued"
   },
   // SDK_URL = 'https://apis.google.com/js/client.js?onload=initYT',
   // SDK_LOADED = false,
@@ -133,8 +134,10 @@ console.log(window.location);
     });
     that.element = that.player.getIframe();
     that.player.addEventListener('onReady', function(event) {
-      that.safeClientCall("onEmbedReady", that);                          //this calls the function in playem.js
       that.initialPlay();
+      setTimeout(function() {
+        that.safeClientCall("onEmbedReady", that);                          //this calls the function in playem.js
+      }, 15); //delay the embed ready until after we start playing
     });
   };
 
@@ -146,7 +149,10 @@ console.log(window.location);
     console.log("embed ready and cued");
     console.log(that.embedVars.autoplay);
     if (that.embedVars.autoplay) {
-      that.player.playVideo();
+      setTimeout(function() {
+        console.log("initialPlay autoplay now");
+        that.player.playVideo();
+      }, 10);
     }
   }
 
@@ -324,7 +330,7 @@ console.log(window.location);
   }
 
   Player.prototype.getTrackPosition = function(callback) {
-    if (callback && this.player && this.player.getCurrentTime)
+    if (callback && this.player && this.player.getCurrentTime && this.player.getPlayerState() == 1) //we are playing
       callback(this.player.getCurrentTime());
   };
 

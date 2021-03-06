@@ -208,6 +208,20 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 		// console.log($scope.nowPlaying);
 		// console.log($scope.playem.getQueue());
 		// console.log($scope.playem.getCurrentTrack());
+
+		//untoggle autoplay if it has been turned on
+		if ($scope.noAutoplay) {
+			$timeout(function() {
+				console.log("autoplay switch on next");
+				// $scope.pauseNext();
+				// $scope.noAutoplay = false;
+				// console.log($scope.noAutoplay);
+				$("#autoplaySwitch").bootstrapToggle("off");
+				console.log($scope.noAutoplay);
+				$scope.$apply();
+			});
+		}
+
 		//update last played playlist
 		$http.post("/setLast", {"startIndex": $scope.nowPlayingIndex}).then(undefined, function(err) {
 			alert("Failed to update last playlist");

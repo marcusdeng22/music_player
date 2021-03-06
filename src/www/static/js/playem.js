@@ -210,6 +210,7 @@ function Playem (playemPrefs) {
     var prevVolState = {muted: false, unmutedVol: 100, vol: 100, mult: 1, local: 100};
     var volPoll = null;
     var playerInfo = {};  //TODO: replace players list with this. it will store the player object and the element id containing it
+    var playStatusCheck = false;
 
     /**
    * @memberof Playem.prototype
@@ -432,6 +433,7 @@ function Playem (playemPrefs) {
         // setVolumePer(track.vol);
         if (currentTrack && currentTrack.index == trackList.length - 1) { that.emit('loadMore') }
         // if the track does not start playing within 7 seconds, skip to next track
+        console.log("playTrack setPlayTimeout");
         setPlayTimeout(function () {
           console.warn('PLAYEM TIMEOUT') // => skipping to next song
           that.emit('onError', {code: 'timeout', source: 'Playem'})
@@ -440,15 +442,43 @@ function Playem (playemPrefs) {
       })
     }
 
-    function setPlayTimeout (handler) {
-      // console.log("set play timeout");
+    function setPlayTimeout (handler, time=playemPrefs.playTimeoutMs) {
+      console.log("set play timeout");
+      console.log(handler);
+      // if (playTimeout) {
+      //   console.log("cleared play timeout");
+      //   clearTimeout(playTimeout)
+      // }
+      // // playTimeout = !handler ? null : setTimeout(handler, playemPrefs.playTimeoutMs)
+      // if (handler == null) {
+      //   console.log("null handler");
+      //   playTimeout = null;
+      // }
+      // else {
+      //   console.log("non null handler");
+      //   playTimeout = setTimeout(handler, time);
+      // }
+      // // console.log("new timeout: ", playTimeout);
+      // // console.log(handler)
+      // // console.log(playTimeout)
+      if (handler == playTimeout) {
+        console.log("handler already exists");
+      }
+      else if (playTimeout) {
+        console.log("handler in progress");
+      }
+      else {
+        console.log("new handler");
+        playTimeout = setTimeout(handler, time);
+      }
+    }
+
+    function clearPlayTimeout() {
       if (playTimeout) {
-        // console.log("cleared timeout");
-        clearTimeout(playTimeout) }
-      playTimeout = !handler ? null : setTimeout(handler, playemPrefs.playTimeoutMs)
-      // console.log("new timeout: ", playTimeout);
-      // console.log(handler)
-      // console.log(playTimeout)
+        console.log("cleared play timeout");
+        clearTimeout(playTimeout);
+        playTimeout = null;
+      }
     }
 
     function callPlayerFct (fctName, param, volPer=null, autoplay=playemPrefs.autoplay) {
@@ -483,17 +513,51 @@ function Playem (playemPrefs) {
           volPoll = setInterval(pollVolume, 200);
         },
         onBuffering: function (player) {
+          console.log("onBuffering setPlayTimeout");
           setTimeout(function () {
-            setPlayTimeout()
+            // setPlayTimeout()
+            console.log("timeout for onBuffering");
+            console.log(player);
+            console.log("should i be playing?:", playStatusCheck);
+            if (playStatusCheck) {
+              setPlayTimeout(function() {
+                console.log("timeout expired for onBuffering");
+                exportedMethods.play()
+              });
+            }
+            else {
+              // setPlayTimeout();
+              clearPlayTimeout();
+            }
             that.emit('onBuffering')
           })
+        },
+        onCued: function(player) {
+          setTimeout(function() {
+            console.log("cued");
+            console.log("onCued setPlayTimeout");
+            console.log("should i be playing?:", playStatusCheck);
+            if (playStatusCheck) {
+              setPlayTimeout(function() {
+                console.log("timeout expired for onCued");
+                exportedMethods.play();
+              });
+            }
+            else {
+              // setPlayTimeout();
+              clearPlayTimeout();
+            }
+          });
         },
         onPlaying: function (player) {
           // setPlayTimeout(); // removed because soundcloud sends a "onPlaying" event, even for not authorized tracks
           // setVolume()
+          playStatusCheck = true;
           setTimeout(function () {
             that.emit('onPlay')
-          }, 1)
+          }, 1);
+          console.log("onPlaying!");
+          console.log(player);
           if (player.trackInfo && player.trackInfo.duration) {
             eventHandlers.onTrackInfo({
               position: player.trackInfo.position || 0,
@@ -520,7 +584,9 @@ function Playem (playemPrefs) {
           if (currentTrack && trackInfo) {
             if (trackInfo.duration) {
               currentTrack.trackDuration = trackInfo.duration
-              setPlayTimeout()
+              console.log("onTrackInfo setPlayTimeout");
+              // setPlayTimeout()
+              clearPlayTimeout();
             }
             if (trackInfo.position) { currentTrack.trackPosition = trackInfo.position }
           }
@@ -528,7 +594,9 @@ function Playem (playemPrefs) {
         },
         onPaused: function (player) {
           console.log(player.label + ".onPaused");
-          setPlayTimeout()
+          console.log("onPaused setPlayTimeout");
+          // setPlayTimeout()
+          clearPlayTimeout();
           if (progress) { clearInterval(progress) }
           progress = null
           // if (!avoidPauseEventPropagation)
@@ -543,6 +611,10 @@ function Playem (playemPrefs) {
             clearInterval(volPoll);
             volPoll = null;
           }
+          console.log("onEnded!");
+          console.log(progress);
+          if (progress) { clearInterval(progress) }
+          progress = null;
           that.emit('onEnd')
           playemFunctions.next()
         },
@@ -552,8 +624,25 @@ function Playem (playemPrefs) {
             clearInterval(volPoll);
             volPoll = null;
           }
-          setPlayTimeout(playemFunctions.next);
+          // setPlayTimeout(playemFunctions.next);
+          console.log("onError setPlayTimeout");
+          setPlayTimeout(exportedMethods.next);
+          // setPlayTimeout(function() {
+          //   console.log("onError setting a timeout!");
+          //   exportedMethods.next();
+          // })
           that.emit('onError', error)
+
+          //attempt to handle the error
+          //known error: youtube player error 2: happens on load sometimes; not sure why, so we reload the player
+          if (player.label == "Youtube" && error.code.data == 2) {
+            console.log("YT ERROR CODE 2 HANDLE");
+            clearPlayTimeout();
+            var oldPlayerVars = $.extend(true, {}, playerInfo["YoutubePlayer"]["vars"])
+            delete playerInfo["YoutubePlayer"];
+            exportedMethods.addPlayer(YoutubePlayer, oldPlayerVars);
+            exportedMethods.play();
+          }
         }
       };
       // // handlers will only be triggered if their associated player is currently active
@@ -575,7 +664,7 @@ function Playem (playemPrefs) {
       //     */
       //   }
       // })
-      return eventHandlers
+      return eventHandlers;
     }
 
     // exported methods, mostly wrappers to Players' methods
@@ -595,8 +684,12 @@ function Playem (playemPrefs) {
           console.log("adding player to playerInfo");
           var player = new PlayerClass(createEventHandlers(this, vars), vars);
           // players.push(player)  //TODO: remove this
-          playerInfo[PlayerClass.name] = {"id": vars.playerId, "key": PlayerClass.name, "player": player};
+          playerInfo[PlayerClass.name] = {"id": vars.playerId, "key": PlayerClass.name, "player": player, "vars": vars};
           if (player.label == "Youtube") {  //alternatively, use PlayerClass.name == "YoutubePlayer"
+            var displayElement = $("#" + vars.playerId);
+            if (displayElement.length) {
+              displayElement.remove();
+            }
             var element = document.createElement("div");
             element.id = vars.playerId; //this is important!
             playemPrefs.playerContainer.appendChild(element);
@@ -640,12 +733,15 @@ function Playem (playemPrefs) {
         return addTrack(metadata, volPer, url)
       },
       play: function (i) {
+        playStatusCheck = true;
         console.log("triggering play:", i);
         console.log("play list:", trackList);
         console.log("cur track:", currentTrack);
         playTrack(i != undefined ? trackList[i] : currentTrack || trackList[0])
       },
       cue: function(i) {
+        playStatusCheck = false;
+        console.log("cued client hit");
         playTrack(i != undefined ? trackList[i] : currentTrack || trackList[0], false);
       },
       pause: function () {
@@ -684,6 +780,7 @@ function Playem (playemPrefs) {
       },
       toggleAutoplay: function() {
         playemPrefs.autoplay = !playemPrefs.autoplay;
+        playStatusCheck = false;
         return playemPrefs.autoplay;
       },
       toggleMute: function() {
