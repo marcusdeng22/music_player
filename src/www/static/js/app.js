@@ -142,10 +142,10 @@ app.factory("sortingFuncs", ["orderByFilter", function(orderBy) {
 app.factory("playDatashare", ["$timeout", "$rootScope", function($timeout, $rootScope) {
 	var config = {
 		playerContainer: document.getElementById("mainPlayerContainer"),
-		playerId: "mainPlayer"
+		playerId: "mainYTPlayer"
 	};
 	var data = {};
-	data.playem = new Playem();
+	data.playem = new Playem({playerContainer: document.getElementById("mainPlayerContainer")});
 	data.currentState = 0;
 	data.nowPlaying = null;
 
@@ -351,7 +351,7 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 	data.editDataID = new Set();	//store the edit song IDs here
 	data.editDataURL = new Set();	//store the edit song URLs here
 	// data.playem = null;	//store the preview player info here
-	data.playem = new Playem();
+	data.playem = new Playem({playerContainer: document.getElementById("previewDisplay")});
 	data.loadEditTemplate = function(targetId, $scope, toAdd=null, callback=null) {
 		data.editTemplateId = targetId;
 		if (toAdd != null) {
@@ -382,7 +382,8 @@ app.factory("songDatashare", ["$compile", "$timeout", "$http", "$window", "sorti
 	data.reloadPlayem = function() {
 		data.stopPlayem();
 		var config = {
-			playerContainer: document.getElementById("previewDisplay")
+			playerContainer: document.getElementById("previewDisplay"),
+			playerId: "previewYTPlayer"
 		};
 		data.playem.addPlayer(YoutubePlayer, config);
 		console.log("DONE RELOADING PLAYEM PREVIEWER");

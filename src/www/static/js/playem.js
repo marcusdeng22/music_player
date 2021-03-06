@@ -182,12 +182,20 @@ function Playem (playemPrefs) {
   function Playem (playemPrefs) {
     EventEmitter.call(this)
 
-    playemPrefs = playemPrefs || {}
+    console.log("playem instant", playemPrefs)
+    playemPrefs = playemPrefs || {};
+
+    if (!playemPrefs.hasOwnProperty("playerContainer")) {
+      throw "MUST PASS playerContainer IN THE CONFIG";
+    }
+    //perform initial clear
+    playemPrefs.playerContainer.innerHTML = "";
+
     playemPrefs.loop = playemPrefs.hasOwnProperty('loop') ? playemPrefs.loop : false
     playemPrefs.playTimeoutMs = playemPrefs.playTimeoutMs || DEFAULT_PLAY_TIMEOUT
     playemPrefs.autoplay = playemPrefs.hasOwnProperty("autoplay") ? playemPrefs.autoplay : true;
 
-    var players = [] // instanciated Player classes, added by client
+    // var players = [] // instanciated Player classes, added by client
     var i
     var exportedMethods
     var currentTrack = null
@@ -201,6 +209,7 @@ function Playem (playemPrefs) {
 
     var prevVolState = {muted: false, unmutedVol: 100, vol: 100, mult: 1, local: 100};
     var volPoll = null;
+    var playerInfo = {};  //TODO: replace players list with this. it will store the player object and the element id containing it
 
     /**
    * @memberof Playem.prototype
@@ -240,30 +249,31 @@ function Playem (playemPrefs) {
         var track = addTrack(metadata, volPer)
         track.trackId = id
         track.player = player
-        track.playerName = player.label.replace(/ /g, '_')
+        // track.playerName = player.label.replace(/ /g, '_')
         return track
         // console.log("added:", player.label, "track", id, track/*, metadata*/);
       } else { throw new Error('no id provided') }
     }
 
-    function searchTracks (query, handleResult) {
-      var expected = 0
-      var i
-      var currentPlayer
-      for (i = 0; i < players.length; i++) {
-        currentPlayer = players[i]
-        // Search for player extending the "searchTracks" method.
-        if (typeof currentPlayer.searchTracks === 'function') {
-          expected++
-          currentPlayer.searchTracks(query, 5, function (results) {
-            for (var i in results) {
-              handleResult(results[i])
-            }
-            if (--expected === 0) { handleResult() } // means: "i have no (more) results to provide for this request"
-          })
-        };
-      };
-    };
+    //DONT NEED THIS, and this was also removed from the YT Player
+    // function searchTracks (query, handleResult) {
+    //   var expected = 0
+    //   var i
+    //   var currentPlayer
+    //   for (i = 0; i < players.length; i++) {
+    //     currentPlayer = players[i]
+    //     // Search for player extending the "searchTracks" method.
+    //     if (typeof currentPlayer.searchTracks === 'function') {
+    //       expected++
+    //       currentPlayer.searchTracks(query, 5, function (results) {
+    //         for (var i in results) {
+    //           handleResult(results[i])
+    //         }
+    //         if (--expected === 0) { handleResult() } // means: "i have no (more) results to provide for this request"
+    //       })
+    //     };
+    //   };
+    // };
 
     function limitVol(vol) {
       if (vol < 0) {
@@ -371,33 +381,53 @@ function Playem (playemPrefs) {
 
     function stopTrack () {
       if (progress) { clearInterval(progress) }
+      //i think we should also move this volPoll out to another method to call on pause?
       if (volPoll != null) {
           clearInterval(volPoll);
           volPoll = null;
         }
-      for (var i in players) {
-        if (players[i].stop) { players[i].stop() } else { players[i].pause() }
-      }
-      try {
-        window.soundManager.stopAll()
-      } catch (e) {
-        console.error('playem tried to stop all soundManager sounds =>', e)
-      }
+      //CHANGE BEHAVIOR: don't stop the track: follows behavior in playTrack
+      // for (var i in players) {
+      //   if (players[i].stop) { players[i].stop() } else { players[i].pause() }
+      // }
+      //i don't think we need this
+      // try {
+      //   window.soundManager.stopAll()
+      // } catch (e) {
+      //   console.error('playem tried to stop all soundManager sounds =>', e)
+      // }
     }
 
     function playTrack (track, autoplay=playemPrefs.autoplay) {
       console.log("playTrack", track);
-      stopTrack()
+      //CHANGE BEHAVIOR: stop the track after we load the next one in order to allow continuous playback. we need to check if the new track player is the same as the old track player
+      //or don't stop the track? pause will handle pause, and once track ends, it should auto stop
+      // stopTrack()
+      //TODO FIX1: unhide the appropriate player and hide the old one
+      var prevTrack = currentTrack;
+      var stopOld = false;
+      if (currentTrack) {
+        console.log("old track player comparison:", currentTrack.player["key"] == track.player["key"]);
+        if (currentTrack.player["key"] != track.player["key"]) {
+          //use stored id to hide and show
+          $("#" + currentTrack.player["id"]).hide();
+          $("#" + track.player["id"]).show();
+          stopOld = true;
+        }
+      }
       currentTrack = track
       delete currentTrack.trackPosition // = null;
       delete currentTrack.trackDuration // = null;
       that.emit('onTrackChange', track)
-      if (!track.player) { return that.emit('onError', {code: 'unrecognized_track', source: 'Playem', track: track}) }
-      doWhenReady(track.player, function () {
+      if (!track.player["player"]) { return that.emit('onError', {code: 'unrecognized_track', source: 'Playem', track: track}) }
+      doWhenReady(track.player["player"], function () {
         // console.log("playTrack #" + track.index + " (" + track.playerName+ ")", track);
         console.log("calling play function");
         console.log(autoplay);
-        callPlayerFct('play', track.trackId, track.volPer, autoplay)
+        callPlayerFct('play', track.trackId, track.volPer, autoplay);
+        if (stopOld) {
+          prevTrack.player["player"].stop();
+        }
         // setVolume()
         // setVolumePer(track.vol);
         if (currentTrack && currentTrack.index == trackList.length - 1) { that.emit('loadMore') }
@@ -424,16 +454,12 @@ function Playem (playemPrefs) {
     function callPlayerFct (fctName, param, volPer=null, autoplay=playemPrefs.autoplay) {
       try {
         // console.log("calling player function")
-        // console.log(fctName)
-        // console.log(param)
-        // console.log(playemPrefs.autoplay);
-        // console.log(currentTrack.player)
         if (currentTrack) {
           var vol = null;
           if (volPer) {
             vol = setLocalVolume(volPer);
           }
-          return currentTrack.player[fctName](param, vol, autoplay)
+          return currentTrack.player["player"][fctName](param, vol, autoplay)
         }
       } catch (e) {
         console.warn('Player call error', fctName, e, e.stack)
@@ -511,7 +537,8 @@ function Playem (playemPrefs) {
         },
         onEnded: function (player) {
           // console.log(player.label + ".onEnded");
-          stopTrack()
+          //CHANGE BEHAVIOR: remove stop track; see playTrack
+          // stopTrack()
           if (volPoll != null) {
             clearInterval(volPoll);
             volPoll = null;
@@ -529,41 +556,63 @@ function Playem (playemPrefs) {
           that.emit('onError', error)
         }
       };
-      // handlers will only be triggered is their associated player is currently active
-      ['onEmbedReady', 'onBuffering', 'onPlaying', 'onPaused', 'onEnded', 'onError'].map(function (evt) {
-        // console.log("EVENT HANDLER MAP");
-        var fct = eventHandlers[evt]
-        // console.log(fct);
-        eventHandlers[evt] = function (player, x) {
-          // console.log("INNER EVENT HANDLER");
-          // console.log(currentTrack);
-          // console.log(player);
-          if (currentTrack && player == currentTrack.player) {
-            // console.log("MATCHED INNER");
-            return fct(player, x)
-          }
-          /*
-          else if (evt != "onEmbedReady")
-            console.warn("ignore event:", evt, "from", player, "instead of:", currentTrack.player);
-          */
-        }
-      })
+      // // handlers will only be triggered if their associated player is currently active
+      // ['onEmbedReady', 'onBuffering', 'onPlaying', 'onPaused', 'onEnded', 'onError'].map(function (evt) {
+      //   // console.log("EVENT HANDLER MAP");
+      //   var fct = eventHandlers[evt]
+      //   // console.log(fct);
+      //   eventHandlers[evt] = function (player, x) {
+      //     // console.log("INNER EVENT HANDLER");
+      //     // console.log(currentTrack);
+      //     // console.log(player);
+      //     if (currentTrack && player == currentTrack.player) {
+      //       // console.log("MATCHED INNER");
+      //       return fct(player, x)
+      //     }
+      //     /*
+      //     else if (evt != "onEmbedReady")
+      //       console.warn("ignore event:", evt, "from", player, "instead of:", currentTrack.player);
+      //     */
+      //   }
+      // })
       return eventHandlers
     }
 
     // exported methods, mostly wrappers to Players' methods
     exportedMethods = {
       addPlayer: function (PlayerClass, vars) {
-        playersToLoad++
-        var player = new PlayerClass(createEventHandlers(this, vars), vars)
-        players.push(player)
+        playersToLoad++;
+        // var player = new PlayerClass(createEventHandlers(this, vars), vars);
+        // players.push(player)
+        //create the player within the container, and hide it if it is not the player for the current track
+        //TODO FIX1
+        //if PlayerClass in playerList: return
+        //else new PlayerClass
+        //based on the label, we need to create the appropiate elements for displaying it
+        //YTPlayer: append a div and set the embed iframe to that
+        console.log("ADD PLAYER");
+        if (!playerInfo.hasOwnProperty(PlayerClass.name)) {
+          console.log("adding player to playerInfo");
+          var player = new PlayerClass(createEventHandlers(this, vars), vars);
+          // players.push(player)  //TODO: remove this
+          playerInfo[PlayerClass.name] = {"id": vars.playerId, "key": PlayerClass.name, "player": player};
+          if (player.label == "Youtube") {  //alternatively, use PlayerClass.name == "YoutubePlayer"
+            var element = document.createElement("div");
+            element.id = vars.playerId; //this is important!
+            playemPrefs.playerContainer.appendChild(element);
+          }
+        }
         return player
       },
       clearPlayers: function() {
-        players = [];
+        //clear the container
+        //TODO FIX1
+        // players = [];   //TODO: remove this
+        playerInfo = {};
       },
       getPlayers: function () {
-        return players
+        // return players  //TODO: check who uses this function
+        return playerInfo;
       },
       getQueue: function () {
         return trackList
@@ -573,12 +622,20 @@ function Playem (playemPrefs) {
         currentTrack = null;
       },
       addTrackByUrl: function (url, volPer=50, metadata) {
-        var p, player, eid
-        for (p = 0; p < players.length; ++p) {
-          player = players[p]
-          // console.log("test ", player.label, eid);
-          eid = player.getEid(url)
-          if (eid) { return addTrackById(eid, player, metadata, volPer) }
+        // var p, player, eid
+        // for (p = 0; p < players.length; ++p) {
+        //   player = players[p]
+        //   // console.log("test ", player.label, eid);
+        //   eid = player.getEid(url)
+        //   if (eid) { return addTrackById(eid, player, metadata, volPer) }
+        // }
+        for (var p in playerInfo) {
+          if (playerInfo.hasOwnProperty(p)) {
+            eid = playerInfo[p]["player"].getEid(url);
+            if (eid) {
+              return addTrackById(eid, playerInfo[p], metadata, volPer);
+            }
+          }
         }
         return addTrack(metadata, volPer, url)
       },
@@ -613,7 +670,7 @@ function Playem (playemPrefs) {
       },
       setVolume: setVolume,
       // setVolumePer: setVolumePer,
-      searchTracks: searchTracks,
+      // searchTracks: searchTracks,
       setCurrentTrack: function(index) {
         currentTrack = trackList[index];
         return currentTrack;
@@ -648,7 +705,7 @@ function Playem (playemPrefs) {
 
   inherits(Playem, EventEmitter)
 
-  return new Playem()
+  return new Playem(playemPrefs)
 };
 
 try {
