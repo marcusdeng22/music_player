@@ -97,6 +97,13 @@ app.controller('NavCtrl', ['$scope', '$rootScope', '$timeout', '$location', '$wi
 		}
 	});
 
+	playDatashare.playem.on("onPlay", function() {
+		//update the page title
+		if (playDatashare.nowPlaying) {
+			document.title = playDatashare.nowPlaying.name + " - " + playDatashare.nowPlaying.artistStr;
+		}
+	});
+
 	$scope.toggleMute = function() {
 		var resVol = playDatashare.playem.toggleMute();
 		$scope.volState.muted = resVol.muted;
