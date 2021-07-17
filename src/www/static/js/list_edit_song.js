@@ -54,26 +54,26 @@ app.controller('listEditSongCtrl', ['$scope', '$rootScope', '$http', '$location'
 		if (!($scope.songEndDate == undefined || $scope.songEndDate == "")) {
 			query["end_date"] = $scope.songEndDate;
 		}
-		var sortByRelev = false;
+		var sortByDate = false;
 		if (!($scope.songArtistSearch == undefined || $scope.songArtistSearch == "")) {
 			query["artist_names"] = $scope.songArtistSearch.split(",").map(i => i.trim()).filter(function(i) {return i != "";});
-			sortByRelev = true;
+			sortByDate = true;
 		}
 		if (!($scope.songAlbumSearch == undefined || $scope.songAlbumSearch == "")) {
 			query["album_names"] = $scope.songAlbumSearch.split(",").map(i => i.trim()).filter(function(i) {return i != "";});
-			sortByRelev = true;
+			sortByDate = true;
 		}
 		if (!($scope.songGenreSearch == undefined || $scope.songGenreSearch == "")) {
 			query["genre_names"] = $scope.songGenreSearch.split(",").map(i => i.trim()).filter(function(i) {return i != "";});
-			sortByRelev = true;
+			sortByDate = true;
 		}
 		if (!($scope.songUrlSearch == undefined || $scope.songUrlSearch == "")) {
 			query["url"] = $scope.songUrlSearch.split(",").map(i => i.trim()).filter(function(i) {return i != "";});
-			sortByRelev = true;
+			sortByDate = true;
 		}
 		console.log("query:", query)
-		if (sortByRelev) {
-			songDatashare.getSongData(query, "relev", undefined, force);
+		if (sortByDate) {
+			songDatashare.getSongData(query, "date", true, force);
 		}
 		else {
 			songDatashare.getSongData(query, undefined, undefined, force);
