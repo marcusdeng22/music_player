@@ -745,7 +745,8 @@ app.controller('playCtrl', ["$scope", "$timeout", "$location", "$window", "$http
 				// 	loadAndStart(resp.data.playlist, $window.location.hash == "#!#play")
 				// }, 1000);
 				console.log("loading and starting");
-				loadAndStart(resp.data.playlist, $window.location.hash == "#!#play", 500);
+				// loadAndStart(resp.data.playlist, $window.location.hash == "#!#play", 500);
+				loadAndStart(resp.data.playlist, false, 500);
 			});
 		}
 	}, function(err) {

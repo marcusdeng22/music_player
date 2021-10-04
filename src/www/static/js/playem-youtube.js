@@ -70,26 +70,6 @@ console.log(window.location);
 
   $.getScript(PLAYER_API_SCRIPT, function() {});
 
-  // // called by $.getScript(SDK_URL)
-  // window.initYT = function() {
-  //   gapi.client.setApiKey(YOUTUBE_API_KEY);
-  //   gapi.client.load('youtube', 'v3', function() {
-  //     apiReady = true;
-  //     $.getScript(PLAYER_API_SCRIPT, function() {
-  //       // will call window.onYouTubeIframeAPIReady()
-  //     });
-  //   });
-  // };
-
-  // if (!SDK_LOADED) {
-  //   $.getScript(SDK_URL, function() {
-  //     // will call window.initYT()
-  //     SDK_LOADED = true;
-  //   });
-  // } else if (!apiReady) {
-  //   window.initYT();
-  // }
-
   function Player(eventHandlers, embedVars) {
     console.log("YoutubePlayer init");
     this.eventHandlers = eventHandlers || {};
@@ -122,6 +102,11 @@ console.log(window.location);
       if (eventName && that.eventHandlers[eventName]) {
         that.eventHandlers[eventName](that);
       }
+      //attempt to play if cued
+      if (eventName == "onCued" && that.embedVars.autoplay) {
+        console.log("ready to play from state checker");
+        that.player.playVideo();
+      }
       prevState = newState.data;
     };
     // if (that.player.removeEventListener && typeof that.player.removeEventListener === "function" && Object.keys(that.player).length > 0) {
@@ -144,15 +129,51 @@ console.log(window.location);
   Player.prototype.initialPlay = function() {
     var that = this;
     that.player.setVolume(that.embedVars.vol);
+    //this works, but will not respect the "autoplay" feature during playback
     // that.player.loadVideoById(that.embedVars.videoId);
+
+    //below used to work, but not anymore
+    // that.player.cueVideoById(that.embedVars.videoId);
+    // console.log("embed ready and cued:", that.embedVars.videoId);
+    // console.log("autoplay?:", that.embedVars.autoplay);
+    // if (that.embedVars.autoplay) {
+    //   setTimeout(function() {
+    //     console.log("initialPlay autoplay now");
+    //     that.player.playVideo();
+    //   }, 10);
+    // }
+
     that.player.cueVideoById(that.embedVars.videoId);
-    console.log("embed ready and cued");
-    console.log(that.embedVars.autoplay);
+    console.log("embed ready and cued:", that.embedVars.videoId);
+    console.log("autoplay?:", that.embedVars.autoplay);
+
+    const controller = new AbortController();
+
+    function triggerPlay(newState) {
+      // player.playVideo();
+      // player.removeEventListener("onStateChange", triggerPlay)
+      if (newState.data == 5) { //cued
+        console.log("cue is ready");
+        setTimeout(function() {
+          //call play
+          console.log("ready to play!");
+          controller.abort();
+          that.player.playVideo();
+          //remove from event listener
+          // that.player.removeEventListener("onStateChange", triggerPlay);
+        });
+      }
+      else {
+        console.log("ignoring cue hit");
+      }
+    };
+
     if (that.embedVars.autoplay) {
-      setTimeout(function() {
-        console.log("initialPlay autoplay now");
-        that.player.playVideo();
-      }, 10);
+      console.log("attempting to play from cue");
+      // autoplayState = 
+      // setTimeout(function() {
+      //   that.player.addEventListener("onStateChange", triggerPlay, {signal: controller.signal});
+      // });
     }
   }
 
@@ -198,87 +219,6 @@ console.log(window.location);
       console.log(this.player);
       this.initialPlay();
     }
-
-    // var that = this;
-    // console.log("YT PLAYER PROTO EMBED");
-    // console.log(that);
-    // console.log(DEFAULT_PARAMS);
-    // function updateState(newState) {
-    //   console.log("YT STATE CHANGE");
-    //   console.log(that);
-    //   console.log(that.player);
-    //   if (newState.data == YT.PlayerState.PLAYING){
-    //     that.trackInfo.duration = that.player.getDuration();
-    //   }
-    //   console.log("------> YT newState:", newState, newState.data);
-    //   var eventName = EVENT_MAP[newState.data];
-    //   console.log(eventName);
-    //   if (eventName && that.eventHandlers[eventName])
-    //     that.eventHandlers[eventName](that);
-
-    //   // console.log(this.embedVars.autoplay);
-    //   // if (prevState == 3 && newState.data == -1) {  //buffered and now unstarted, so trigger play
-    //   //   console.log("bufferd -> unstarted, so playing");
-    //   //   that.player.playVideo();
-    //   // }
-    //   // if (prevState == -1 && newState.data == 3) {
-    //   //   console.log("reverse buffer state");
-    //   //   that.player.playVideo();
-    //   // }
-    //   // else if (newState.data == -1) { //unstarted; start it; this causes looping
-    //   //   that.player.playVideo();
-    //   // }
-    //   prevState = newState.data;
-    // }
-    // if (that.player.removeEventListener && typeof that.player.removeEventListener === "function" && Object.keys(that.player).length > 0) {
-    //   that.player.removeEventListener("onStateChange", updateState);
-    // }
-    // that.player = new YT.Player(that.embedVars.playerId || 'ytplayer', DEFAULT_PARAMS);
-    // // that.player.addEventListener("onStateChange", "onYoutubeStateChange");
-    // that.player.addEventListener("onStateChange", updateState);
-    // // that.player.addEventListener("onStateChange", function(newState) {
-    // //   console.log("YT STATE CHANGE");
-    // //   console.log(that);
-    // //   console.log(that.player);
-    // //   if (newState.data == YT.PlayerState.PLAYING){
-    // //     that.trackInfo.duration = that.player.getDuration();
-    // //   }
-    // //   console.log("------> YT newState:", newState, newState.data);
-    // //   var eventName = EVENT_MAP[newState.data];
-    // //   if (eventName && that.eventHandlers[eventName])
-    // //     that.eventHandlers[eventName](that);
-
-    // //   // console.log(this.embedVars.autoplay);
-    // //   // if (prevState == 3 && newState.data == -1) {  //buffered and now unstarted, so trigger play
-    // //   //   console.log("bufferd -> unstarted, so playing");
-    // //   //   that.player.playVideo();
-    // //   // }
-    // //   // if (prevState == -1 && newState.data == 3) {
-    // //   //   console.log("reverse buffer state");
-    // //   //   that.player.playVideo();
-    // //   // }
-    // //   // else if (newState.data == -1) { //unstarted; start it; this causes looping
-    // //   //   that.player.playVideo();
-    // //   // }
-    // //   prevState = newState.data;
-    // // });
-    // // that.player.addEventListener("onError", "onYoutubeError");
-    // that.player.addEventListener("onError", function(error) {
-    //   //console.log(that.embedVars.playerId + " error:", error);
-    //   that.eventHandlers.onError && that.eventHandlers.onError(that, {source:"YoutubePlayer", code: error});
-    // });
-    // that.element = that.player.getIframe();
-    // that.player.addEventListener('onReady', function(event) {
-    //   that.player.setVolume(that.embedVars.vol);
-    //   that.safeClientCall("onEmbedReady", that);                          //this calls the function in playem.js
-    //   // that.player.loadVideoById(that.embedVars.videoId);
-    //   that.player.cueVideoById(that.embedVars.videoId);
-    //   console.log("embed ready and cued");
-    //   console.log(that.embedVars.autoplay);
-    //   if (that.embedVars.autoplay) {
-    //     that.player.playVideo();
-    //   }
-    // });
   }
 
   Player.prototype.getEid = function(url) {
