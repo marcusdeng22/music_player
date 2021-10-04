@@ -97,11 +97,13 @@ app.controller('NavCtrl', ['$scope', '$rootScope', '$timeout', '$location', '$wi
 		}
 	});
 
-	playDatashare.playem.on("onPlay", function() {
+	playDatashare.playem.on("onTrackChange", function() {
 		//update the page title
-		if (playDatashare.nowPlaying) {
-			document.title = playDatashare.nowPlaying.name + " - " + playDatashare.nowPlaying.artistStr;
-		}
+		$timeout(function() {
+			if (playDatashare.nowPlaying) {
+				document.title = playDatashare.nowPlaying.name + " - " + playDatashare.nowPlaying.artistStr;
+			}
+		});
 	});
 
 	$scope.toggleMute = function() {
