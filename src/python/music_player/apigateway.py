@@ -91,8 +91,8 @@ class ApiGateway(object):
 		# self.colPlaylists = db['playlists']
 		self.colUsers = self.db['users']
 		self.colLast = self.db["lastPlay"]
-		cleanupDownloadThread = threading.Thread(target=self.cleanupDownloads)
-		cleanupDownloadThread.start()
+		# cleanupDownloadThread = threading.Thread(target=self.cleanupDownloads)
+		# cleanupDownloadThread.start()
 
 	@authUser
 	def getUser(self):
