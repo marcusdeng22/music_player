@@ -9,7 +9,7 @@ eyeD3==0.9
 filetype==1.0.5
 idna==2.9
 jaraco.functools==2.0
-Mako==1.0.10
+Mako==1.2.2
 MarkupSafe==1.1.1
 more-itertools==7.0.0
 packaging==20.0
