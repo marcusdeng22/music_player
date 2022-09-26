@@ -188,6 +188,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 		refreshPositions: true
 	});
 
+	//gets selected playlist data if single, or clears song data if multiple
 	$("#playlistSelect").on('ui-sortable-selectionschanged', function (e, selectedSongs=null) {
 		// console.log("playlist select changed");
 		// console.log($(this).find('.ui-sortable-selected').map(function(i, element){
@@ -255,6 +256,7 @@ app.controller('playlistCtrl', ['$scope', '$http', '$location', '$window', '$tim
 		}
 	});
 
+	//indicates number of songs selected, bound to the container
 	$("#songSelect").on('ui-sortable-selectionschanged', function (e, args) {
 		//DONE: update the indices in the playlist store
 		$scope.songIndices = $(this).find('.ui-sortable-selected').map(function(i, element){

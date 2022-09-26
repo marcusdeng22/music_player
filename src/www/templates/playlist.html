@@ -81,15 +81,15 @@
 			<p>Songs</p>
 			<!--- search filter here; disable ordering when searching?-->
 			<input type="text" ng-model="songFilter" style="width: 100%;" placeholder="Search for song name, artist, album, genre, ...">
+
+<!-- original? -->
 			<div lazy-img-container id="songContainer" class="sortableDataContainer" style="height: calc(100% - 69px);">
 				<div ui-sortable="sortableSongs" ng-model="songData" id="songSelect" class="list" style="width: 100%; min-height: 100%;">
 					<div ui-sortable-selectable ng-repeat="song in songData | filter:songFilter track by $index" class="item songItem">
 						<!-- lazy loads -->
 						<div ng-dblclick="triggerPlay($index)" class="playRow2">
 							<div class="item-contents2 number">{{$index + 1}}</div>
-							<!-- <div class="item-contents2"><img lazy-img="song" width="64px"/></div> -->
 							<div class="item-contents2"><img lazy-img="song" height="44px"/></div>
-							<!-- <div class="item-contents2"><img ng-src="{{getThumbnail(song)}}" width="64px"/></div> -->
 							<div class="item-contents2 attr">
 								<div title="{{song.name}}" class="item-contents2 attr">{{song.name}}</div>
 								<div title="{{song.artistStr}}" class="item-contents2 attr">{{song.artistStr}}</div>
@@ -98,6 +98,28 @@
 					</div>
 				</div>
 			</div>
+
+<!-- testing without image -->
+<!-- 			<div id="songContainer" class="sortableDataContainer" style="height: calc(100% - 69px);">
+				<div ui-sortable="sortableSongs" ng-model="songData" id="songSelect" class="list" style="width: 100%; min-height: 100%;">
+					<div ui-sortable-selectable ng-repeat="song in songData | filter:songFilter track by $index" class="item songItem"> -->
+						<!-- lazy loads -->
+						<!-- <div ng-dblclick="triggerPlay($index)" class="playRow2">
+							<div class="item-contents2 number">{{$index + 1}}</div> -->
+							<!-- this was all commented out -->
+							<!-- <div class="item-contents2"><img lazy-img="song" width="64px"/></div> -->
+							<!-- <div class="item-contents2"><img lazy-img="song" height="44px"/></div> -->
+							<!-- <div class="item-contents2"><img ng-src="{{getThumbnail(song)}}" width="64px"/></div> -->
+							<!-- end of comment block -->
+							<!-- <div class="item-contents2 attr">
+								<div title="{{song.name}}" class="item-contents2 attr">{{song.name}}</div>
+								<div title="{{song.artistStr}}" class="item-contents2 attr">{{song.artistStr}}</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div> -->
+
 			<button type="button" class="btn btn-success" ng-click="addSongs()" ng-disabled="playlistIndices.length != 1">Add Songs</button>
 			<button type="button" class="btn btn-primary" ng-click="editSong()" ng-disabled="songIndices.length == 0">Edit Song</button>
 			<button type="button" class="btn btn-danger" ng-click="deleteSong()" ng-disabled="songIndices.length == 0">Remove Selected</button>
