@@ -267,16 +267,19 @@ def makeMusicQuery(data, musicDB, fast=False):
 			raise cherrypy.HTTPError(400, "Invalid sort parameter")
 	if "descend" in data:
 		orderBy = checkValidData("descend", data, bool)
-	ret = musicDB.find(myMusic, myProjection)
-	totalCount = ret.count()
+	#print("dumping")
+	#print(myMusic)
+	ret = musicDB.find(myMusic)
 	if sortBy == "relev":	#this returns a relev score of 0 even if text search not used
-		ret = cleanRet(ret.sort([("relev", {"$meta": "textScore"})]))
-		if not orderBy:
-			ret.reverse()
+		#ret = cleanRet(ret.sort([("relev", {"$meta": "textScore"})]))
+		#if not orderBy:
+		#	ret.reverse()
+		ret = cleanRet(ret.sort("song_name", DESCENDING if orderBy else ASCENDING))
 		# ret = ret[pageNo * SONG_PAGE_SIZE : (pageNo + 1) * SONG_PAGE_SIZE]
 	else:
 		ret = cleanRet(ret.collation({"locale": "en"}).sort(sortBy, DESCENDING if orderBy else ASCENDING))
 		# ret = cleanRet(ret.collation({"locale": "en"}).sort(sortBy, DESCENDING if orderBy else ASCENDING).skip(pageNo * SONG_PAGE_SIZE).limit(SONG_PAGE_SIZE))
+	totalCount = len(ret)
 	return {"results": ret, "count": totalCount}
 
 def makePlaylistQuery(data, playlistDB, musicDB):

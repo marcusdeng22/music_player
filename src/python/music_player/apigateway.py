@@ -220,7 +220,7 @@ class ApiGateway(object):
 		myRequest["date"] = datetime.now()
 
 		# insert the data into the database
-		inserted = self.musicDB().insert(myRequest)
+		inserted = self.musicDB().insert_one(myRequest)
 
 		#TODO: check if the artist exists; add if DNE
 		# for artist in myRequest["artist"]:
@@ -424,7 +424,7 @@ class ApiGateway(object):
 
 		myIDList = [m_utils.checkValidID(i) for i in m_utils.checkValidData("_id", data, list)]
 		for i in myIDList:
-			if self.musicDB().count({"_id": i}) == 0:
+			if self.musicDB().count_documents({"_id": i}) == 0:
 				raise cherrypy.HTTPError(400, "Song does not exist")
 
 		# sanitize the input
@@ -519,7 +519,7 @@ class ApiGateway(object):
 		contentList = m_utils.checkValidData("contents", data, list)
 		myContent = []
 		for song in contentList:
-			if self.musicDB().count({"_id": m_utils.checkValidID(song)}) > 0:
+			if self.musicDB().count_documents({"_id": m_utils.checkValidID(song)}) > 0:
 				myContent.append(song)
 			else:
 				raise cherrypy.HTTPError(400, "Invalid song ID")
@@ -527,7 +527,7 @@ class ApiGateway(object):
 		myPlaylist["date"] = datetime.now()
 
 		# add to database
-		inserted = self.playlistDB().insert(myPlaylist)
+		inserted = self.playlistDB().insert_one(myPlaylist)
 
 		myPlaylist["_id"] = str(inserted)
 		return m_utils.cleanRet(myPlaylist)
@@ -586,7 +586,7 @@ class ApiGateway(object):
 
 		print("editing playlist")
 		myID = m_utils.checkValidID(data)
-		if self.playlistDB().count({"_id": myID}) == 0:
+		if self.playlistDB().count_documents({"_id": myID}) == 0:
 			raise cherrypy.HTTPError(400, "Playlist does not exist")
 
 		myPlaylist = dict()
@@ -596,7 +596,7 @@ class ApiGateway(object):
 			contentList = m_utils.checkValidData("contents", data, list)
 			myContent = []
 			for song in contentList:
-				if self.musicDB().count({"_id": m_utils.checkValidID(song)}) > 0:
+				if self.musicDB().count_documents({"_id": m_utils.checkValidID(song)}) > 0:
 					myContent.append(ObjectId(song))
 				else:
 					raise cherrypy.HTTPError(400, "Invalid song ID")
